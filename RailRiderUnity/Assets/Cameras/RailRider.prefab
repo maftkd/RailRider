@@ -129,9 +129,11 @@ MonoBehaviour:
   _rail: {fileID: 0}
   _paused: 0
   _levelProgress: 0
-  _speed: 0.07
-  _maxSpeed: 1
+  _speed: 0.25
+  _maxSpeed: 2
   _heightOffRail: 1.6
   _maxProgress: 0
   _acceleration: -1
+  _centrifugal: 2
+  _angAccel: 0.025
   _balanceAngle: 1.5707964

@@ -16,10 +16,19 @@ public class RailRider : MonoBehaviour
 
     //physics stuff
     private Vector3 _prevPos;
+    private float _prevYaw;
     public float _acceleration;
+    [Tooltip("this controls how quckly delta yaw affects balance rate")]
+    public float _centrifugal;
+    [Tooltip("This controls how quickly you fall solely based on your angle to the rail")]
+    public float _angAccel;
 
     //balance stuff
     public float _balanceAngle = 0;
+
+    //input stuff
+    public float _baseInputPower;
+    public float _fallOffPowerMultiplier;
     // Start is called before the first frame update
     void Start()
     {
@@ -46,12 +55,31 @@ public class RailRider : MonoBehaviour
                 //not on the first frame
                 if (_prevPos != Vector3.zero)
                 {
-                    float yDelta = transform.position.y - _prevPos.y;
-                    Debug.Log("yDelta: " + yDelta);
+                    //control speed based off vertical differential
+                    float yDelta = transform.position.y - _prevPos.y;                    
                     _speed += _acceleration * yDelta*yDelta *Mathf.Sign(yDelta);
                     _speed = Mathf.Min(_speed,_maxSpeed);
+
+                    //control balance based on rail curvature (yaw)
+                    float yawDelta = transform.rotation.y - _prevYaw;                    
+                    _balanceAngle += yawDelta * _speed*_centrifugal;
+
+                    //balance angle increases (along a curve, or exponentially)
+                    float diff = (Mathf.PI * .5f - _balanceAngle)*-1f; //diff represents how off-balance the player is
+                    _balanceAngle += diff * _angAccel * Time.deltaTime;
+
+                    float inputInfluence = -1f * Input.GetAxis("Horizontal") * Time.deltaTime * (_baseInputPower*(1+Mathf.Abs(diff)*_fallOffPowerMultiplier));
+                    Debug.Log("inputInfluence: " + inputInfluence);
+                    _balanceAngle += inputInfluence;
+
+                    if(Mathf.Abs(diff) > Mathf.PI * .5f)
+                    {
+                        Debug.Log("Fall off");
+                        _paused = true;
+                    }
                 }
                 _prevPos = transform.position;
+                _prevYaw = transform.rotation.y;
             }
             else
             {
