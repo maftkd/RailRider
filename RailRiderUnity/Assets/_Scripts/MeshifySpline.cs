@@ -25,10 +25,11 @@ public class MeshifySpline : MonoBehaviour
 
     //safety first
     private bool _threadLocked;
+
     // Start is called before the first frame update
     void Start()
     {
-        
+        UpdateMesh();
     }
 
     // Update is called once per frame
@@ -36,7 +37,9 @@ public class MeshifySpline : MonoBehaviour
     {
         //temp code to always update mesh
         //in practice this only needs to be done on animate
+#if UNITY_EDITOR
         UpdateMesh();
+#endif
     }
 
     public void UpdateMesh()
@@ -53,7 +56,6 @@ public class MeshifySpline : MonoBehaviour
         mesh.Clear();
 
         _numPoints = Mathf.FloorToInt(_pointsPerCurve * _spline.curves.Count * _meshEnd);
-        Debug.Log("numPoints: " + _numPoints);
         int numCurves = _numPoints % _pointsPerCurve == 0 ? _numPoints / _pointsPerCurve : _numPoints / _pointsPerCurve + 1;
         int pointCounter = 0;
         if (_numPoints < 2)
