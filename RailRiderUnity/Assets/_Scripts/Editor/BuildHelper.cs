@@ -27,7 +27,7 @@ public class BuildHelper : EditorWindow
         if(GUILayout.Button("Build And Push"))
         {
             BuildPlayer(BuildTargets.HTML);
-            //PushToItch();
+            PushToItch();
         }
     }
 
@@ -78,19 +78,14 @@ public class BuildHelper : EditorWindow
 
     private void PushToItch()
     {
-        string bat = "set serverPath=" + _serverSCP + "\n";
+        string bat = "cd %1\nbutler push HTML rithmgaming/rail-rider:HTML5\nexit";
 
-        bat += "cd %1\ndel *.zip\n";
-        bat += "7z a -spe StandaloneWindows.zip .\\StandaloneWindows\\*\n";
-        bat += "7z a -spe StandaloneOSX.zip .\\StandaloneOSX\\*\n";
-        bat += "7z a -spe StandaloneLinux64.zip .\\StandaloneLinux64\\*\n";
-        bat += "scp -rp *.zip %serverPath%\nexit";
-
-        string batPath = Application.dataPath + "/ABK/Scripts/PushBuilds.bat";
+        string batPath = Application.dataPath + "/_Scripts/Bat/PushToItch.bat";
         File.WriteAllText(batPath, bat);
 
         string buildPath = Directory.GetParent(Directory.GetParent(Application.dataPath).FullName).FullName.Replace('\\', '/') + "/buildPath";
         System.Diagnostics.Process.Start("cmd.exe", "/k " + batPath + " " + buildPath);
+        Debug.Log("Pushing to itch");
     }
 
 
