@@ -53,7 +53,272 @@ MonoBehaviour:
     scale: {x: 1, y: 1}
     roll: 0
   - position: {x: 0, y: 0, z: 10}
-    direction: {x: 0, y: 0, z: 10}
+    direction: {x: 0, y: 0, z: 11.88799}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: 1.2935296, y: 0, z: 20.156492}
+    direction: {x: 1.9842274, y: 0, z: 23.459229}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: 4.687147, y: 0, z: 30.314125}
+    direction: {x: 6.905121, y: 0, z: 34.06487}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: 12.078045, y: 0, z: 37.143013}
+    direction: {x: 17.27015, y: 0, z: 39.588345}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: 22.754194, y: 0, z: 47.162663}
+    direction: {x: 25.621857, y: 0, z: 51.49495}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: 29.29497, y: 0, z: 60.33299}
+    direction: {x: 29.864986, y: 0, z: 64.96823}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: 30, y: 0, z: 70}
+    direction: {x: 30, y: 0, z: 75}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: 30, y: -5, z: 80}
+    direction: {x: 30, y: -5, z: 85}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: 30, y: -5, z: 90}
+    direction: {x: 30, y: -5, z: 95}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: 25.835295, y: -5, z: 98.662575}
+    direction: {x: 21.92047, y: -5, z: 100.699265}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: 14.340715, y: -5, z: 96.08046}
+    direction: {x: 10.425892, y: -5, z: 97.83199}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: 6.261264, y: -5, z: 104.06486}
+    direction: {x: 2.3464403, y: -5, z: 105.81639}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: -5.314371, y: -8.503588, z: 107.31589}
+    direction: {x: -9.771029, y: -11.190922, z: 107.294136}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: -18.35794, y: -12.044739, z: 102.85498}
+    direction: {x: -22.814617, y: -12.468788, z: 99.78521}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: -25, y: -11.767138, z: 89.61743}
+    direction: {x: -25, y: -12.191187, z: 86.12343}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: -25, y: -12.078611, z: 79.41752}
+    direction: {x: -25, y: -12.502661, z: 75.923515}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: -22.500502, y: -12.164843, z: 69.657585}
+    direction: {x: -21.091396, y: -12.588892, z: 66.69591}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: -21.832539, y: -12.299189, z: 59.7272}
+    direction: {x: -22.961693, y: -12.723238, z: 56.765522}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: -25.949883, y: -12.7036, z: 49.52082}
+    direction: {x: -25.977211, y: -13.127649, z: 46.559143}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: -21.819754, y: -12.827515, z: 39.74618}
+    direction: {x: -19.412733, y: -13.251564, z: 36.784504}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: -13, y: -13, z: 35}
+    direction: {x: -10, y: -13, z: 35}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: -3, y: -13, z: 35}
+    direction: {x: 0, y: -13, z: 35}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: 7.6933947, y: -13, z: 35}
+    direction: {x: 10.693395, y: -13, z: 35}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: 18.25893, y: -13, z: 35}
+    direction: {x: 21.25893, y: -13, z: 35}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: 23.332579, y: -13.636689, z: 30.020779}
+    direction: {x: 23.386906, y: -13.80473, z: 27.998611}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: 18.294594, y: -14.289034, z: 24.678778}
+    direction: {x: 14.744155, y: -14.655973, z: 24.697863}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: 12.914144, y: -15.707103, z: 29.964832}
+    direction: {x: 12.919207, y: -16.088419, z: 32.726723}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: 18.261124, y: -16.877829, z: 35.046356}
+    direction: {x: 21.110325, y: -17.113716, z: 35.001457}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: 23.298304, y: -17.536049, z: 29.959793}
+    direction: {x: 23.332611, y: -17.824358, z: 27.692608}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: 18.261124, y: -17.694931, z: 24.626308}
+    direction: {x: 15.110157, y: -18.03566, z: 24.630793}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: 12.911804, y: -18.788631, z: 29.919617}
+    direction: {x: 13.00964, y: -19.410667, z: 32.976852}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: 19.20599, y: -19.957851, z: 36.592735}
+    direction: {x: 21.24064, y: -20.22708, z: 38.70339}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: 22.656233, y: -20.602854, z: 45.000164}
+    direction: {x: 22.659315, y: -20.602854, z: 47.69655}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: 23.080862, y: -19.720123, z: 54.57354}
+    direction: {x: 23.083944, y: -19.720123, z: 57.269924}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: 22.91415, y: -21.270233, z: 61.87811}
+    direction: {x: 22.992975, y: -22.422523, z: 64.57448}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: 23.080862, y: -23.215027, z: 71.95915}
+    direction: {x: 23.083944, y: -23.215027, z: 74.655556}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: 23.080862, y: -22.76579, z: 79.22537}
+    direction: {x: 23.083944, y: -22.76579, z: 81.921776}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: 23.080862, y: -26.694237, z: 89.282585}
+    direction: {x: 23.083944, y: -27.128181, z: 91.97899}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: 23.080862, y: -27.381939, z: 100.02097}
+    direction: {x: 23.083944, y: -27.381939, z: 102.71738}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: 23.080862, y: -27.381939, z: 109.83737}
+    direction: {x: 23.083944, y: -27.381939, z: 112.533775}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: 16.605604, y: -27.381939, z: 116.69857}
+    direction: {x: 13.092321, y: -27.381939, z: 116.73626}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: 7.6431675, y: -28.539768, z: 116.69857}
+    direction: {x: 4.1298847, y: -29.22589, z: 116.73626}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: -1.2741337, y: -30.78693, z: 116.69857}
+    direction: {x: -4.7874165, y: -30.822342, z: 116.73626}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: -11.247766, y: -30.78693, z: 116.69857}
+    direction: {x: -14.76105, y: -30.822342, z: 116.73626}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: -20.735859, y: -30.78693, z: 108.41229}
+    direction: {x: -20.83343, y: -30.822342, z: 101.681816}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: -20.735859, y: -30.78693, z: 96.698105}
+    direction: {x: -20.83343, y: -30.822342, z: 89.96763}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: -20.735859, y: -32.704525, z: 87.09241}
+    direction: {x: -20.83343, y: -33.99375, z: 83.53334}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: -20.735859, y: -35.58092, z: 77.662506}
+    direction: {x: -20.83343, y: -35.616333, z: 74.250946}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: -18.105537, y: -29.162779, z: 68.660225}
+    direction: {x: -16.745514, y: -26.122152, z: 68.57866}
+    up: {x: 0.014221171, y: 0.033809613, z: 0.9993272}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: -14.243059, y: -21.694925, z: 76.03061}
+    direction: {x: -13.819414, y: -21.806696, z: 81.987434}
+    up: {x: 0.001573563, y: -0.9997275, z: -0.023292547}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: -11.752514, y: -29.606773, z: 84.3778}
+    direction: {x: -11.328869, y: -32.78214, z: 84.42943}
+    up: {x: 0.22773068, y: -0.14062686, z: -0.9635159}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: -9.833139, y: -36.918625, z: 75.57712}
+    direction: {x: -9.409494, y: -36.808403, z: 71.32195}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: -9.346827, y: -36.918625, z: 63.03679}
+    direction: {x: -9.372918, y: -36.808403, z: 58.781624}
+    up: {x: 0, y: 1, z: 0}
+    scale: {x: 1, y: 1}
+    roll: 0
+  - position: {x: -9.358791, y: -36.918625, z: 51.223183}
+    direction: {x: -9.520319, y: -36.808403, z: 46.968018}
     up: {x: 0, y: 1, z: 0}
     scale: {x: 1, y: 1}
     roll: 0
@@ -66,14 +331,809 @@ MonoBehaviour:
       roll: 0
     n2:
       position: {x: 0, y: 0, z: 10}
-      direction: {x: 0, y: 0, z: 10}
+      direction: {x: 0, y: 0, z: 11.88799}
       up: {x: 0, y: 1, z: 0}
       scale: {x: 1, y: 1}
       roll: 0
     Changed:
       m_PersistentCalls:
         m_Calls: []
-  Length: 32.31613
+  - n1:
+      position: {x: 0, y: 0, z: 10}
+      direction: {x: 0, y: 0, z: 11.88799}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: 1.2935296, y: 0, z: 20.156492}
+      direction: {x: 1.9842274, y: 0, z: 23.459229}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: 1.2935296, y: 0, z: 20.156492}
+      direction: {x: 1.9842274, y: 0, z: 23.459229}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: 4.687147, y: 0, z: 30.314125}
+      direction: {x: 6.905121, y: 0, z: 34.06487}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: 4.687147, y: 0, z: 30.314125}
+      direction: {x: 6.905121, y: 0, z: 34.06487}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: 12.078045, y: 0, z: 37.143013}
+      direction: {x: 17.27015, y: 0, z: 39.588345}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: 12.078045, y: 0, z: 37.143013}
+      direction: {x: 17.27015, y: 0, z: 39.588345}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: 22.754194, y: 0, z: 47.162663}
+      direction: {x: 25.621857, y: 0, z: 51.49495}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: 22.754194, y: 0, z: 47.162663}
+      direction: {x: 25.621857, y: 0, z: 51.49495}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: 29.29497, y: 0, z: 60.33299}
+      direction: {x: 29.864986, y: 0, z: 64.96823}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: 29.29497, y: 0, z: 60.33299}
+      direction: {x: 29.864986, y: 0, z: 64.96823}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: 30, y: 0, z: 70}
+      direction: {x: 30, y: 0, z: 75}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: 30, y: 0, z: 70}
+      direction: {x: 30, y: 0, z: 75}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: 30, y: -5, z: 80}
+      direction: {x: 30, y: -5, z: 85}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: 30, y: -5, z: 80}
+      direction: {x: 30, y: -5, z: 85}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: 30, y: -5, z: 90}
+      direction: {x: 30, y: -5, z: 95}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: 30, y: -5, z: 90}
+      direction: {x: 30, y: -5, z: 95}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: 25.835295, y: -5, z: 98.662575}
+      direction: {x: 21.92047, y: -5, z: 100.699265}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: 25.835295, y: -5, z: 98.662575}
+      direction: {x: 21.92047, y: -5, z: 100.699265}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: 14.340715, y: -5, z: 96.08046}
+      direction: {x: 10.425892, y: -5, z: 97.83199}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: 14.340715, y: -5, z: 96.08046}
+      direction: {x: 10.425892, y: -5, z: 97.83199}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: 6.261264, y: -5, z: 104.06486}
+      direction: {x: 2.3464403, y: -5, z: 105.81639}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: 6.261264, y: -5, z: 104.06486}
+      direction: {x: 2.3464403, y: -5, z: 105.81639}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: -5.314371, y: -8.503588, z: 107.31589}
+      direction: {x: -9.771029, y: -11.190922, z: 107.294136}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: -5.314371, y: -8.503588, z: 107.31589}
+      direction: {x: -9.771029, y: -11.190922, z: 107.294136}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: -18.35794, y: -12.044739, z: 102.85498}
+      direction: {x: -22.814617, y: -12.468788, z: 99.78521}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: -18.35794, y: -12.044739, z: 102.85498}
+      direction: {x: -22.814617, y: -12.468788, z: 99.78521}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: -25, y: -11.767138, z: 89.61743}
+      direction: {x: -25, y: -12.191187, z: 86.12343}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: -25, y: -11.767138, z: 89.61743}
+      direction: {x: -25, y: -12.191187, z: 86.12343}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: -25, y: -12.078611, z: 79.41752}
+      direction: {x: -25, y: -12.502661, z: 75.923515}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: -25, y: -12.078611, z: 79.41752}
+      direction: {x: -25, y: -12.502661, z: 75.923515}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: -22.500502, y: -12.164843, z: 69.657585}
+      direction: {x: -21.091396, y: -12.588892, z: 66.69591}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: -22.500502, y: -12.164843, z: 69.657585}
+      direction: {x: -21.091396, y: -12.588892, z: 66.69591}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: -21.832539, y: -12.299189, z: 59.7272}
+      direction: {x: -22.961693, y: -12.723238, z: 56.765522}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: -21.832539, y: -12.299189, z: 59.7272}
+      direction: {x: -22.961693, y: -12.723238, z: 56.765522}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: -25.949883, y: -12.7036, z: 49.52082}
+      direction: {x: -25.977211, y: -13.127649, z: 46.559143}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: -25.949883, y: -12.7036, z: 49.52082}
+      direction: {x: -25.977211, y: -13.127649, z: 46.559143}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: -21.819754, y: -12.827515, z: 39.74618}
+      direction: {x: -19.412733, y: -13.251564, z: 36.784504}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: -21.819754, y: -12.827515, z: 39.74618}
+      direction: {x: -19.412733, y: -13.251564, z: 36.784504}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: -13, y: -13, z: 35}
+      direction: {x: -10, y: -13, z: 35}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: -13, y: -13, z: 35}
+      direction: {x: -10, y: -13, z: 35}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: -3, y: -13, z: 35}
+      direction: {x: 0, y: -13, z: 35}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: -3, y: -13, z: 35}
+      direction: {x: 0, y: -13, z: 35}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: 7.6933947, y: -13, z: 35}
+      direction: {x: 10.693395, y: -13, z: 35}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: 7.6933947, y: -13, z: 35}
+      direction: {x: 10.693395, y: -13, z: 35}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: 18.25893, y: -13, z: 35}
+      direction: {x: 21.25893, y: -13, z: 35}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: 18.25893, y: -13, z: 35}
+      direction: {x: 21.25893, y: -13, z: 35}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: 23.332579, y: -13.636689, z: 30.020779}
+      direction: {x: 23.386906, y: -13.80473, z: 27.998611}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: 23.332579, y: -13.636689, z: 30.020779}
+      direction: {x: 23.386906, y: -13.80473, z: 27.998611}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: 18.294594, y: -14.289034, z: 24.678778}
+      direction: {x: 14.744155, y: -14.655973, z: 24.697863}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: 18.294594, y: -14.289034, z: 24.678778}
+      direction: {x: 14.744155, y: -14.655973, z: 24.697863}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: 12.914144, y: -15.707103, z: 29.964832}
+      direction: {x: 12.919207, y: -16.088419, z: 32.726723}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: 12.914144, y: -15.707103, z: 29.964832}
+      direction: {x: 12.919207, y: -16.088419, z: 32.726723}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: 18.261124, y: -16.877829, z: 35.046356}
+      direction: {x: 21.110325, y: -17.113716, z: 35.001457}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: 18.261124, y: -16.877829, z: 35.046356}
+      direction: {x: 21.110325, y: -17.113716, z: 35.001457}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: 23.298304, y: -17.536049, z: 29.959793}
+      direction: {x: 23.332611, y: -17.824358, z: 27.692608}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: 23.298304, y: -17.536049, z: 29.959793}
+      direction: {x: 23.332611, y: -17.824358, z: 27.692608}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: 18.261124, y: -17.694931, z: 24.626308}
+      direction: {x: 15.110157, y: -18.03566, z: 24.630793}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: 18.261124, y: -17.694931, z: 24.626308}
+      direction: {x: 15.110157, y: -18.03566, z: 24.630793}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: 12.911804, y: -18.788631, z: 29.919617}
+      direction: {x: 13.00964, y: -19.410667, z: 32.976852}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: 12.911804, y: -18.788631, z: 29.919617}
+      direction: {x: 13.00964, y: -19.410667, z: 32.976852}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: 19.20599, y: -19.957851, z: 36.592735}
+      direction: {x: 21.24064, y: -20.22708, z: 38.70339}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: 19.20599, y: -19.957851, z: 36.592735}
+      direction: {x: 21.24064, y: -20.22708, z: 38.70339}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: 22.656233, y: -20.602854, z: 45.000164}
+      direction: {x: 22.659315, y: -20.602854, z: 47.69655}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: 22.656233, y: -20.602854, z: 45.000164}
+      direction: {x: 22.659315, y: -20.602854, z: 47.69655}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: 23.080862, y: -19.720123, z: 54.57354}
+      direction: {x: 23.083944, y: -19.720123, z: 57.269924}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: 23.080862, y: -19.720123, z: 54.57354}
+      direction: {x: 23.083944, y: -19.720123, z: 57.269924}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: 22.91415, y: -21.270233, z: 61.87811}
+      direction: {x: 22.992975, y: -22.422523, z: 64.57448}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: 22.91415, y: -21.270233, z: 61.87811}
+      direction: {x: 22.992975, y: -22.422523, z: 64.57448}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: 23.080862, y: -23.215027, z: 71.95915}
+      direction: {x: 23.083944, y: -23.215027, z: 74.655556}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: 23.080862, y: -23.215027, z: 71.95915}
+      direction: {x: 23.083944, y: -23.215027, z: 74.655556}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: 23.080862, y: -22.76579, z: 79.22537}
+      direction: {x: 23.083944, y: -22.76579, z: 81.921776}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: 23.080862, y: -22.76579, z: 79.22537}
+      direction: {x: 23.083944, y: -22.76579, z: 81.921776}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: 23.080862, y: -26.694237, z: 89.282585}
+      direction: {x: 23.083944, y: -27.128181, z: 91.97899}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: 23.080862, y: -26.694237, z: 89.282585}
+      direction: {x: 23.083944, y: -27.128181, z: 91.97899}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: 23.080862, y: -27.381939, z: 100.02097}
+      direction: {x: 23.083944, y: -27.381939, z: 102.71738}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: 23.080862, y: -27.381939, z: 100.02097}
+      direction: {x: 23.083944, y: -27.381939, z: 102.71738}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: 23.080862, y: -27.381939, z: 109.83737}
+      direction: {x: 23.083944, y: -27.381939, z: 112.533775}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: 23.080862, y: -27.381939, z: 109.83737}
+      direction: {x: 23.083944, y: -27.381939, z: 112.533775}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: 16.605604, y: -27.381939, z: 116.69857}
+      direction: {x: 13.092321, y: -27.381939, z: 116.73626}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: 16.605604, y: -27.381939, z: 116.69857}
+      direction: {x: 13.092321, y: -27.381939, z: 116.73626}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: 7.6431675, y: -28.539768, z: 116.69857}
+      direction: {x: 4.1298847, y: -29.22589, z: 116.73626}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: 7.6431675, y: -28.539768, z: 116.69857}
+      direction: {x: 4.1298847, y: -29.22589, z: 116.73626}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: -1.2741337, y: -30.78693, z: 116.69857}
+      direction: {x: -4.7874165, y: -30.822342, z: 116.73626}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: -1.2741337, y: -30.78693, z: 116.69857}
+      direction: {x: -4.7874165, y: -30.822342, z: 116.73626}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: -11.247766, y: -30.78693, z: 116.69857}
+      direction: {x: -14.76105, y: -30.822342, z: 116.73626}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: -11.247766, y: -30.78693, z: 116.69857}
+      direction: {x: -14.76105, y: -30.822342, z: 116.73626}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: -20.735859, y: -30.78693, z: 108.41229}
+      direction: {x: -20.83343, y: -30.822342, z: 101.681816}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: -20.735859, y: -30.78693, z: 108.41229}
+      direction: {x: -20.83343, y: -30.822342, z: 101.681816}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: -20.735859, y: -30.78693, z: 96.698105}
+      direction: {x: -20.83343, y: -30.822342, z: 89.96763}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: -20.735859, y: -30.78693, z: 96.698105}
+      direction: {x: -20.83343, y: -30.822342, z: 89.96763}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: -20.735859, y: -32.704525, z: 87.09241}
+      direction: {x: -20.83343, y: -33.99375, z: 83.53334}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: -20.735859, y: -32.704525, z: 87.09241}
+      direction: {x: -20.83343, y: -33.99375, z: 83.53334}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: -20.735859, y: -35.58092, z: 77.662506}
+      direction: {x: -20.83343, y: -35.616333, z: 74.250946}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: -20.735859, y: -35.58092, z: 77.662506}
+      direction: {x: -20.83343, y: -35.616333, z: 74.250946}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: -18.105537, y: -29.162779, z: 68.660225}
+      direction: {x: -16.745514, y: -26.122152, z: 68.57866}
+      up: {x: 0.014221171, y: 0.033809613, z: 0.9993272}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: -18.105537, y: -29.162779, z: 68.660225}
+      direction: {x: -16.745514, y: -26.122152, z: 68.57866}
+      up: {x: 0.014221171, y: 0.033809613, z: 0.9993272}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: -14.243059, y: -21.694925, z: 76.03061}
+      direction: {x: -13.819414, y: -21.806696, z: 81.987434}
+      up: {x: 0.001573563, y: -0.9997275, z: -0.023292547}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: -14.243059, y: -21.694925, z: 76.03061}
+      direction: {x: -13.819414, y: -21.806696, z: 81.987434}
+      up: {x: 0.001573563, y: -0.9997275, z: -0.023292547}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: -11.752514, y: -29.606773, z: 84.3778}
+      direction: {x: -11.328869, y: -32.78214, z: 84.42943}
+      up: {x: 0.22773068, y: -0.14062686, z: -0.9635159}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: -11.752514, y: -29.606773, z: 84.3778}
+      direction: {x: -11.328869, y: -32.78214, z: 84.42943}
+      up: {x: 0.22773068, y: -0.14062686, z: -0.9635159}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: -9.833139, y: -36.918625, z: 75.57712}
+      direction: {x: -9.409494, y: -36.808403, z: 71.32195}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: -9.833139, y: -36.918625, z: 75.57712}
+      direction: {x: -9.409494, y: -36.808403, z: 71.32195}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: -9.346827, y: -36.918625, z: 63.03679}
+      direction: {x: -9.372918, y: -36.808403, z: 58.781624}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  - n1:
+      position: {x: -9.346827, y: -36.918625, z: 63.03679}
+      direction: {x: -9.372918, y: -36.808403, z: 58.781624}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    n2:
+      position: {x: -9.358791, y: -36.918625, z: 51.223183}
+      direction: {x: -9.520319, y: -36.808403, z: 46.968018}
+      up: {x: 0, y: 1, z: 0}
+      scale: {x: 1, y: 1}
+      roll: 0
+    Changed:
+      m_PersistentCalls:
+        m_Calls: []
+  Length: 574.8821
   isLoop: 0
   CurveChanged:
     m_PersistentCalls:
