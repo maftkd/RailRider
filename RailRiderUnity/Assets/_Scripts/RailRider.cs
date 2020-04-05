@@ -31,6 +31,7 @@ public class RailRider : MonoBehaviour
 
     //balance stuff
     public float _balanceAngle = 0;
+    public Animator _avatarAnim;
 
     //input stuff
     public float _baseInputPower;
@@ -93,6 +94,9 @@ public class RailRider : MonoBehaviour
                         //balance angle increases (along a curve, or exponentially)
                         float diff = (Mathf.PI * .5f - _balanceAngle) * -1f; //diff represents how off-balance the player is
                         _balanceAngle += diff * diff * _angAccel * Time.deltaTime;
+
+                        float balanceLevel = 1f-(diff / (Mathf.PI * .5f) + 1) * .5f;
+                        _avatarAnim.SetFloat("balance", balanceLevel);
 
                         float horIn = Input.GetAxis("Horizontal");
                         if (Input.GetMouseButton(0))

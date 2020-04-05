@@ -24,10 +24,11 @@ public class FollowTarget : MonoBehaviour
     {
         if (!_standardOffset)
         {
-            Vector3 targetPos = _target.position + _target.forward * _posOffset.z + Vector3.up * _yDiff;
+            Vector3 targetPos = _target.position + _target.forward * _posOffset.z + _target.right*_posOffset.x + Vector3.up * _yDiff;
             transform.position = Vector3.Lerp(transform.position, targetPos, _moveLerpSpeed * Time.deltaTime);
-            Vector3 oldEuler = transform.eulerAngles;
-            transform.rotation = Quaternion.Slerp(transform.rotation, _target.rotation, _turnLerpSpeed * Time.deltaTime);
+            //Vector3 oldEuler = transform.eulerAngles;
+            //transform.rotation = Quaternion.Slerp(transform.rotation, _target.rotation, _turnLerpSpeed * Time.deltaTime);
+            transform.LookAt(_target);
             //transform.eulerAngles = new Vector3(oldEuler.x, transform.eulerAngles.y, oldEuler.z);
 
         }

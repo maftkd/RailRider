@@ -135,7 +135,7 @@ public class MeshifySpline : MonoBehaviour
     }
 
     private void OnDrawGizmos()
-    {
+    {/*
         Gizmos.color = Color.red;
         foreach(SplineNode node in _spline.nodes)
         {
@@ -150,6 +150,6 @@ public class MeshifySpline : MonoBehaviour
                 param = (float)i / (float)_pointsPerCurve;
                 Gizmos.DrawSphere(curve.GetLocation(param), .05f);
             }
-        }
+        }*/
     }
 }
