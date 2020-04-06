@@ -12,9 +12,8 @@ public class RailRider : MonoBehaviour
     public FadeHelper _introFader;
     public FadeHelper _winFader;
     
-
+    //rail stuff
     public Spline _rail;
-
     public bool _paused = true;
     public float _levelProgress = 0;
     public float _speed = .1f;
@@ -47,6 +46,7 @@ public class RailRider : MonoBehaviour
     public float _multiplier;
     public int _pointsPerSecond;
     public int _multPerSec;
+    public Image _trackBar, _trackHandle;
 
     // Start is called before the first frame update
     void Start()
@@ -80,6 +80,9 @@ public class RailRider : MonoBehaviour
                     return;
                 }
                 _levelProgress += _speed * Time.deltaTime;
+                float progFrac = _levelProgress / _maxProgress;
+                _trackBar.fillAmount = progFrac;
+                _trackHandle.transform.localPosition = Vector3.right * (1920f * progFrac - 960f);
                 if (_levelProgress <= _maxProgress)
                 {
                     CurveSample _curSample = _rail.GetSample(_levelProgress);

@@ -33,6 +33,22 @@ Transform:
   m_Father: {fileID: 7854978760754225190}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &366499659376571641
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3934938366100835948}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbf3575480402db40813e763382412fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  color: 0
+  eraseRenderer: 0
+  originalLayer: 0
+  originalMaterials: []
 --- !u!1 &4533919975116833950
 GameObject:
   m_ObjectHideFlags: 0
@@ -762,7 +778,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 3
       scalar: 4
-      minScalar: 3
+      minScalar: -4
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -1020,7 +1036,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 100
+      scalar: 200
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -3978,9 +3994,9 @@ ParticleSystem:
         m_RotationOrder: 4
     maxLights: 20
   TrailModule:
-    enabled: 0
+    enabled: 1
     mode: 0
-    ratio: 0.5
+    ratio: 0.2
     lifetime:
       serializedVersion: 2
       minMaxState: 0
@@ -4112,7 +4128,7 @@ ParticleSystem:
     widthOverTrail:
       serializedVersion: 2
       minMaxState: 1
-      scalar: 0.3383955
+      scalar: 0.17812158
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -4810,7 +4826,7 @@ ParticleSystemRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 10301, guid: 0000000000000000f000000000000000, type: 0}
-  - {fileID: 0}
+  - {fileID: 2100000, guid: fae0012cf11a0274faf4c6a2cbe0a1db, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5301,11 +5317,21 @@ PrefabInstance:
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: f1cdc9bc8751bd64f802cfb13772052d, type: 2}
+    - target: {fileID: 13700006, guid: b235179bd2a63d1468dd430670338c55, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 77064db70e79cda4eabb3c7114c0ebf1, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b235179bd2a63d1468dd430670338c55, type: 3}
 --- !u!4 &3934938366100410894 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400168, guid: b235179bd2a63d1468dd430670338c55,
+    type: 3}
+  m_PrefabInstance: {fileID: 3934938366100801830}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &3934938366100835948 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 100170, guid: b235179bd2a63d1468dd430670338c55,
     type: 3}
   m_PrefabInstance: {fileID: 3934938366100801830}
   m_PrefabAsset: {fileID: 0}
