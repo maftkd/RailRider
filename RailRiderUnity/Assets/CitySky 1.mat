@@ -7,15 +7,14 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: CitySky
-  m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
+  m_Name: CitySky 1
+  m_Shader: {fileID: 10752, guid: 0000000000000000f000000000000000, type: 0}
   m_ShaderKeywords: _ALPHATEST_ON _EMISSION
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 2450
-  stringTagMap:
-    RenderType: TransparentCutout
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
   disabledShaderPasses: []
   m_SavedProperties:
     serializedVersion: 3
@@ -39,11 +38,11 @@ Material:
     - _EmissionMap:
         m_Texture: {fileID: 2800000, guid: 684d424b616c8d0459cd1eaf34f75a6c, type: 3}
         m_Scale: {x: 4.46, y: 1}
-        m_Offset: {x: 0, y: 0.09}
+        m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: be3d73a5383f15449868f471b2e192b7, type: 3}
-        m_Scale: {x: 4.46, y: 1}
-        m_Offset: {x: 0, y: 0.09}
+        m_Texture: {fileID: 2800000, guid: a32b9ee4a068e2c4a8befe4e2d450ce6, type: 3}
+        m_Scale: {x: 4.46, y: 4.63}
+        m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
