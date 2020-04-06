@@ -8,12 +8,15 @@ public class FadeHelper : MonoBehaviour
     [HideInInspector]
     public CanvasGroup _cg;
     public float _fadeDur;
-    private bool _fadeInterupt; //implement this
+    public bool _fadeInterupt=true; //implement this
     public bool _fadeOnAwake;
+    public bool _pulseOnAwake;
     // Start is called before the first frame update
     void Start()
     {
         _cg = GetComponent<CanvasGroup>();
+        if (_pulseOnAwake)
+            StartPulse(false, _fadeDur);
     }
 
     public void FadeThenDestroy()
@@ -43,8 +46,9 @@ public class FadeHelper : MonoBehaviour
         StartCoroutine(FadeOut(_cg, _fadeDur));
     }
 
-    public void Pulse(bool isGui, float myFadeDur)
+    public void StartPulse(bool isGui, float myFadeDur)
     {
+        Debug.Log("start Pulse");
         StopAllCoroutines();
         if (isGui)
         {
@@ -96,6 +100,7 @@ public class FadeHelper : MonoBehaviour
         {
             cg.alpha = Mathf.PingPong(timer, dur);
             timer += Time.deltaTime;
+            Debug.Log("pulsing");
             yield return null;
         }
     }

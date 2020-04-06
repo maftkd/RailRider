@@ -105,7 +105,7 @@ public class MeshifySpline : MonoBehaviour
             offset += right * Mathf.Cos(angle) * _radius + up * Mathf.Sin(angle) * _radius;
             verts[index] = position + offset;
             norms[index] = offset;
-            uvs[index] = new Vector2(frac, ringFrac);
+            uvs[index] = new Vector2(frac, (float)ring);
 
             //triangle
             if (ring < _numPoints-1)

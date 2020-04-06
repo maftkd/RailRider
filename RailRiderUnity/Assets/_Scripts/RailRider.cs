@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class RailRider : MonoBehaviour
 {
@@ -9,6 +10,7 @@ public class RailRider : MonoBehaviour
     public enum RideStates { PAUSED, RIDING, FALLING, WINNING}
     public RideStates _state = RideStates.PAUSED;
     public FadeHelper _introFader;
+    public FadeHelper _winFader;
     
 
     public Spline _rail;
@@ -38,12 +40,24 @@ public class RailRider : MonoBehaviour
     public float _fallOffPowerMultiplier;
     public float _inputOffset;
     public float _inputDecayRate;
+
+    //scoring
+    public Text _scoreboard;
+    public float _score;
+    public float _multiplier;
+    public int _pointsPerSecond;
+    public int _multPerSec;
+
     // Start is called before the first frame update
     void Start()
     {
         _maxProgress = (float)(_rail.nodes.Count-1);
+        _score = 0;
+        _multiplier = 1;
+        _scoreboard.text = "000";
     }
 
+    string appendix = "";
     // Update is called once per frame
     void Update()
     {
@@ -55,6 +69,7 @@ public class RailRider : MonoBehaviour
                 {
                     _state = RideStates.RIDING;
                     _introFader.FadeOut(true);
+                    _introFader.transform.GetChild(_introFader.transform.childCount - 1).GetComponent<FadeHelper>()._fadeInterupt = false;
                 }
                 break;
             case RideStates.RIDING:
@@ -111,7 +126,30 @@ public class RailRider : MonoBehaviour
                         {
                             Debug.Log("Fall off");
                             _state = RideStates.FALLING;
+                            Camera.main.transform.GetComponent<FOVAnimator>().StartFOVAnim(160f, 3f);
                         }
+                        else if(Mathf.Abs(diff) < .5f)
+                        {
+                            if (_multiplier == 1f)
+                            {
+                                _scoreboard.fontStyle = FontStyle.Bold;
+                            }
+                            _multiplier += _multPerSec * Time.deltaTime;
+                            _score += Time.deltaTime * _pointsPerSecond * _multiplier;
+                            appendix = "\nx"+Mathf.FloorToInt(_multiplier);
+                            
+                        }
+                        else
+                        {
+                            if (_multiplier > 1f)
+                            {
+                                _scoreboard.fontStyle = FontStyle.Normal;
+                                appendix = "";
+                            }
+                            _multiplier = 1f;
+                            _score += (Time.deltaTime * _pointsPerSecond);                            
+                        }
+                        _scoreboard.text = string.Format("{0:n0}", Mathf.FloorToInt(_score)*100)+appendix;
                     }
                     _prevPos = transform.position;
                     _prevForward = transform.forward;
@@ -120,6 +158,7 @@ public class RailRider : MonoBehaviour
                 {
                     _state = RideStates.WINNING;
                     Debug.Log("Level over!");
+                    _winFader.FadeIn(true);
                 }
                 break;
             case RideStates.FALLING:
