@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[ExecuteInEditMode]
+
 public class MeshifySpline : MonoBehaviour
 {
     public Spline _spline;
@@ -26,6 +26,12 @@ public class MeshifySpline : MonoBehaviour
     //safety first
     private bool _threadLocked;
 
+    private void Awake()
+    {
+        mesh = new Mesh();
+        _meshFilter.sharedMesh = mesh;
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -41,17 +47,9 @@ public class MeshifySpline : MonoBehaviour
         UpdateMesh();
 #endif
     }
-
+    Mesh mesh;
     public void UpdateMesh()
     {
-        Mesh mesh;
-        if (_meshFilter.sharedMesh != null)
-            mesh = _meshFilter.sharedMesh;
-        else
-        {
-            mesh = new Mesh();
-            _meshFilter.sharedMesh = mesh;
-        }
 
         mesh.Clear();
 
