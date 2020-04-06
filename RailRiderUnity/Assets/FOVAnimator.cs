@@ -28,7 +28,6 @@ public class FOVAnimator : MonoBehaviour
         float startFov = mainCam.fieldOfView;
         while (timer < duration)
         {
-            Debug.Log("Animating fov");
             mainCam.fieldOfView = Mathf.Lerp(startFov, targetFov, timer / duration);
             timer += Time.deltaTime;
             yield return null;

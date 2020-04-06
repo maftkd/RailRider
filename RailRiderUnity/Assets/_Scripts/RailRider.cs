@@ -2,12 +2,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class RailRider : MonoBehaviour
 {
     //game state stuff
-    public enum RideStates { PAUSED, RIDING, FALLING, WINNING}
+    public enum RideStates { PAUSED, RIDING, FALLING, WINNING, INTUBE}
     public RideStates _state = RideStates.PAUSED;
     public FadeHelper _introFader;
     public FadeHelper _winFader;
@@ -50,6 +51,7 @@ public class RailRider : MonoBehaviour
 
     //audio
     private AudioSource _mAudio;
+    public float _pitchEffect;
 
     // Start is called before the first frame update
     void Start()
@@ -69,7 +71,7 @@ public class RailRider : MonoBehaviour
         {
             case RideStates.PAUSED:
                 //temp input till menu is in
-                if (Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0))
+                if (Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0) || Input.GetButtonDown("Fire1"))
                 {
                     _state = RideStates.RIDING;
                     _introFader.FadeOut(true);
@@ -120,6 +122,8 @@ public class RailRider : MonoBehaviour
                         float balanceLevel = 1f-(diff / (Mathf.PI * .5f) + 1) * .5f;
                         _avatarAnim.SetFloat("balance", balanceLevel);
                         _mAudio.panStereo = balanceLevel * 2f - 1f;
+                        _mAudio.pitch = 1 + _pitchEffect * diff;
+
 
                         float horIn = Input.GetAxis("Horizontal");
                         if (Input.GetMouseButton(0))
@@ -130,11 +134,12 @@ public class RailRider : MonoBehaviour
                         _balanceAngle += _inputOffset;
                         _inputOffset = Mathf.Lerp(_inputOffset, 0, Time.deltaTime * _inputDecayRate);
 
+
                         if (Mathf.Abs(diff) > Mathf.PI * .5f)
                         {
-                            Debug.Log("Fall off");
                             _state = RideStates.FALLING;
                             Camera.main.transform.GetComponent<FOVAnimator>().StartFOVAnim(160f, 3f);
+                            SaveScore();
                         }
                         else if(Mathf.Abs(diff) < .5f)
                         {
@@ -165,8 +170,11 @@ public class RailRider : MonoBehaviour
                 else
                 {
                     _state = RideStates.WINNING;
-                    Debug.Log("Level over!");
-                    _winFader.FadeIn(true);
+                    //Debug.Log("Level over!");
+                    //_winFader.FadeIn(true);
+                    //GameObject.Find("EventSystem").GetComponent<EventSystem>().SetSelectedGameObject(_winFader.transform.Find("Button").gameObject);
+                    transform.Find("LookyPoo").SetParent(null);
+                    _avatarAnim.SetTrigger("tubeDive");
                 }
                 break;
             case RideStates.FALLING:
@@ -182,5 +190,18 @@ public class RailRider : MonoBehaviour
             case RideStates.WINNING:
                 break;
         }
+    }
+
+    public void TubeDone()
+    {
+        SaveScore();
+        _winFader.FadeIn(true);
+        GameObject.Find("EventSystem").GetComponent<EventSystem>().SetSelectedGameObject(_winFader.transform.Find("Button").gameObject);
+        enabled = false;
+    }
+
+    public void SaveScore()
+    {
+        FindObjectOfType<ScoreKeeper>().GetComponent<ScoreKeeper>().SaveHighScore(Mathf.FloorToInt(_score));
     }
 }

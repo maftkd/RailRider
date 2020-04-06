@@ -27,12 +27,13 @@ public class FadeHelper : MonoBehaviour
     public void FadeIn(bool isGui)
     {
         StopAllCoroutines();
+        _fadeInterupt = false;
         if (isGui)
         {
             _cg.interactable = true;
             _cg.blocksRaycasts = true;
         }
-        StartCoroutine(FadeIn(_cg, _fadeDur));
+        StartCoroutine(FadeInRoutine(_cg, _fadeDur));
     }
 
     public void FadeOut(bool isGui)
@@ -48,7 +49,6 @@ public class FadeHelper : MonoBehaviour
 
     public void StartPulse(bool isGui, float myFadeDur)
     {
-        Debug.Log("start Pulse");
         StopAllCoroutines();
         if (isGui)
         {
@@ -70,7 +70,7 @@ public class FadeHelper : MonoBehaviour
         Destroy(transform.gameObject);
     }
 
-    public IEnumerator FadeIn(CanvasGroup cg, float dur)
+    public IEnumerator FadeInRoutine(CanvasGroup cg, float dur)
     {
         float timer = 0;
         while(timer < dur && !_fadeInterupt)
@@ -100,7 +100,6 @@ public class FadeHelper : MonoBehaviour
         {
             cg.alpha = Mathf.PingPong(timer, dur);
             timer += Time.deltaTime;
-            Debug.Log("pulsing");
             yield return null;
         }
     }

@@ -29,6 +29,12 @@ public class BuildHelper : EditorWindow
             BuildPlayer(BuildTargets.HTML);
             PushToItch();
         }
+        if(GUILayout.Button("Build standalone"))
+        {
+            BuildPlayer(BuildTargets.WINDOWS);
+            BuildPlayer(BuildTargets.LINUX);
+            BuildPlayer(BuildTargets.MAC);
+        }
     }
 
     private void BuildPlayer(BuildTargets target)
@@ -51,19 +57,27 @@ public class BuildHelper : EditorWindow
             case BuildTargets.WINDOWS:
                 buildPath += "/StandaloneWindows/";
                 bTarget = BuildTarget.StandaloneWindows;
+                Debug.Log("Building player");
+                BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, buildPath + Application.productName + extension, bTarget, BuildOptions.None);
                 break;
             case BuildTargets.LINUX:
                 buildPath += "/StandaloneLinux64/";
                 bTarget = BuildTarget.StandaloneLinux64;
+                Debug.Log("Building player");
+                BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, buildPath + Application.productName + extension, bTarget, BuildOptions.None);
                 extension = ".x64";
                 break;
             case BuildTargets.MAC:
                 buildPath += "/StandaloneOSX/";
                 bTarget = BuildTarget.StandaloneOSX;
+                Debug.Log("Building player");
+                BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, buildPath + Application.productName + extension, bTarget, BuildOptions.None);
                 break;
             case BuildTargets.HTML:
                 buildPath += "/HTML/";
                 bTarget = BuildTarget.WebGL;
+                Debug.Log("Building player");
+                BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, buildPath, bTarget, BuildOptions.None);
                 break;
             default:
                 Debug.LogError("Unidentified / unsupported build platform: " + target.ToString());
@@ -72,8 +86,7 @@ public class BuildHelper : EditorWindow
         if (!Directory.Exists(buildPath))
             Directory.CreateDirectory(buildPath);
 
-        Debug.Log("Building player");
-        BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, buildPath , bTarget, BuildOptions.None);
+        
     }
 
     private void PushToItch()

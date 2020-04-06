@@ -6,12 +6,18 @@
         _MainTex ("Albedo (RGB)", 2D) = "white" {}
         _Glossiness ("Smoothness", Range(0,1)) = 0.5
         _Metallic ("Metallic", Range(0,1)) = 0.0
+		[Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend("SrcBlend", Float) = 1
+		[Enum(UnityEngine.Rendering.BlendMode)] _DstBlend("DstBlend", Float) = 0
+			[Toggle] _AlphaBlend("Alpha Blend", Float) = 0
+			[Toggle] _ZWrite("ZWrite", Float) = 1
     }
     SubShader
     {
         Tags { "RenderType"="Opaque" }
         LOD 200
 		Cull Off
+		ZWrite[_ZWrite]
+		Blend[_SrcBlend][_DstBlend]
 
         CGPROGRAM
         // Physically based Standard lighting model, and enable shadows on all light types
@@ -41,12 +47,16 @@
         void surf (Input IN, inout SurfaceOutputStandard o)
         {
             // Albedo comes from a texture tinted by color
-            fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
+            //fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
+            fixed4 c = _Color;
             o.Albedo = c.rgb;
             // Metallic and smoothness come from slider variables
             o.Metallic = _Metallic;
             o.Smoothness = _Glossiness;
             o.Alpha = c.a;
+#if !defined(_ALPHABLEND_ON)
+			o.Alpha = 1.0;
+#endif
         }
         ENDCG
     }

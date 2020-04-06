@@ -7,6 +7,8 @@ public class CopyRotation : MonoBehaviour
 
     public Transform _target;
     public float _slerpSpeed;
+    public float _rotateSpeed;
+    private Quaternion _prevRot;
     // Start is called before the first frame update
     void Start()
     {
@@ -16,6 +18,8 @@ public class CopyRotation : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        transform.rotation = Quaternion.Slerp(transform.rotation, _target.rotation, _slerpSpeed * Time.deltaTime);
+        transform.rotation = Quaternion.Slerp(_prevRot, _target.rotation, _slerpSpeed * Time.deltaTime);
+        _prevRot = transform.rotation;
+        transform.Rotate(Vector3.forward * Time.timeSinceLevelLoad * _rotateSpeed);
     }
 }

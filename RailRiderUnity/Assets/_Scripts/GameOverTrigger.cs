@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class GameOverTrigger : MonoBehaviour
 {
@@ -20,5 +21,6 @@ public class GameOverTrigger : MonoBehaviour
     private void OnCollisionEnter(Collision collision)
     {
         _outro.FadeIn(true);
+        GameObject.Find("EventSystem").GetComponent<EventSystem>().SetSelectedGameObject(_outro.transform.Find("Button").gameObject);
     }
 }
