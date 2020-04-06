@@ -48,6 +48,9 @@ public class RailRider : MonoBehaviour
     public int _multPerSec;
     public Image _trackBar, _trackHandle;
 
+    //audio
+    private AudioSource _mAudio;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -55,6 +58,7 @@ public class RailRider : MonoBehaviour
         _score = 0;
         _multiplier = 1;
         _scoreboard.text = "000";
+        _mAudio = GameObject.Find("MusicPlayer").GetComponent<AudioSource>();
     }
 
     string appendix = "";
@@ -115,6 +119,7 @@ public class RailRider : MonoBehaviour
 
                         float balanceLevel = 1f-(diff / (Mathf.PI * .5f) + 1) * .5f;
                         _avatarAnim.SetFloat("balance", balanceLevel);
+                        _mAudio.panStereo = balanceLevel * 2f - 1f;
 
                         float horIn = Input.GetAxis("Horizontal");
                         if (Input.GetMouseButton(0))
