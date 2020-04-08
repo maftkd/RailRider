@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-
+[ExecuteInEditMode]
 public class MeshifySpline : MonoBehaviour
 {
     public Spline _spline;
@@ -48,9 +48,10 @@ public class MeshifySpline : MonoBehaviour
 #endif
     }
     Mesh mesh;
+
     public void UpdateMesh()
     {
-
+        Debug.Log("Mesh cleared");
         mesh.Clear();
 
         _numPoints = Mathf.FloorToInt(_pointsPerCurve * _spline.curves.Count * _meshEnd);
@@ -90,6 +91,7 @@ public class MeshifySpline : MonoBehaviour
         mesh.triangles = tris;
         mesh.normals = norms;
         mesh.uv = uvs;
+        Debug.Log("mesh updated");
     }
 
     private void DrawRing(int ring, float ringFrac, Vector3 position, Vector3 right, Vector3 up)
