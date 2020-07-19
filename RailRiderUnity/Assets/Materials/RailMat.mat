@@ -7,9 +7,9 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: TubeMat
-  m_Shader: {fileID: 4800000, guid: 452949aaa8003864faa504b22773e376, type: 3}
-  m_ShaderKeywords: _ALPHABLEND_ON
+  m_Name: RailMat
+  m_Shader: {fileID: 4800000, guid: 866804b8f11c0104ea067cf595d6fe67, type: 3}
+  m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -56,13 +56,12 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
-    - _AlphaBlend: 1
     - _BumpScale: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
-    - _DstBlend: 4
+    - _DstBlend: 0
     - _GlossMapScale: 1
-    - _Glossiness: 0
+    - _Glossiness: 0.5
     - _GlossyReflections: 1
     - _Metallic: 0
     - _Mode: 0
@@ -70,12 +69,9 @@ Material:
     - _Parallax: 0.02
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
-    - _SrcBlend: 3
+    - _SrcBlend: 1
     - _UVSec: 0
-    - _ZWrite: 0
+    - _ZWrite: 1
     m_Colors:
-    - _Color: {r: 0.7924528, g: 0.16073336, b: 0.16073336, a: 0.57254905}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _EndCol: {r: 0, g: 0.5678592, b: 1, a: 1}
-    - _FresnelCol: {r: 0, g: 0, b: 0, a: 0}
-    - _StartCol: {r: 1, g: 0.0047169924, b: 0.0047169924, a: 1}

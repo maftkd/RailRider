@@ -30,7 +30,7 @@ namespace SplineMesh {
         private Spline spline { get { return (Spline)serializedObject.targetObject; } }
 
         private GUIStyle nodeButtonStyle, directionButtonStyle, upButtonStyle;
-
+        /*
         private void OnEnable() {
             Texture2D t = new Texture2D(1, 1);
             t.SetPixel(0, 0, CURVE_BUTTON_COLOR);
@@ -265,6 +265,7 @@ namespace SplineMesh {
                 EditorGUILayout.LabelField("No selected node");
             }
         }
+        
 
         private void drawNodeData(SerializedProperty nodeProperty, SplineNode node) {
             using (var check = new EditorGUI.ChangeCheckScope()) {
@@ -306,11 +307,14 @@ namespace SplineMesh {
                     node.Roll = rollProp.floatValue;
                 }
             }
-        }
+        */
+    }
 
+    /*
         [MenuItem("GameObject/3D Object/Spline")]
         public static void CreateSpline() {
             new GameObject("Spline", typeof(Spline));
         }
-    }
+    */
 }
+
