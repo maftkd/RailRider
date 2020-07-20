@@ -42,7 +42,8 @@ public class RailGenerator : MonoBehaviour
 			_knots.Add(_knots[_knots.Count-1]+new Vector3(-.447f,0,.894f)*_nodeDist);
 		}*/
 		AddCurve(_nodeDist*2,3,false);
-		AddCurve(_nodeDist*2,3,true);
+		//AddCurve(_nodeDist*2,3,true);
+		AddZigZag(Mathf.PI/8f,4,false);
 		//instantiate our cubic bezier path
 		_path = new CubicBezierPath(_knots.ToArray());	
 		
@@ -79,6 +80,17 @@ public class RailGenerator : MonoBehaviour
 			yield return null;
 		}
 	}
+
+	void AddZigZag(float angle, int zigzags, bool leftFirst){
+		Vector3 tan = _knots[_knots.Count-1]-_knots[_knots.Count-2];
+		float ang = Mathf.Atan2(tan.z,tan.x);
+		int start= leftFirst ? 0 : 1;
+		for(int i=start; i<zigzags; i++){
+			float curAngle = i%2==0 ? ang+angle : ang-angle;
+			_knots.Add(_knots[_knots.Count-1]+new Vector3(_nodeDist*Mathf.Cos(curAngle),0,_nodeDist*Mathf.Sin(curAngle)));
+		}
+	}
+
 
 	void AddCurve(float radius, int sectors, bool toRight){
 		//get the current rail head
