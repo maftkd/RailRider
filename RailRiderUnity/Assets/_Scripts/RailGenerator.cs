@@ -13,7 +13,7 @@ public class RailGenerator : MonoBehaviour
 	public Material _lineMat;
 	float _nodeDist = 16f;
 	int _lineResolution = 10;
-	float _moveSpeed=0.3f;
+	float _moveSpeed=0.4f;
 	CurveSample _curSplineSample;
 	Transform _railTracker;
 	float _balanceSpeed = 100;
@@ -41,9 +41,12 @@ public class RailGenerator : MonoBehaviour
 			_knots.Add(_knots[_knots.Count-1]+new Vector3(.447f,0,.894f)*_nodeDist);
 			_knots.Add(_knots[_knots.Count-1]+new Vector3(-.447f,0,.894f)*_nodeDist);
 		}*/
+		AddStraight(2);
 		AddCurve(_nodeDist*2,3,false);
 		//AddCurve(_nodeDist*2,3,true);
 		AddZigZag(Mathf.PI/8f,4,false);
+		AddCurve(_nodeDist*1.5f,3,true);
+		AddStraight(5);
 		//instantiate our cubic bezier path
 		_path = new CubicBezierPath(_knots.ToArray());	
 		
@@ -80,6 +83,15 @@ public class RailGenerator : MonoBehaviour
 			yield return null;
 		}
 	}
+
+	void AddStraight(int segments){
+		Vector3 tan = _knots[_knots.Count-1]-_knots[_knots.Count-2];
+		tan.Normalize();
+		for(int i=0; i<segments; i++){
+			_knots.Add(_knots[_knots.Count-1]+tan*_nodeDist);
+		}
+	}
+
 
 	void AddZigZag(float angle, int zigzags, bool leftFirst){
 		Vector3 tan = _knots[_knots.Count-1]-_knots[_knots.Count-2];
@@ -137,13 +149,13 @@ public class RailGenerator : MonoBehaviour
 				Gizmos.DrawSphere(_line.GetPosition(i),.1f);
 			}
 		}
-		if(_knots!=null)
+/*		if(_knots!=null)
 		{
 			Gizmos.color = Color.red;
 			for(int i=0; i<_knots.Count; i++){
 				Gizmos.DrawSphere(_knots[i],.5f);
 			}
-		}
+		}*/
 		if(_turnCenters!=null){
 			Gizmos.color = Color.blue;
 			for(int i=0; i<_turnCenters.Count; i++){
