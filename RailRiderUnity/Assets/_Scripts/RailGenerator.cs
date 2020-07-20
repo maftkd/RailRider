@@ -8,10 +8,12 @@ public class RailGenerator : MonoBehaviour
 	Spline _spline;
 	LineRenderer _line;
 	public Material _lineMat;
-	float _nodeDist = 2f;
+	float _nodeDist = 16f;
 	int _lineResolution = 10;
+	float _moveSpeed=0.3f;
 	CurveSample _curSplineSample;
 	Transform _railTracker;
+	float _balanceSpeed = 100;
 	//float _uniformCurveModifier=
 	// Start is called before the first frame update
 	void Start()
@@ -34,10 +36,13 @@ public class RailGenerator : MonoBehaviour
 		//root node
 		_spline.AddNode(new SplineNode(Vector3.zero, Vector3.forward));
 		AddNode(Vector3.forward);
-		AddNode(new Vector3(1,0,2));
-		AddNode(new Vector3(-1,0,2));
-		AddNode(new Vector3(-1,0,2));
-		AddNode(new Vector3(1,0,2));
+		//here we create a zig-zag with 10 cycles
+		for(int i=0; i<10; i++){
+			AddNode(new Vector3(1,0,2));
+			AddNode(new Vector3(-1,0,2));
+			//AddNode(new Vector3(-1,0,2));
+			//AddNode(new Vector3(1,0,2));
+		}
 		AddNode(new Vector3(0,0,1));
 		AdjustDirections();
 		
@@ -55,10 +60,16 @@ public class RailGenerator : MonoBehaviour
 
 	IEnumerator TestRide(){
 		float t=0;
+		float balance=0;
 		while(t<_spline.nodes.Count-1){
+			balance+=Input.GetAxis("Horizontal")*Time.deltaTime*_balanceSpeed;
 			_curSplineSample = _spline.GetSample(t);
 			_railTracker.position=_curSplineSample.location;
-			t+=Time.deltaTime;
+			_railTracker.forward = _curSplineSample.tangent;
+			Vector3 localEuler = _railTracker.localEulerAngles;
+			localEuler.z = -balance;
+			_railTracker.localEulerAngles=localEuler;
+			t+=Time.deltaTime*_moveSpeed;
 			yield return null;
 		}
 	}
@@ -82,7 +93,7 @@ public class RailGenerator : MonoBehaviour
 				//in betweeners
 				_spline.nodes[i].Direction = Vector3.Lerp((_spline.nodes[i+1].Position-_spline.nodes[i].Position).normalized,(_spline.nodes[i].Position-_spline.nodes[i-1].Position).normalized,0.5f);
 			}
-			_spline.nodes[i].Direction=_spline.nodes[i].Direction*0.3f*_nodeDist+_spline.nodes[i].Position;
+			_spline.nodes[i].Direction=_spline.nodes[i].Direction*0.5f*_nodeDist+_spline.nodes[i].Position;
 		}
 	}
 
