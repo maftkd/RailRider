@@ -17,6 +17,9 @@ public class RailGenerator : MonoBehaviour
 	CurveSample _curSplineSample;
 	Transform _railTracker;
 	float _balanceSpeed = 100;
+	int _balanceState = 0;
+	float _balanceVelocity = 0;
+	float _balanceAcceleration = 4f;
 	
 	// Start is called before the first frame update
 	void Start()
@@ -70,10 +73,28 @@ public class RailGenerator : MonoBehaviour
 			{
 				Vector2 curPos = Input.mousePosition;
 				if(curPos.x>Screen.width*.6f)
-					balance+=Time.deltaTime*_balanceSpeed;
+					_balanceState=2;
 				else if(curPos.x<Screen.width*.4f)
-					balance-=Time.deltaTime*_balanceSpeed;
+					_balanceState=1;
 			}
+			else{
+				_balanceState=0;
+			}
+			switch(_balanceState){
+				case 0:
+					//fall to 0
+					_balanceVelocity=Mathf.Lerp(_balanceVelocity,0,_balanceAcceleration*Time.deltaTime);
+					break;
+				case 1:
+					//climb to 1
+					_balanceVelocity=Mathf.Lerp(_balanceVelocity,1f,_balanceAcceleration*Time.deltaTime);
+					break;
+				case 2:
+					//climb to -1
+					_balanceVelocity = Mathf.Lerp(_balanceVelocity,-1f,_balanceAcceleration*Time.deltaTime);
+					break;
+			}
+			balance-=_balanceVelocity*Time.deltaTime*_balanceSpeed;
 			_railTracker.position = _path.GetPoint(t);
 			_railTracker.forward = _path.GetTangent(t);
 			Vector3 localEuler = _railTracker.localEulerAngles;
