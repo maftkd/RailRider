@@ -106,7 +106,10 @@ public class RailGenerator : MonoBehaviour
 		for(int i=1; i<=sectors; i++){
 			Vector3 pos;
 			float ang = angleOffset+secAngle*i;
-			pos = new Vector3(turnCenter.x+Mathf.Cos(ang)*radius,0,turnCenter.z+Mathf.Sin(ang)*radius);
+			if(toRight)
+				pos = new Vector3(turnCenter.x-Mathf.Cos(ang)*radius,0,turnCenter.z+Mathf.Sin(ang)*radius);
+			else
+				pos = new Vector3(turnCenter.x+Mathf.Cos(ang)*radius,0,turnCenter.z+Mathf.Sin(ang)*radius);
 			_knots.Add(pos);
 		}
 	}

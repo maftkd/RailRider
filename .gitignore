@@ -9,6 +9,7 @@
 /RailRiderUnity/[Bb]uilds/
 /RailRiderUnity/[Ll]ogs/
 /RailRiderUnity/[Mm]emoryCaptures/
+/RailRiderX/
 
 # Asset meta data should only be ignored when the corresponding asset is also ignored
 !/RailRiderUnity/[Aa]ssets/**/*.meta
