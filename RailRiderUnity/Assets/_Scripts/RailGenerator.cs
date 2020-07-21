@@ -11,15 +11,17 @@ public class RailGenerator : MonoBehaviour
 	List<Vector3> _turnCenters = new List<Vector3>();
 	LineRenderer _line;
 	public Material _lineMat;
-	float _nodeDist = 16f;
-	int _lineResolution = 10;
-	float _moveSpeed=0.4f;
-	CurveSample _curSplineSample;
+	float _nodeDist = 16f;//approximate segment length
+	int _lineResolution = 10;//Number of points on line per segment
+	float _moveSpeed=0.4f;//rate at which char moves along rail in segments/sec
 	Transform _railTracker;
-	float _balanceSpeed = 100;
-	int _balanceState = 0;
-	float _balanceVelocity = 0;
-	float _balanceAcceleration = 4f;
+	float _balanceSpeed = 100;//degrees per second of rotation at full balanceVelocity
+	int _balanceState = 0;//0=no input, 1=left input, 2=right input
+	float _balanceVelocity = 0;//rate at which Character rotates
+	float _balanceAcceleration = 4f;//rate at which touch input affects velocity
+	float _gravityPower = 2f;//linear offset to balance
+	float _gravityThreshold = 10f;//min angle for grav to kick in
+	float _momentumPower = 50f;//strength of momentum along curvature
 	
 	// Start is called before the first frame update
 	void Start()
@@ -95,9 +97,16 @@ public class RailGenerator : MonoBehaviour
 					break;
 			}
 			balance-=_balanceVelocity*Time.deltaTime*_balanceSpeed;
+			Vector3 prevForward = _railTracker.forward;
 			_railTracker.position = _path.GetPoint(t);
 			_railTracker.forward = _path.GetTangent(t);
 			Vector3 localEuler = _railTracker.localEulerAngles;
+			//lets try some "physics here"
+			float grav = Mathf.Abs(balance);
+			grav = grav<_gravityThreshold ? 0 : Mathf.InverseLerp(0,90,grav)*Mathf.Sign(balance)*_gravityPower;
+			float momentum = Vector3.Cross(prevForward, _railTracker.forward).y*_momentumPower;
+			balance+=grav;
+			balance-=momentum;
 			localEuler.z = -balance;
 			_railTracker.localEulerAngles=localEuler;
 			t+=Time.deltaTime*_moveSpeed;
@@ -135,17 +144,13 @@ public class RailGenerator : MonoBehaviour
 		float secFrac = _nodeDist/c;
 		float secAngle = secFrac*Mathf.PI*2;
 		secAngle = toRight ? secAngle*-1f : secAngle;
-		Debug.Log("sector angle: "+secAngle);
 		//temp code - hardcoding
 		Vector3 turnCenter = _knots[_knots.Count-1];
 		Vector3 tan = turnCenter-_knots[_knots.Count-2];
 		tan.Normalize();
-		Debug.Log("tan: "+tan);
 		Vector3 right = Vector3.Cross(Vector3.up,tan);
 		right = toRight? right : right*-1f;
-		Debug.Log("right: "+right);
 		float angleOffset = Mathf.Atan2(-right.z,-right.x);
-		Debug.Log("angle offset: "+angleOffset);
 		turnCenter+=right*radius;
 		_turnCenters.Add(turnCenter);
 		for(int i=1; i<=sectors; i++){
