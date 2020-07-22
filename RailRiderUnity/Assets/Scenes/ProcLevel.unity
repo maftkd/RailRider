@@ -428,7 +428,7 @@ MonoBehaviour:
   _target: {fileID: 1673982826}
   _posOffset: {x: 0, y: 0, z: -1.5}
   _altOffset: {x: 0.6, y: 0, z: -1.5}
-  _moveLerpSpeed: 8
+  _moveLerpSpeed: 7
   _turnLerpSpeed: 2
   _yDiff: -0.82
   _getPosOffsetAtStart: 0
