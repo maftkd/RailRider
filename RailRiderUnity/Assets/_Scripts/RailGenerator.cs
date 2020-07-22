@@ -13,7 +13,7 @@ public class RailGenerator : MonoBehaviour
 	public Material _lineMat;
 	float _nodeDist = 16f;//approximate segment length
 	int _lineResolution = 10;//Number of points on line per segment
-	float _moveSpeed=0.4f;//rate at which char moves along rail in segments/sec
+	float _moveSpeed=0.35f;//rate at which char moves along rail in segments/sec
 	Transform _railTracker;
 	float _balanceSpeed = 100;//degrees per second of rotation at full balanceVelocity
 	int _balanceState = 0;//0=no input, 1=left input, 2=right input
@@ -22,6 +22,23 @@ public class RailGenerator : MonoBehaviour
 	float _gravityPower = 2f;//linear offset to balance
 	float _gravityThreshold = 10f;//min angle for grav to kick in
 	float _momentumPower = 50f;//strength of momentum along curvature
+	Transform _helmet;
+	Dictionary<float, Coin> _coins = new Dictionary<float, Coin>();
+	public Transform _coin;
+	public AnimationCurve _indicatorCurve;
+	float _indicatorHeight = 1.8f;
+	float _indicatorWidth = .7f;
+	FollowTarget _followTarget;
+	float _crossThreshold = 0.001f;
+	float _coinProbability = 0.2f;
+	int _minCoinCluster=3;
+	int _maxCoinCluster=8;
+
+	struct Coin {
+		public Transform transform;
+		public LineRenderer line;
+		public MeshRenderer mesh;
+	}
 	
 	// Start is called before the first frame update
 	void Start()
@@ -37,39 +54,77 @@ public class RailGenerator : MonoBehaviour
 		//configure railTracker
 		_railTracker=transform.GetChild(0);
 
-		//ok so lets try adding some nodes
+		//Start out with a straight segment
 		_knots.Add(Vector3.zero);
 		_knots.Add(Vector3.forward*_nodeDist);
-
-		//here we create a zig-zag with 10 cycles
-		/*for(int i=0; i<10; i++){
-			_knots.Add(_knots[_knots.Count-1]+new Vector3(.447f,0,.894f)*_nodeDist);
-			_knots.Add(_knots[_knots.Count-1]+new Vector3(-.447f,0,.894f)*_nodeDist);
-		}*/
+		//then add some more...
 		AddStraight(2);
+		//add some curves and zig zag
 		AddCurve(_nodeDist*2,3,false);
-		//AddCurve(_nodeDist*2,3,true);
 		AddZigZag(Mathf.PI/8f,4,false);
 		AddCurve(_nodeDist*1.5f,3,true);
 		AddStraight(5);
+		
 		//instantiate our cubic bezier path
 		_path = new CubicBezierPath(_knots.ToArray());	
 		
 		//create a line to render the spline
+		//oh and also the coin generation has hijacked this loop because of it's
+		//precious t value
 		_line.positionCount=_lineResolution*(_path.GetNumCurveSegments());
+		int clusterCounter=0;
 		for(int i=0; i<_line.positionCount; i++){
 			float t = i/(float)_lineResolution;
-			_line.SetPosition(i,_path.GetPoint(t));
+			Vector3 railPos = _path.GetPoint(t);
+			Vector3 curForward = _path.GetTangent(t);
+			_line.SetPosition(i,railPos);
+			//temp code - we may want a separate loop to instance coins
+			if(i<_line.positionCount-1){
+				if(clusterCounter>0){
+					Coin c;
+					Vector3 nextForward = _path.GetTangent(t+1f/(float)_lineResolution);
+					float cross = Vector3.Cross(curForward,nextForward).y*.1f;
+					Vector3 right = Vector3.Cross(Vector3.up,curForward);
+					Vector3 offset = Vector3.LerpUnclamped(Vector3.up,right,cross);
+					offset.Normalize();
+					Transform curCoin = Instantiate(_coin,railPos+offset,Quaternion.identity, null);
+					c.transform = curCoin;
+					//_coins.Add(t,curCoin);
+					LineRenderer curLine = curCoin.GetComponent<LineRenderer>();
+					curLine.SetPosition(0,railPos);
+					curLine.SetPosition(1,railPos+offset*.3f);
+
+					c.line=curLine;
+					c.mesh = curCoin.GetComponent<MeshRenderer>();
+					_coins.Add(t,c);
+					//_coinLines.Add(curCoin,curLine);
+					clusterCounter--;
+				}
+				else{
+					if(Random.value<_coinProbability)
+					{
+						Vector3 nextForward = _path.GetTangent(t+1f/(float)_lineResolution);
+						float cross = Vector3.Cross(curForward,nextForward).y*.1f;
+						if(cross>_crossThreshold)
+							clusterCounter=Random.Range(_minCoinCluster,_maxCoinCluster+1);
+					}
+				}
+			}
 		}
+
+		//Get some references
+		_helmet = GameObject.FindGameObjectWithTag("helmet").transform;
+		_followTarget = Camera.main.transform.GetComponent<FollowTarget>();
+
 		//start test
 		StartCoroutine(TestRide());
-		
 	}
 	
 	IEnumerator TestRide(){
 		float t=0;
 		float balance=0;
 		while(t<_knots.Count-1){
+			//get input
 			balance+=Input.GetAxis("Horizontal")*Time.deltaTime*_balanceSpeed;
 			if(Input.GetMouseButton(0))
 			{
@@ -82,6 +137,7 @@ public class RailGenerator : MonoBehaviour
 			else{
 				_balanceState=0;
 			}
+			//handle balance logic
 			switch(_balanceState){
 				case 0:
 					//fall to 0
@@ -98,6 +154,7 @@ public class RailGenerator : MonoBehaviour
 			}
 			balance-=_balanceVelocity*Time.deltaTime*_balanceSpeed;
 			Vector3 prevForward = _railTracker.forward;
+			//set player's root position and orientation
 			_railTracker.position = _path.GetPoint(t);
 			_railTracker.forward = _path.GetTangent(t);
 			Vector3 localEuler = _railTracker.localEulerAngles;
@@ -105,10 +162,41 @@ public class RailGenerator : MonoBehaviour
 			float grav = Mathf.Abs(balance);
 			grav = grav<_gravityThreshold ? 0 : Mathf.InverseLerp(0,90,grav)*Mathf.Sign(balance)*_gravityPower;
 			float momentum = Vector3.Cross(prevForward, _railTracker.forward).y*_momentumPower;
+			_followTarget.AdjustCamera(momentum);
 			balance+=grav;
 			balance-=momentum;
 			localEuler.z = -balance;
+			//set player's apparent balance on the rail
 			_railTracker.localEulerAngles=localEuler;
+
+			//Check for point acquisitions
+			foreach(float f in _coins.Keys){
+				if(f>t && f <t+2){
+					Coin c = _coins[f];
+					float sqrMag = (c.transform.position-_helmet.position).sqrMagnitude;
+					if(sqrMag<400){
+						c.mesh.enabled=true;
+						if(sqrMag>4){
+							c.line.enabled=true;
+							LineRenderer r = c.line;
+							Vector3 pos0 = r.GetPosition(0);
+							Vector3 pos1 = r.GetPosition(1);
+							Vector3 dif = (pos1-pos0).normalized;
+							float normDist = 1-(sqrMag/400f);
+							pos1 = pos0+dif*_indicatorCurve.Evaluate(normDist)*_indicatorHeight;
+							r.SetPosition(1,pos1);
+							r.widthMultiplier=(1-normDist)*_indicatorWidth;
+							c.transform.position=pos1;
+						}
+						else
+							c.line.enabled=false;
+					}
+					if(sqrMag<.3f)
+						Debug.Log("hit a coin");
+				}
+			}
+
+			//tick for next frame
 			t+=Time.deltaTime*_moveSpeed;
 			yield return null;
 		}

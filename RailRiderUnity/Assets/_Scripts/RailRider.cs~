@@ -184,7 +184,7 @@ public class RailRider : MonoBehaviour
                 bod.useGravity = true;
                 bod.AddTorque(Random.onUnitSphere*15f);
                 FollowTarget ft = Camera.main.transform.GetComponent<FollowTarget>();
-                //ft._standardOffset = true;
+                ft._standardOffset = true;
                 enabled = false;
                 break;
             case RideStates.WINNING:

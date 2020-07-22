@@ -41,11 +41,9 @@ public class FollowTarget : MonoBehaviour
 	}
 
 	public void AdjustCamera(float momentum){
-		/*
 		if(Mathf.Abs(momentum)<_momentumThreshold)
 			_followBehaviour=false;
 		else
 			_followBehaviour=true;
-			*/
 	}
 }
