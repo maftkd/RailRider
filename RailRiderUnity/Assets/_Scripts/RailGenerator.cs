@@ -26,11 +26,11 @@ public class RailGenerator : MonoBehaviour
 	Dictionary<float, Coin> _coins = new Dictionary<float, Coin>();
 	public Transform _coin;
 	public AnimationCurve _indicatorCurve;
-	float _indicatorHeight = 1.8f;
-	float _indicatorWidth = .7f;
+	float _indicatorHeight = 2f;
+	float _indicatorWidth = .9f;
 	FollowTarget _followTarget;
 	float _crossThreshold = 0.001f;
-	float _coinProbability = 0.2f;
+	float _coinProbability = 0.3f;
 	int _minCoinCluster=3;
 	int _maxCoinCluster=8;
 
@@ -48,7 +48,7 @@ public class RailGenerator : MonoBehaviour
 			_line = gameObject.AddComponent(typeof(LineRenderer)) as LineRenderer;
 		else
 			_line = GetComponent<LineRenderer>();
-		_line.widthMultiplier=0.1f;
+		_line.widthMultiplier=0.8f;
 		_line.material=_lineMat;
 		
 		//configure railTracker
@@ -63,42 +63,62 @@ public class RailGenerator : MonoBehaviour
 		AddCurve(_nodeDist*2,3,false);
 		AddZigZag(Mathf.PI/8f,4,false);
 		AddCurve(_nodeDist*1.5f,3,true);
-		AddStraight(5);
+		AddStraight(2);
+		AddCurve(_nodeDist*1.5f,4,false);
+		AddCurve(_nodeDist*2.5f,8,true);
+		AddStraight(2);
+		AddZigZag(Mathf.PI/6f,8,false);
+		AddCurve(_nodeDist*3f,12,true);
 		
 		//instantiate our cubic bezier path
 		_path = new CubicBezierPath(_knots.ToArray());	
 		
-		//create a line to render the spline
-		//oh and also the coin generation has hijacked this loop because of it's
-		//precious t value
+		//set the rail pos count
 		_line.positionCount=_lineResolution*(_path.GetNumCurveSegments());
 		int clusterCounter=0;
+		float prevCross=0;
 		for(int i=0; i<_line.positionCount; i++){
+			//set the rail position at point t along rail
 			float t = i/(float)_lineResolution;
 			Vector3 railPos = _path.GetPoint(t);
 			Vector3 curForward = _path.GetTangent(t);
 			_line.SetPosition(i,railPos);
-			//temp code - we may want a separate loop to instance coins
+
 			if(i<_line.positionCount-1){
+
+				//if we are adding a cluster of coins
 				if(clusterCounter>0){
+
 					Coin c;
+					//determine the curvature
 					Vector3 nextForward = _path.GetTangent(t+1f/(float)_lineResolution);
 					float cross = Vector3.Cross(curForward,nextForward).y*.1f;
-					Vector3 right = Vector3.Cross(Vector3.up,curForward);
-					Vector3 offset = Vector3.LerpUnclamped(Vector3.up,right,cross);
-					offset.Normalize();
-					Transform curCoin = Instantiate(_coin,railPos+offset,Quaternion.identity, null);
-					c.transform = curCoin;
-					//_coins.Add(t,curCoin);
-					LineRenderer curLine = curCoin.GetComponent<LineRenderer>();
-					curLine.SetPosition(0,railPos);
-					curLine.SetPosition(1,railPos+offset*.3f);
+					//make sure the delta isn't nuts
+					if(prevCross!=0 && Mathf.Abs(cross-prevCross)>0.1f)
+					{
+						clusterCounter=0;
+					}
+					else{
+						//rail curvature is smooth enough for a coin
+						Vector3 right = Vector3.Cross(Vector3.up,curForward);
+						Vector3 offset = Vector3.LerpUnclamped(Vector3.up,right,cross);
+						offset.Normalize();
+						//instance the coin
+						Transform curCoin = Instantiate(_coin,railPos+offset,Quaternion.identity, null);
+						c.transform = curCoin;
+						//set the line data
+						LineRenderer curLine = curCoin.GetComponent<LineRenderer>();
+						curLine.SetPosition(0,railPos);
+						curLine.SetPosition(1,railPos+offset*.3f);
 
-					c.line=curLine;
-					c.mesh = curCoin.GetComponent<MeshRenderer>();
-					_coins.Add(t,c);
-					//_coinLines.Add(curCoin,curLine);
-					clusterCounter--;
+						c.line=curLine;
+						//get the coin mesh data
+						c.mesh = curCoin.GetComponent<MeshRenderer>();
+						//add coin to coin dict
+						_coins.Add(t,c);
+						clusterCounter--;
+						prevCross=cross;
+					}
 				}
 				else{
 					if(Random.value<_coinProbability)
@@ -106,7 +126,10 @@ public class RailGenerator : MonoBehaviour
 						Vector3 nextForward = _path.GetTangent(t+1f/(float)_lineResolution);
 						float cross = Vector3.Cross(curForward,nextForward).y*.1f;
 						if(cross>_crossThreshold)
+						{
 							clusterCounter=Random.Range(_minCoinCluster,_maxCoinCluster+1);
+							prevCross=0;
+						}
 					}
 				}
 			}
@@ -136,6 +159,12 @@ public class RailGenerator : MonoBehaviour
 			}
 			else{
 				_balanceState=0;
+			}
+			if(Input.GetKeyUp(KeyCode.Space)){
+				Debug.Log("space pressed");
+				_moveSpeed += 0.1f;
+				//_followTarget._moveLerpSpeed += 2;
+				_balanceSpeed += 40f;
 			}
 			//handle balance logic
 			switch(_balanceState){

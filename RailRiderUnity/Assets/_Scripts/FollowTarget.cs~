@@ -6,7 +6,7 @@ public class FollowTarget : MonoBehaviour
 {
 	public Transform _target;
 	public Vector3 _posOffset;
-	public Vector3 _altOffset;
+	Vector3 _posOffsetTarget;
 	public float _moveLerpSpeed;
 	public float _turnLerpSpeed;
 	public float _yDiff;
@@ -18,22 +18,18 @@ public class FollowTarget : MonoBehaviour
 	{
 		if (_getPosOffsetAtStart)
 			_posOffset = transform.position - _target.position;
+		_posOffsetTarget=_posOffset;
 	}
 
 	// Update is called once per frame
 	void Update()
 	{
 		Vector3 targetPos;
-		if (_followBehaviour)
-		{
-			targetPos = _target.position + _target.forward * _posOffset.z + _target.right*_posOffset.x + Vector3.up * _yDiff;
-		}
-		else
-		{
-			targetPos = _target.position + _target.forward * _altOffset.z + _target.right*_altOffset.x + Vector3.up * _yDiff;
-		}
+		_posOffset = Vector3.Lerp(_posOffset,_posOffsetTarget,1f*Time.deltaTime);
+		targetPos = _target.position + _target.forward * _posOffset.z + _target.right*_posOffset.x + Vector3.up * _yDiff;
 		//handle cam look and target rotation
-		transform.position = Vector3.Lerp(transform.position, targetPos, _moveLerpSpeed * Time.deltaTime);
+		//transform.position = Vector3.Lerp(transform.position, targetPos, _moveLerpSpeed * Time.deltaTime);
+		transform.position = targetPos;
 		Quaternion curRot = transform.rotation;
 		transform.LookAt(_target);
 		Quaternion targetRot = transform.rotation;
@@ -41,9 +37,9 @@ public class FollowTarget : MonoBehaviour
 	}
 
 	public void AdjustCamera(float momentum){
-		if(Mathf.Abs(momentum)<_momentumThreshold)
-			_followBehaviour=false;
+		if(momentum>0)
+			_posOffsetTarget.x=Mathf.Abs(_posOffsetTarget.x);
 		else
-			_followBehaviour=true;
+			_posOffsetTarget.x=-Mathf.Abs(_posOffsetTarget.x);
 	}
 }

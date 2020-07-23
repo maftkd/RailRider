@@ -6,6 +6,8 @@
         _MainTex ("Albedo (RGB)", 2D) = "white" {}
         _Glossiness ("Smoothness", Range(0,1)) = 0.5
         _Metallic ("Metallic", Range(0,1)) = 0.0
+	_Rim ("Rim val", Float) = 0.5
+	_VanishDepth("Vanish Depth", Float) = 2;
     }
     SubShader
     {
@@ -26,11 +28,14 @@
             float2 uv_MainTex;
 		float3 viewDir;
 		float3 worldNormal;
+		float4 screenPos;
         };
 
         half _Glossiness;
         half _Metallic;
         fixed4 _Color;
+	half _Rim;
+	half _VanishDepth;
 
         // Add instancing support for this shader. You need to check 'Enable Instancing' on materials that use the shader.
         // See https://docs.unity3d.com/Manual/GPUInstancing.html for more information about instancing.
@@ -47,7 +52,8 @@
             // Metallic and smoothness come from slider variables
             o.Metallic = _Metallic;
             o.Smoothness = _Glossiness;
-            o.Alpha = 1-dot(IN.viewDir,IN.worldNormal)*2;
+		half a =1-dot(IN.viewDir,IN.worldNormal)*_Rim;;
+            o.Alpha = a*(IN.screenPos.w-_VanishDepth);	
         }
         ENDCG
     }
