@@ -16,6 +16,7 @@ public class RailGenerator : MonoBehaviour
 	float _moveSpeed=0.35f;//rate at which char moves along rail in segments/sec
 	Transform _railTracker;
 	float _balanceSpeed = 100;//degrees per second of rotation at full balanceVelocity
+	float _balanceSpeedIncrease = 20;
 	int _balanceState = 0;//0=no input, 1=left input, 2=right input
 	float _balanceVelocity = 0;//rate at which Character rotates
 	float _balanceAcceleration = 4f;//rate at which touch input affects velocity
@@ -34,6 +35,7 @@ public class RailGenerator : MonoBehaviour
 	int _minCoinCluster=3;
 	int _maxCoinCluster=8;
 	int _tOffset=0;
+	int _lookAheadTracks=8;
 
 	struct Coin {
 		public Transform transform;
@@ -92,7 +94,7 @@ public class RailGenerator : MonoBehaviour
 				Debug.Log("space pressed");
 				_moveSpeed += 0.1f;
 				//_followTarget._moveLerpSpeed += 2;
-				_balanceSpeed += 40f;
+				_balanceSpeed += _balanceSpeedIncrease;
 			}
 			//handle balance logic
 			switch(_balanceState){
@@ -163,25 +165,20 @@ public class RailGenerator : MonoBehaviour
 				}
 			}
 
-			//check for new track gen
-			if(t-_tOffset>_knots.Count-8){
-				//temp code - assumes adding a straight
-				//remove first knot
-				_knots.RemoveAt(0);
+			//check for new track gen if only X tracks lie ahead
+			if(t-_tOffset>_knots.Count-_lookAheadTracks){
 
-				//might be a good time to clear out some of those dictionary items from the coins dict
-				//again temp code - assuming a single track was removed
-				ClearOldCoins(_tOffset+1);
-				//add a straight
-				AddStraight(1);
-				//reset cubic bezier path
-				//reset line renderer
+				int numTracks = GenerateNewTrack();
+
+				int removed = RemoveOldTrack(t);
+
+				ClearOldCoins(_tOffset+removed);
+
 				ResetRail();
-				//increment tOffset
-				//Note: this corresponds to the number of knots REMOVED
-				_tOffset++;
-				//generate coins
-				GenerateCoins(_knots.Count-2,_knots.Count-1);
+
+				_tOffset+=removed;
+
+				GenerateCoins(_knots.Count-(numTracks+1),_knots.Count-1);
 			}
 
 			//tick for next frame
@@ -206,6 +203,7 @@ public class RailGenerator : MonoBehaviour
 		for(int i=startKnot*_lineResolution; i<endKnot*_lineResolution; i++){
 			//converts line space to coin space
 			float t = i/(float)_lineResolution;
+			float key = t+_tOffset;
 
 			//calculates the local position and tengent at t along rail
 			Vector3 railPos = _path.GetPoint(t);
@@ -249,7 +247,9 @@ public class RailGenerator : MonoBehaviour
 						c.mesh = curCoin.GetComponent<MeshRenderer>();
 
 						//add coin to coin dict
-						_coins.Add(t+_tOffset,c);
+						if(!_coins.ContainsKey(key)){
+							_coins.Add(key,c);
+						}
 						clusterCounter--;
 						prevCross=cross;
 					}
@@ -274,6 +274,42 @@ public class RailGenerator : MonoBehaviour
 		}
 
 	}
+
+	int GenerateNewTrack(){
+		float val = Random.value;
+		int numTracks = 0;
+		if(val<.33f){
+			numTracks = Random.Range(1,4);
+			//add a straight
+			AddStraight(numTracks);
+		}
+		else if(val<.67f){
+			//add a curve
+			float trackToRad = Random.Range(1,6f);
+			float radius = _nodeDist*trackToRad;
+			numTracks = Random.Range(1,Mathf.FloorToInt(3*trackToRad));
+			AddCurve(radius,numTracks,(Random.value<0.5f));
+		}
+		else{
+			//add a zig zag
+			numTracks = Random.Range(2,12);
+			AddZigZag(Mathf.PI/Random.Range(5f,12f),numTracks,(Random.value<0.5f));
+		}
+		return numTracks;
+	}
+
+	int RemoveOldTrack(float t){
+		//remove old tracks
+		int removeUntil = Mathf.FloorToInt(t-_tOffset);
+		int removedTracks = 0;
+		for(int i=removeUntil-3; i>=0; i--)
+		{
+			_knots.RemoveAt(i);
+			removedTracks++;
+		}
+		return removedTracks;
+	}
+
 
 	void ClearOldCoins(int endClear){
 
@@ -330,16 +366,14 @@ public class RailGenerator : MonoBehaviour
 
 
 	void AddCurve(float radius, int sectors, bool toRight){
-		//get the current rail head
-		//get the center of the circle position
-		//get circumference c=pi*2*r
-		//get sectorfraction = circumference/_nodeDist	
-		//get sectorFractionAngle = sectorFraction*2*PI
+
+		//calculate the angle for each section
 		float c = Mathf.PI*2*radius;
 		float secFrac = _nodeDist/c;
 		float secAngle = secFrac*Mathf.PI*2;
 		secAngle = toRight ? secAngle*-1f : secAngle;
-		//temp code - hardcoding
+
+		//calculate the circle's center
 		Vector3 turnCenter = _knots[_knots.Count-1];
 		Vector3 tan = turnCenter-_knots[_knots.Count-2];
 		tan.Normalize();
@@ -347,7 +381,9 @@ public class RailGenerator : MonoBehaviour
 		right = toRight? right : right*-1f;
 		float angleOffset = Mathf.Atan2(-right.z,-right.x);
 		turnCenter+=right*radius;
-		_turnCenters.Add(turnCenter);
+		_turnCenters.Add(turnCenter); //this is for debugging (remove before ship)
+
+		//Add knots
 		for(int i=1; i<=sectors; i++){
 			Vector3 pos;
 			float ang = angleOffset+secAngle*i;
