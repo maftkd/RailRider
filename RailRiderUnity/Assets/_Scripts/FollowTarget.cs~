@@ -28,8 +28,8 @@ public class FollowTarget : MonoBehaviour
 		_posOffset = Vector3.Lerp(_posOffset,_posOffsetTarget,1f*Time.deltaTime);
 		targetPos = _target.position + _target.forward * _posOffset.z + _target.right*_posOffset.x + Vector3.up * _yDiff;
 		//handle cam look and target rotation
-		//transform.position = Vector3.Lerp(transform.position, targetPos, _moveLerpSpeed * Time.deltaTime);
-		transform.position = targetPos;
+		transform.position = Vector3.Lerp(transform.position, targetPos, _moveLerpSpeed * Time.deltaTime);
+		//transform.position = targetPos;
 		Quaternion curRot = transform.rotation;
 		transform.LookAt(_target);
 		Quaternion targetRot = transform.rotation;
