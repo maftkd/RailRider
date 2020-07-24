@@ -27,7 +27,7 @@ public class RailGenerator : MonoBehaviour
 	Dictionary<float, Coin> _coins = new Dictionary<float, Coin>();
 	public Transform _coin;
 	public AnimationCurve _indicatorCurve;
-	float _indicatorHeight = 2f;
+	float _indicatorHeight = 1f;
 	float _indicatorWidth = .9f;
 	FollowTarget _followTarget;
 	float _crossThreshold = 0.001f;
@@ -139,8 +139,8 @@ public class RailGenerator : MonoBehaviour
 					if(sqrMag<400){
 						//this is not really ideal, we don't want to be setting this every frame they are close-by... I think...
 						c.mesh.enabled=true;
+						/*
 						if(sqrMag>4){
-
 							//animate the indicator line
 							c.line.enabled=true;
 							LineRenderer r = c.line;
@@ -156,6 +156,7 @@ public class RailGenerator : MonoBehaviour
 						}
 						else
 							c.line.enabled=false;
+							*/
 					}
 
 					//this hit detection logic is continuous and not really valid (frame rate dependent)
@@ -233,7 +234,9 @@ public class RailGenerator : MonoBehaviour
 						offset.Normalize();
 
 						//instance the coin
-						Transform curCoin = Instantiate(_coin,railPos+offset,Quaternion.identity, null);
+						Transform curCoin = Instantiate(_coin,railPos+offset*_indicatorHeight,Quaternion.identity, null);
+						curCoin.LookAt(railPos);
+						curCoin.localScale=new Vector3(.5f,.5f,2f);
 						c.transform = curCoin;
 
 						//set the line data
@@ -288,11 +291,12 @@ public class RailGenerator : MonoBehaviour
 			float trackToRad = Random.Range(1,6f);
 			float radius = _nodeDist*trackToRad;
 			numTracks = Random.Range(1,Mathf.FloorToInt(3*trackToRad));
+			numTracks = Mathf.Min(5,numTracks);
 			AddCurve(radius,numTracks,(Random.value<0.5f));
 		}
 		else{
 			//add a zig zag
-			numTracks = Random.Range(2,12);
+			numTracks = Random.Range(2,8);
 			AddZigZag(Mathf.PI/Random.Range(5f,12f),numTracks,(Random.value<0.5f));
 		}
 		return numTracks;
