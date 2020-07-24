@@ -27,7 +27,7 @@ public class RailGenerator : MonoBehaviour
 	Dictionary<float, Coin> _coins = new Dictionary<float, Coin>();
 	public Transform _coin;
 	public AnimationCurve _indicatorCurve;
-	float _indicatorHeight = 2f;
+	float _indicatorHeight = 2.1f;
 	float _indicatorWidth = .9f;
 	FollowTarget _followTarget;
 	float _crossThreshold = 0.001f;
@@ -125,8 +125,8 @@ public class RailGenerator : MonoBehaviour
 			grav = grav<_gravityThreshold ? 0 : Mathf.InverseLerp(0,90,grav)*Mathf.Sign(balance)*_gravityPower;
 			float momentum = Vector3.Cross(prevForward, _railTracker.forward).y*_momentumPower;
 			_followTarget.AdjustCamera(momentum);
-			balance+=grav;
-			balance-=momentum;
+			//balance+=grav;
+			//balance-=momentum;
 			localEuler.z = -balance;
 			_railTracker.localEulerAngles=localEuler;
 

@@ -125,8 +125,8 @@ public class RailGenerator : MonoBehaviour
 			grav = grav<_gravityThreshold ? 0 : Mathf.InverseLerp(0,90,grav)*Mathf.Sign(balance)*_gravityPower;
 			float momentum = Vector3.Cross(prevForward, _railTracker.forward).y*_momentumPower;
 			_followTarget.AdjustCamera(momentum);
-			balance+=grav;
-			balance-=momentum;
+			//balance+=grav;
+			//balance-=momentum;
 			localEuler.z = -balance;
 			_railTracker.localEulerAngles=localEuler;
 
@@ -250,8 +250,6 @@ public class RailGenerator : MonoBehaviour
 						if(!_coins.ContainsKey(key)){
 							_coins.Add(key,c);
 						}
-						else
-							Debug.Log("Oops key exists: "+key);
 						clusterCounter--;
 						prevCross=cross;
 					}
