@@ -37,19 +37,28 @@ public class RailGenerator : MonoBehaviour
 	int _tOffset=0;
 	int _lookAheadTracks=8;
 	public Transform _jumper;
-	float _jumpDist = 0;//A tracker to note the distance since the previous jumper
+	float _lastJump;
 	float _jumpThreshold=1.1f;//spacing between jumps and other jumps
 	float _jumpSpacing=0.5f;//spacing between coins and jumps
+	float _lineResFrac;
 	Transform _ethan;
 	bool _jumping=false;
-	float _jumpHeight = 1.25f;
-	float _jumpDur = 0.75f;
+	float _jumpHeight = 1.15f;
+	float _jumpDur = 0.5f;
 	public AnimationCurve _jumpCurve;
 	float _spinSpeed=360f;
+	float _inputDelayTimer=0;
+	float _inputDelay=.05f;
+	Dictionary<float, Jumper> _jumpers = new Dictionary<float, Jumper>();
 
 	struct Coin {
 		public Transform transform;
 		public LineRenderer line;
+		public MeshRenderer mesh;
+	}
+
+	struct Jumper {
+		public Transform transform;
 		public MeshRenderer mesh;
 	}
 	
@@ -63,6 +72,7 @@ public class RailGenerator : MonoBehaviour
 			_line = GetComponent<LineRenderer>();
 		_line.widthMultiplier=0.8f;
 		_line.material=_lineMat;
+		_lineResFrac=1/(float)_lineResolution;
 		
 		//configure railTracker
 		_railTracker=transform.GetChild(0);
@@ -112,6 +122,9 @@ public class RailGenerator : MonoBehaviour
 			else
 				_balanceState=0;
 #endif
+			//reset input delay
+			if(_balanceState==0)
+				_inputDelayTimer=0;
 			/*
 			if(Input.GetMouseButtonDown(0)){
 				Vector2 curPos = Input.mousePosition;
@@ -152,22 +165,31 @@ public class RailGenerator : MonoBehaviour
 					LimitVelocity();
 					break;
 				case 1:
-					//climb to 1
-					if(!_jumping)
-						_balanceVelocity=Mathf.Lerp(_balanceVelocity,1f,_balanceAcceleration*Time.deltaTime);
-
-					//temp code for air spins
-					else
-						_ethan.Rotate(0,-_spinSpeed*Time.deltaTime, 0);
+					if(_inputDelayTimer<_inputDelay)
+						_inputDelayTimer+=Time.deltaTime;
+					else{
+						//climb to 1
+						if(!_jumping)
+						{
+							_balanceVelocity=Mathf.Lerp(_balanceVelocity,1f,_balanceAcceleration*Time.deltaTime);
+						}
+						//temp code for air spins
+						else
+							_ethan.Rotate(0,-_spinSpeed*Time.deltaTime, 0);
+						}
 					break;
 				case 2:
-					//climb to -1
-					if(!_jumping)
-						_balanceVelocity = Mathf.Lerp(_balanceVelocity,-1f,_balanceAcceleration*Time.deltaTime);
+					if(_inputDelayTimer<_inputDelay)
+						_inputDelayTimer+=Time.deltaTime;
+					else{
+						//climb to -1
+						if(!_jumping)
+							_balanceVelocity = Mathf.Lerp(_balanceVelocity,-1f,_balanceAcceleration*Time.deltaTime);
 
-					//temp code for air spins
-					else
-						_ethan.Rotate(0,_spinSpeed*Time.deltaTime, 0);
+						//temp code for air spins
+						else
+							_ethan.Rotate(0,_spinSpeed*Time.deltaTime, 0);
+					}
 					break;
 				case 3:
 					//jump
@@ -177,10 +199,6 @@ public class RailGenerator : MonoBehaviour
 					LimitVelocity();
 					break;
 			}
-
-			//temp code debugging balance after jump
-			if(_balanceVelocity!=0)
-				Debug.Log("balancing");
 
 			//set player's root position and orientation
 			balance-=_balanceVelocity*Time.deltaTime*_balanceSpeed;
@@ -244,6 +262,7 @@ public class RailGenerator : MonoBehaviour
 				int removed = RemoveOldTrack(t);
 
 				ClearOldCoins(_tOffset+removed);
+				ClearOldJumpers(_tOffset+removed);
 
 				ResetRail();
 
@@ -270,6 +289,7 @@ public class RailGenerator : MonoBehaviour
 	IEnumerator JumpRoutine(){
 		_jumping=true;
 		_balanceVelocity=0;
+		_inputDelayTimer=0;
 		float timer=0;
 		Vector3 startPos = _ethan.localPosition;
 		Vector3 endPos = startPos+Vector3.up*_jumpHeight;
@@ -280,6 +300,7 @@ public class RailGenerator : MonoBehaviour
 		}
 		_ethan.localPosition=startPos;
 		_jumping=false;
+		_inputDelayTimer=-_inputDelay*2;
 	}
 
 	void GenerateStartingSection(){
@@ -354,8 +375,17 @@ public class RailGenerator : MonoBehaviour
 				}
 				//If we are not currently generating a cluster
 				else{
+					bool nearJump=false;
+					foreach(float k in _jumpers.Keys){
+						if(Mathf.Abs(k-key)<_jumpSpacing)
+						{
+							nearJump=true;
+							break;
+						}
+					}
+						
 					//see if we randomly create a cluster
-					if(Random.value<_coinProbability)
+					if(!nearJump && Random.value<_coinProbability)
 					{
 						//Make sure we don't generate coins on straight sections because that is boring and the coins are harder to see
 						Vector3 nextForward = _path.GetTangent(t+1f/(float)_lineResolution);
@@ -386,11 +416,19 @@ public class RailGenerator : MonoBehaviour
 			//validate rail index (don't add any past the end)
 			if(i<_line.positionCount-1){
 
-				//temp code for spawning jumpers just hijacking the coin gen func
-				if(_jumpDist>_jumpThreshold && Random.value<0.1){
+				//if jump is far enough from another jump and rng hits, then spawn a jumper
+				if(key-_lastJump>_jumpThreshold && Random.value<0.05){
+					
+					_lastJump=key;
 					Transform jumper = Instantiate(_jumper,railPos,Quaternion.identity, null);
 					jumper.up=curForward;
-					_jumpDist=0;
+
+					//add to jumper dict
+					Jumper j;
+					j.transform = jumper;
+					j.mesh = jumper.GetComponent<MeshRenderer>();
+					_jumpers.Add(key, j);
+
 					//clear out nearby coins
 					List<float> removeList = new List<float>();
 					foreach(float k in _coins.Keys){
@@ -404,8 +442,6 @@ public class RailGenerator : MonoBehaviour
 						_coins.Remove(k);
 					}
 				}
-				else
-					_jumpDist+=1/(float)_lineResolution;
 			}
 		}
 	}
@@ -463,6 +499,21 @@ public class RailGenerator : MonoBehaviour
 			Transform t = _coins[f].transform;
 			_coins.Remove(f);
 			Destroy(t.gameObject,Random.value);//stagger the recycling process over a second
+		}
+	}
+
+	void ClearOldJumpers(int endClear){
+		List<float> deleteKeys = new List<float>();
+		foreach(float f in _jumpers.Keys){
+			if(f<endClear)
+				deleteKeys.Add(f);
+			else
+				break;
+		}
+		foreach(float f in deleteKeys){
+			Transform t = _jumpers[f].transform;
+			_jumpers.Remove(f);
+			Destroy(t.gameObject, Random.value);
 		}
 	}
 
@@ -542,13 +593,13 @@ public class RailGenerator : MonoBehaviour
 				Gizmos.DrawSphere(_line.GetPosition(i),.1f);
 			}
 		}
-/*		if(_knots!=null)
+		if(_knots!=null)
 		{
 			Gizmos.color = Color.red;
 			for(int i=0; i<_knots.Count; i++){
 				Gizmos.DrawSphere(_knots[i],.5f);
 			}
-		}*/
+		}
 		if(_turnCenters!=null){
 			Gizmos.color = Color.blue;
 			for(int i=0; i<_turnCenters.Count; i++){
