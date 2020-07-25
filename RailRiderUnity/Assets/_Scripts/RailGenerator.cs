@@ -36,6 +36,10 @@ public class RailGenerator : MonoBehaviour
 	int _maxCoinCluster=8;
 	int _tOffset=0;
 	int _lookAheadTracks=8;
+	public Transform _jumper;
+	float _jumpDist = 0;//A tracker to note the distance since the previous jumper
+	float _jumpThreshold=1.1f;//spacing between jumps and other jumps
+	float _jumpSpacing=0.5f;//spacing between coins and jumps
 
 	struct Coin {
 		public Transform transform;
@@ -62,6 +66,7 @@ public class RailGenerator : MonoBehaviour
 		ResetRail();
 
 		GenerateCoins(0,_knots.Count-1);
+		GenerateJumpers(0,_knots.Count-1);
 
 		//Get some references
 		_helmet = GameObject.FindGameObjectWithTag("helmet").transform;
@@ -180,6 +185,7 @@ public class RailGenerator : MonoBehaviour
 				_tOffset+=removed;
 
 				GenerateCoins(_knots.Count-(numTracks+1),_knots.Count-1);
+				GenerateJumpers(_knots.Count-(numTracks+1),_knots.Count-1);
 			}
 
 			//tick for next frame
@@ -201,6 +207,7 @@ public class RailGenerator : MonoBehaviour
 		//coin generation
 		int clusterCounter=0;
 		float prevCross=0;
+		//more temp code for jumper
 		for(int i=startKnot*_lineResolution; i<endKnot*_lineResolution; i++){
 			//converts line space to coin space
 			float t = i/(float)_lineResolution;
@@ -236,7 +243,7 @@ public class RailGenerator : MonoBehaviour
 						//instance the coin
 						Transform curCoin = Instantiate(_coin,railPos+offset*_indicatorHeight,Quaternion.identity, null);
 						curCoin.LookAt(railPos);
-						curCoin.localScale=new Vector3(.5f,.5f,2f);
+						curCoin.localScale=new Vector3(.5f,1f,2f);
 						c.transform = curCoin;
 
 						//set the line data
@@ -275,7 +282,44 @@ public class RailGenerator : MonoBehaviour
 				}
 			}
 		}
+	}
 
+	void GenerateJumpers(int startKnot, int endKnot){
+		
+		for(int i=startKnot*_lineResolution; i<endKnot*_lineResolution; i++){
+			//converts line space to coin space
+			float t = i/(float)_lineResolution;
+			float key = t+_tOffset;
+
+			//calculates the local position and tengent at t along rail
+			Vector3 railPos = _path.GetPoint(t);
+			Vector3 curForward = _path.GetTangent(t);
+
+			//validate rail index (don't add any past the end)
+			if(i<_line.positionCount-1){
+
+				//temp code for spawning jumpers just hijacking the coin gen func
+				if(_jumpDist>_jumpThreshold && Random.value<0.1){
+					Transform jumper = Instantiate(_jumper,railPos,Quaternion.identity, null);
+					jumper.up=curForward;
+					_jumpDist=0;
+					//clear out nearby coins
+					List<float> removeList = new List<float>();
+					foreach(float k in _coins.Keys){
+						if(Mathf.Abs(k-key)<_jumpSpacing){
+							Transform trans = _coins[k].transform;
+							Destroy(trans.gameObject);
+							removeList.Add(k);
+						}
+					}
+					foreach(float k in removeList){
+						_coins.Remove(k);
+					}
+				}
+				else
+					_jumpDist+=1/(float)_lineResolution;
+			}
+		}
 	}
 
 	int GenerateNewTrack(){

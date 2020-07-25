@@ -53,7 +53,10 @@
             o.Metallic = _Metallic;
             o.Smoothness = _Glossiness;
 		half a =1-dot(IN.viewDir,IN.worldNormal)*_Rim;;
-            o.Alpha = a*(IN.screenPos.w-_VanishDepth);	
+		//half maxCap = .1*IN.screenPos.w;
+		//half divisor = step(2,maxCap);
+		//divisor = divisor*maxCap+(1-divisor)*1;
+            o.Alpha = a*(IN.screenPos.w-_VanishDepth);
         }
         ENDCG
     }

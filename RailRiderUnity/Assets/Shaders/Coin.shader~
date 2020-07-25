@@ -7,7 +7,7 @@
         _Glossiness ("Smoothness", Range(0,1)) = 0.5
         _Metallic ("Metallic", Range(0,1)) = 0.0
 	_Rim ("Rim val", Float) = 0.5
-	_VanishDepth("Vanish Depth", Float) = 2;
+	_VanishDepth("Vanish Depth", Float) = 2
     }
     SubShader
     {
@@ -53,7 +53,10 @@
             o.Metallic = _Metallic;
             o.Smoothness = _Glossiness;
 		half a =1-dot(IN.viewDir,IN.worldNormal)*_Rim;;
-            o.Alpha = a*(IN.screenPos.w-_VanishDepth);	
+		//half maxCap = .1*IN.screenPos.w;
+		//half divisor = step(2,maxCap);
+		//divisor = divisor*maxCap+(1-divisor)*1;
+            o.Alpha = a*(min(1,(IN.screenPos.w-_VanishDepth)));///divisor);
         }
         ENDCG
     }

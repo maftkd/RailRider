@@ -72,8 +72,8 @@ Material:
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _UVSec: 0
-    - _VanishDepth: 0.88
+    - _VanishDepth: 0.93
     - _ZWrite: 1
     m_Colors:
-    - _Color: {r: 0.91481453, g: 2.1185474, b: 0.8207984, a: 1}
+    - _Color: {r: 0.030207425, g: 1.031776, b: 2.134662, a: 1}
     - _EmissionColor: {r: 1, g: 0.76815236, b: 0, a: 1}
