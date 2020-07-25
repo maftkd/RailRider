@@ -240,11 +240,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 448b1c14db8718c4f8070dfb56a160af, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _target: {fileID: 1673982826}
+  _positionAnchor: {fileID: 98319412}
+  _lookAt: {fileID: 1673982826}
   _posOffset: {x: 0.5, y: 0, z: -2}
   _moveLerpSpeed: 7
   _turnLerpSpeed: 2
-  _yDiff: -0.82
+  _yDiff: 1.6
   _getPosOffsetAtStart: 0
 --- !u!114 &534243067
 MonoBehaviour:
@@ -413,17 +414,26 @@ MonoBehaviour:
     - serializedVersion: 3
       time: -0
       value: 0
-      inSlope: 2.3568509
-      outSlope: 2.3568509
+      inSlope: 7.9620023
+      outSlope: 7.9620023
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
-      outWeight: 0.043165468
+      outWeight: 0.029976018
+    - serializedVersion: 3
+      time: 0.8
+      value: -0.000005185604
+      inSlope: -5.0437236
+      outSlope: 0.000025928022
+      tangentMode: 65
+      weightedMode: 0
+      inWeight: 0.028776973
+      outWeight: 0.33333334
     - serializedVersion: 3
       time: 1
       value: 0
-      inSlope: -6.0260406
-      outSlope: -6.0260406
+      inSlope: 0
+      outSlope: 0
       tangentMode: 0
       weightedMode: 0
       inWeight: 0.019184649
@@ -495,7 +505,7 @@ PrefabInstance:
     - target: {fileID: 1682201072283878664, guid: 8e5df86e71eab594c923ee6c6ad59d69,
         type: 3}
       propertyPath: m_RootOrder
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1682201072283878664, guid: 8e5df86e71eab594c923ee6c6ad59d69,
         type: 3}

@@ -43,8 +43,9 @@ public class RailGenerator : MonoBehaviour
 	Transform _ethan;
 	bool _jumping=false;
 	float _jumpHeight = 1.25f;
-	float _jumpDur = 0.6f;
+	float _jumpDur = 0.75f;
 	public AnimationCurve _jumpCurve;
+	float _spinSpeed=360f;
 
 	struct Coin {
 		public Transform transform;
@@ -88,13 +89,30 @@ public class RailGenerator : MonoBehaviour
 		//this might need to get changed for an infinite track
 		//more of a state based riding condition
 		while(t-_tOffset<_knots.Count-1){
-			//get input
-			//This horizontal axis is for testing in editor
-			balance+=Input.GetAxis("Horizontal")*Time.deltaTime*_balanceSpeed;
 
-			//the mouse button is fired by single touches
-			//temp code - we eventually want multitouch so turning and jumping can happen simultaneously
-			//We should use mult-touch to at least allow some grace in case two touches are down for a fraction of a second
+			//get input
+
+			//multi-touch input loop
+			_balanceState=0;
+			foreach(Touch touch in Input.touches){
+				Vector2 touchPos = touch.position;
+				if(touchPos.x < Screen.width*0.4f){
+					_balanceState+=1;
+				}
+				else if(touchPos.x > Screen.width*0.6f){
+					_balanceState+=2;
+				}
+			}	
+#if UNITY_EDITOR
+			float keyInput = Input.GetAxis("Horizontal");
+			if(keyInput<0)
+				_balanceState=1;
+			else if(keyInput>0)
+				_balanceState=2;
+			else
+				_balanceState=0;
+#endif
+			/*
 			if(Input.GetMouseButtonDown(0)){
 				Vector2 curPos = Input.mousePosition;
 				if(curPos.x<Screen.width*.6f && curPos.x>=Screen.width*.4f){
@@ -113,6 +131,7 @@ public class RailGenerator : MonoBehaviour
 			else{
 				_balanceState=0;
 			}
+			*/
 
 			//temp code for testing speed increase
 			if(Input.GetKeyUp(KeyCode.Space)){
@@ -120,22 +139,48 @@ public class RailGenerator : MonoBehaviour
 				_moveSpeed += 0.1f;
 				_balanceSpeed += _balanceSpeedIncrease;
 			}
+			//temp code for testing jump
+			if(Input.GetKey(KeyCode.UpArrow)){
+				if(!_jumping)
+					StartCoroutine(JumpRoutine());
+			}
 
 			//handle balance logic
 			switch(_balanceState){
 				case 0:
 					//fall to 0
-					_balanceVelocity=Mathf.Lerp(_balanceVelocity,0,_balanceAcceleration*Time.deltaTime);
+					LimitVelocity();
 					break;
 				case 1:
 					//climb to 1
-					_balanceVelocity=Mathf.Lerp(_balanceVelocity,1f,_balanceAcceleration*Time.deltaTime);
+					if(!_jumping)
+						_balanceVelocity=Mathf.Lerp(_balanceVelocity,1f,_balanceAcceleration*Time.deltaTime);
+
+					//temp code for air spins
+					else
+						_ethan.Rotate(0,-_spinSpeed*Time.deltaTime, 0);
 					break;
 				case 2:
 					//climb to -1
-					_balanceVelocity = Mathf.Lerp(_balanceVelocity,-1f,_balanceAcceleration*Time.deltaTime);
+					if(!_jumping)
+						_balanceVelocity = Mathf.Lerp(_balanceVelocity,-1f,_balanceAcceleration*Time.deltaTime);
+
+					//temp code for air spins
+					else
+						_ethan.Rotate(0,_spinSpeed*Time.deltaTime, 0);
+					break;
+				case 3:
+					//jump
+					if(!_jumping)
+						StartCoroutine(JumpRoutine());
+					//and fall to 0
+					LimitVelocity();
 					break;
 			}
+
+			//temp code debugging balance after jump
+			if(_balanceVelocity!=0)
+				Debug.Log("balancing");
 
 			//set player's root position and orientation
 			balance-=_balanceVelocity*Time.deltaTime*_balanceSpeed;
@@ -214,8 +259,17 @@ public class RailGenerator : MonoBehaviour
 		}
 	}
 
+	void LimitVelocity(){
+		if(_balanceVelocity!=0){
+			_balanceVelocity=Mathf.Lerp(_balanceVelocity,0,_balanceAcceleration*Time.deltaTime);
+			if(Mathf.Abs(_balanceVelocity)<0.01f)
+				_balanceVelocity=0;
+		}
+	}
+
 	IEnumerator JumpRoutine(){
 		_jumping=true;
+		_balanceVelocity=0;
 		float timer=0;
 		Vector3 startPos = _ethan.localPosition;
 		Vector3 endPos = startPos+Vector3.up*_jumpHeight;

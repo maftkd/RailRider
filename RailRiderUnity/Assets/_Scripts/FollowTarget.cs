@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class FollowTarget : MonoBehaviour
 {
-	public Transform _target;
+	public Transform _positionAnchor;
+	public Transform _lookAt;
 	public Vector3 _posOffset;
 	Vector3 _posOffsetTarget;
 	public float _moveLerpSpeed;
@@ -15,7 +16,7 @@ public class FollowTarget : MonoBehaviour
 	void Start()
 	{
 		if (_getPosOffsetAtStart)
-			_posOffset = transform.position - _target.position;
+			_posOffset = transform.position - _positionAnchor.position;
 		_posOffsetTarget=_posOffset;
 	}
 
@@ -24,12 +25,12 @@ public class FollowTarget : MonoBehaviour
 	{
 		Vector3 targetPos;
 		_posOffset = Vector3.Lerp(_posOffset,_posOffsetTarget,1f*Time.deltaTime);
-		targetPos = _target.position + _target.forward * _posOffset.z + _target.right*_posOffset.x + Vector3.up * _yDiff;
+		targetPos = _positionAnchor.position + _positionAnchor.forward * _posOffset.z + _positionAnchor.right*_posOffset.x + Vector3.up * _yDiff;
 		//handle cam look and target rotation
 		transform.position = Vector3.Lerp(transform.position, targetPos, _moveLerpSpeed * Time.deltaTime);
 		//transform.position = targetPos;
 		Quaternion curRot = transform.rotation;
-		transform.LookAt(_target);
+		transform.LookAt(_lookAt);
 		Quaternion targetRot = transform.rotation;
 		transform.rotation = Quaternion.Slerp(curRot,targetRot,_turnLerpSpeed*Time.deltaTime);
 	}

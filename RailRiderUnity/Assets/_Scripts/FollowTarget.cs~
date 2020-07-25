@@ -11,8 +11,6 @@ public class FollowTarget : MonoBehaviour
 	public float _turnLerpSpeed;
 	public float _yDiff;
 	public bool _getPosOffsetAtStart;
-	bool _followBehaviour=true;
-	float _momentumThreshold = 0.001f;
 	// Start is called before the first frame update
 	void Start()
 	{
