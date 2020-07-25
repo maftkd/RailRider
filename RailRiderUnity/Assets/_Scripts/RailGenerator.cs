@@ -40,6 +40,11 @@ public class RailGenerator : MonoBehaviour
 	float _jumpDist = 0;//A tracker to note the distance since the previous jumper
 	float _jumpThreshold=1.1f;//spacing between jumps and other jumps
 	float _jumpSpacing=0.5f;//spacing between coins and jumps
+	Transform _ethan;
+	bool _jumping=false;
+	float _jumpHeight = 1.25f;
+	float _jumpDur = 0.6f;
+	public AnimationCurve _jumpCurve;
 
 	struct Coin {
 		public Transform transform;
@@ -71,6 +76,7 @@ public class RailGenerator : MonoBehaviour
 		//Get some references
 		_helmet = GameObject.FindGameObjectWithTag("helmet").transform;
 		_followTarget = Camera.main.transform.GetComponent<FollowTarget>();
+		_ethan = _railTracker.GetChild(0); 
 
 		//start test
 		StartCoroutine(Ride());
@@ -83,7 +89,19 @@ public class RailGenerator : MonoBehaviour
 		//more of a state based riding condition
 		while(t-_tOffset<_knots.Count-1){
 			//get input
+			//This horizontal axis is for testing in editor
 			balance+=Input.GetAxis("Horizontal")*Time.deltaTime*_balanceSpeed;
+
+			//the mouse button is fired by single touches
+			//temp code - we eventually want multitouch so turning and jumping can happen simultaneously
+			//We should use mult-touch to at least allow some grace in case two touches are down for a fraction of a second
+			if(Input.GetMouseButtonDown(0)){
+				Vector2 curPos = Input.mousePosition;
+				if(curPos.x<Screen.width*.6f && curPos.x>=Screen.width*.4f){
+					if(!_jumping)
+						StartCoroutine(JumpRoutine());
+				}
+			}
 			if(Input.GetMouseButton(0))
 			{
 				Vector2 curPos = Input.mousePosition;
@@ -95,12 +113,14 @@ public class RailGenerator : MonoBehaviour
 			else{
 				_balanceState=0;
 			}
+
+			//temp code for testing speed increase
 			if(Input.GetKeyUp(KeyCode.Space)){
 				Debug.Log("space pressed");
 				_moveSpeed += 0.1f;
-				//_followTarget._moveLerpSpeed += 2;
 				_balanceSpeed += _balanceSpeedIncrease;
 			}
+
 			//handle balance logic
 			switch(_balanceState){
 				case 0:
@@ -192,6 +212,20 @@ public class RailGenerator : MonoBehaviour
 			t+=Time.deltaTime*_moveSpeed;
 			yield return null;
 		}
+	}
+
+	IEnumerator JumpRoutine(){
+		_jumping=true;
+		float timer=0;
+		Vector3 startPos = _ethan.localPosition;
+		Vector3 endPos = startPos+Vector3.up*_jumpHeight;
+		while(timer<_jumpDur){
+			timer+=Time.deltaTime;
+			_ethan.localPosition = Vector3.LerpUnclamped(startPos,endPos,_jumpCurve.Evaluate(timer/_jumpDur));			
+			yield return null;
+		}
+		_ethan.localPosition=startPos;
+		_jumping=false;
 	}
 
 	void GenerateStartingSection(){
