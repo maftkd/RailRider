@@ -75,5 +75,5 @@ Material:
     - _VanishDepth: 0.93
     - _ZWrite: 1
     m_Colors:
-    - _Color: {r: 0.030207425, g: 1.031776, b: 2.134662, a: 1}
+    - _Color: {r: 2.134662, g: 0.03352866, b: 0.5227126, a: 1}
     - _EmissionColor: {r: 1, g: 0.76815236, b: 0, a: 1}

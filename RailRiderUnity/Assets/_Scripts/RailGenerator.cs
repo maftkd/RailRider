@@ -28,7 +28,7 @@ public class RailGenerator : MonoBehaviour
 	public Transform _coin;
 	public AnimationCurve _indicatorCurve;
 	float _indicatorHeight = 1.5f;
-	float _indicatorWidth = .9f;
+	//float _indicatorWidth = .9f;
 	FollowTarget _followTarget;
 	float _crossThreshold = 0.001f;
 	float _coinProbability = 0.3f;
@@ -50,11 +50,18 @@ public class RailGenerator : MonoBehaviour
 	float _inputDelayTimer=0;
 	float _inputDelay=.05f;
 	Dictionary<float, Jumper> _jumpers = new Dictionary<float, Jumper>();
+	[ColorUsageAttribute(false,true)]
+	public Color _coinHitColor;
+	int _requiredCoins;
+	int _collectedCoins;
+	public Material _shades;
 
 	struct Coin {
 		public Transform transform;
 		public LineRenderer line;
 		public MeshRenderer mesh;
+		public bool collected;
+		public Vector3 offset;
 	}
 
 	struct Jumper {
@@ -82,7 +89,14 @@ public class RailGenerator : MonoBehaviour
 		ResetRail();
 
 		GenerateCoins(0,_knots.Count-1);
+
 		GenerateJumpers(0,_knots.Count-1);
+
+		//temp code - just set the required number of coins to an arbitrary amount to test the sunglass color change
+		_requiredCoins=20;
+
+		//This sets number of coins to 0
+		AddCoin(0);
 
 		//Get some references
 		_helmet = GameObject.FindGameObjectWithTag("helmet").transform;
@@ -96,6 +110,7 @@ public class RailGenerator : MonoBehaviour
 	IEnumerator Ride(){
 		float t=0;
 		float balance=0;
+		//todo - when we have a start menu, a fail state, special state, then we will modify this I THINK
 		//this might need to get changed for an infinite track
 		//more of a state based riding condition
 		while(t-_tOffset<_knots.Count-1){
@@ -125,26 +140,6 @@ public class RailGenerator : MonoBehaviour
 			//reset input delay
 			if(_balanceState==0)
 				_inputDelayTimer=0;
-			/*
-			if(Input.GetMouseButtonDown(0)){
-				Vector2 curPos = Input.mousePosition;
-				if(curPos.x<Screen.width*.6f && curPos.x>=Screen.width*.4f){
-					if(!_jumping)
-						StartCoroutine(JumpRoutine());
-				}
-			}
-			if(Input.GetMouseButton(0))
-			{
-				Vector2 curPos = Input.mousePosition;
-				if(curPos.x>Screen.width*.6f)
-					_balanceState=2;
-				else if(curPos.x<Screen.width*.4f)
-					_balanceState=1;
-			}
-			else{
-				_balanceState=0;
-			}
-			*/
 
 			//temp code for testing speed increase
 			if(Input.GetKeyUp(KeyCode.Space)){
@@ -220,37 +215,28 @@ public class RailGenerator : MonoBehaviour
 
 			//Check for point acquisitions
 			foreach(float f in _coins.Keys){
-				if(f>t && f <t+2){
+				if(f>t-1 && f <t+2){
 					Coin c = _coins[f];
-					float sqrMag = (c.transform.position-_helmet.position).sqrMagnitude;
-					//if it's not in the ballpark just skip
-					if(sqrMag<400){
-						//this is not really ideal, we don't want to be setting this every frame they are close-by... I think...
-						c.mesh.enabled=true;
-						/*
-						if(sqrMag>4){
-							//animate the indicator line
-							c.line.enabled=true;
-							LineRenderer r = c.line;
-							Vector3 pos0 = r.GetPosition(0);
-							Vector3 pos1 = r.GetPosition(1);
-							Vector3 dif = (pos1-pos0).normalized;
-							float normDist = 1-(sqrMag/400f);
-							pos1 = pos0+dif*_indicatorCurve.Evaluate(normDist)*_indicatorHeight;
-							r.SetPosition(1,pos1);
-							r.widthMultiplier=(1-normDist)*_indicatorWidth;
-							//animate the coin along with line
-							c.transform.position=pos1;
-						}
-						else
-							c.line.enabled=false;
-							*/
-					}
 
-					//this hit detection logic is continuous and not really valid (frame rate dependent)
-					//temp code - need something more discrete
-					if(sqrMag<.3f)
-						Debug.Log("hit a coin");
+					//disable coins
+					if(f<t-.5f)
+						c.mesh.enabled=false;
+
+					//enable coins
+					else
+					{
+						c.mesh.enabled=true;
+
+						//coinDetection
+						if(Mathf.Abs(f-t)<.05f && !c.collected){
+							if(Vector3.Dot(c.offset,_railTracker.up)>0.9f)
+							{
+								c.collected=true;
+								c.mesh.material.SetColor("_Color",_coinHitColor);
+								AddCoin();
+							}
+						}
+					}
 				}
 			}
 
@@ -332,7 +318,7 @@ public class RailGenerator : MonoBehaviour
 				//If there are still coins to be added in a cluster
 				if(clusterCounter>0){
 					//declare coin struct
-					Coin c;
+					Coin c = new Coin();
 					//determine the curvature
 					Vector3 nextForward = _path.GetTangent(t+1f/(float)_lineResolution);
 					float cross = Vector3.Cross(curForward,nextForward).y*.1f;
@@ -348,6 +334,7 @@ public class RailGenerator : MonoBehaviour
 						Vector3 right = Vector3.Cross(Vector3.up,curForward);
 						Vector3 offset = Vector3.LerpUnclamped(Vector3.up,right,cross);
 						offset.Normalize();
+						c.offset=offset;
 
 						//instance the coin
 						Transform curCoin = Instantiate(_coin,railPos+offset*_indicatorHeight,Quaternion.identity, null);
@@ -578,6 +565,19 @@ public class RailGenerator : MonoBehaviour
 			_knots.Add(pos);
 		}
 	}
+
+	void AddCoin(int setValue=-1){
+		if(setValue==-1)
+			_collectedCoins++;
+		else
+			_collectedCoins=setValue;
+		float coinFrac = _collectedCoins/(float)_requiredCoins;
+		if(coinFrac<1)
+			_shades.SetColor("_EmissionColor",new Color(1f,coinFrac,0));
+		else
+			_shades.SetColor("_EmissionColor",Color.green);
+	}
+
 
 	// Update is called once per frame
 	void Update()

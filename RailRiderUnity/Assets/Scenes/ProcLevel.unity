@@ -14,10 +14,10 @@ OcclusionCullingSettings:
 RenderSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 9
-  m_Fog: 0
+  m_Fog: 1
   m_FogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   m_FogMode: 3
-  m_FogDensity: 0.01
+  m_FogDensity: 0.02
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
   m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
@@ -196,7 +196,7 @@ Camera:
     height: 1
   near clip plane: 0.1
   far clip plane: 100
-  field of view: 90
+  field of view: 69
   orthographic: 0
   orthographic size: 5
   m_Depth: -1
@@ -242,7 +242,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _positionAnchor: {fileID: 98319412}
   _lookAt: {fileID: 1673982826}
-  _posOffset: {x: 0.5, y: 0, z: -2}
+  _posOffset: {x: 0.5, y: 0, z: -2.15}
   _moveLerpSpeed: 7
   _turnLerpSpeed: 2
   _yDiff: 1.6
@@ -432,6 +432,8 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  _coinHitColor: {r: 0, g: 2, b: 0.26666668, a: 0}
+  _shades: {fileID: 2100000, guid: 77064db70e79cda4eabb3c7114c0ebf1, type: 2}
 --- !u!4 &1009601617
 Transform:
   m_ObjectHideFlags: 0
