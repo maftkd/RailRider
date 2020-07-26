@@ -55,6 +55,7 @@ public class RailGenerator : MonoBehaviour
 	int _requiredCoins;
 	int _collectedCoins;
 	public Material _shades;
+	float _coinHitThreshold = .91f;
 
 	struct Coin {
 		public Transform transform;
@@ -227,9 +228,11 @@ public class RailGenerator : MonoBehaviour
 					{
 						c.mesh.enabled=true;
 
+						Debug.Log(c.collected);
+
 						//coinDetection
 						if(Mathf.Abs(f-t)<.05f && !c.collected){
-							if(Vector3.Dot(c.offset,_railTracker.up)>0.9f)
+							if(Vector3.Dot(c.offset,_railTracker.up)>_coinHitThreshold)
 							{
 								c.collected=true;
 								c.mesh.material.SetColor("_Color",_coinHitColor);
@@ -341,6 +344,8 @@ public class RailGenerator : MonoBehaviour
 						curCoin.LookAt(railPos);
 						curCoin.localScale=new Vector3(.5f,1f,2f);
 						c.transform = curCoin;
+
+						c.collected=false;
 
 						//set the line data
 						LineRenderer curLine = curCoin.GetComponent<LineRenderer>();

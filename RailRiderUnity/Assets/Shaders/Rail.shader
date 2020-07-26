@@ -46,11 +46,11 @@
             // Albedo comes from a texture tinted by color
             //fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _EdgeColor;
 		float edge = 1-step(_EdgeThickness,abs(.5-IN.uv_MainTex.y));
-            o.Albedo = IN.uv_MainTex.y*_Color*edge+(1-edge)*_Color;
+            o.Albedo = IN.uv_MainTex.y*_Color*edge+(1-edge)*_EdgeColor;
             // Metallic and smoothness come from slider variables
             o.Metallic = _Metallic;
 		//o.Emission = (1-edge)*(_EdgeColor*(1+abs(.5-frac(_Time.y*.25))*3));
-		o.Emission = (1-edge)*lerp(_EdgeColor,_Color,abs(.5-frac(_Time.y*.2)));
+		//o.Emission = (1-edge)*lerp(_EdgeColor,_Color,abs(.5-frac(_Time.y*.2)));
             o.Smoothness = _Glossiness;
             o.Alpha = 1;
         }
