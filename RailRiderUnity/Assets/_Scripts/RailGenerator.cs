@@ -8,13 +8,15 @@ public class RailGenerator : MonoBehaviour
 	CubicBezierPath _path;
 	List<Vector3> _knots = new List<Vector3>();
 	//temp code for debugging
-	List<Vector3> _turnCenters = new List<Vector3>();
+	//List<Vector3> _turnCenters = new List<Vector3>();
 	LineRenderer _line;
 	public Material _lineMat;
 	float _nodeDist = 16f;//approximate segment length
 	int _lineResolution = 10;//Number of points on line per segment
 	float _moveSpeed=0.35f;//rate at which char moves along rail in segments/sec
 	Transform _railTracker;
+	float _balance;
+	float _t;
 	float _balanceSpeed = 100;//degrees per second of rotation at full balanceVelocity
 	float _balanceSpeedIncrease = 20;
 	int _balanceState = 0;//0=no input, 1=left input, 2=right input
@@ -43,8 +45,8 @@ public class RailGenerator : MonoBehaviour
 	float _lineResFrac;
 	Transform _ethan;
 	bool _jumping=false;
-	float _jumpHeight = 1.15f;
-	float _jumpDur = 0.5f;
+	float _jumpHeight = 1.5f;
+	float _jumpDur = 0.65f;
 	public AnimationCurve _jumpCurve;
 	float _spinSpeed=360f;
 	float _inputDelayTimer=0;
@@ -54,8 +56,14 @@ public class RailGenerator : MonoBehaviour
 	public Color _coinHitColor;
 	int _requiredCoins;
 	int _collectedCoins;
-	public Material _shades;
-	float _coinHitThreshold = .91f;
+	float _coinHitThreshold = .97f;
+	int _gameState=0;
+	//0 = menu
+	//1 = play
+	//2 = collided with jumper
+	int _nextGate;
+	int _gatePos;
+	Transform _gate;
 
 	struct Coin {
 		public Transform transform;
@@ -91,7 +99,7 @@ public class RailGenerator : MonoBehaviour
 
 		GenerateCoins(0,_knots.Count-1);
 
-		GenerateJumpers(0,_knots.Count-1);
+		//GenerateJumpers(0,_knots.Count-1);
 
 		//temp code - just set the required number of coins to an arbitrary amount to test the sunglass color change
 		_requiredCoins=20;
@@ -100,14 +108,16 @@ public class RailGenerator : MonoBehaviour
 		AddCoin(0);
 
 		//Get some references
-		_helmet = GameObject.FindGameObjectWithTag("helmet").transform;
+		_helmet = GameObject.FindGameObjectWithTag("Helmet").transform;
 		_followTarget = Camera.main.transform.GetComponent<FollowTarget>();
 		_ethan = _railTracker.GetChild(0); 
+		_gate = GameObject.FindGameObjectWithTag("Gate").transform;
 
 		//start test
-		StartCoroutine(Ride());
+		//StartCoroutine(Ride());
 	}
 	
+	/*
 	IEnumerator Ride(){
 		float t=0;
 		float balance=0;
@@ -118,154 +128,13 @@ public class RailGenerator : MonoBehaviour
 
 			//get input
 
-			//multi-touch input loop
-			_balanceState=0;
-			foreach(Touch touch in Input.touches){
-				Vector2 touchPos = touch.position;
-				if(touchPos.x < Screen.width*0.4f){
-					_balanceState+=1;
-				}
-				else if(touchPos.x > Screen.width*0.6f){
-					_balanceState+=2;
-				}
-			}	
-#if UNITY_EDITOR
-			float keyInput = Input.GetAxis("Horizontal");
-			if(keyInput<0)
-				_balanceState=1;
-			else if(keyInput>0)
-				_balanceState=2;
-			else
-				_balanceState=0;
-#endif
-			//reset input delay
-			if(_balanceState==0)
-				_inputDelayTimer=0;
-
-			//temp code for testing speed increase
-			if(Input.GetKeyUp(KeyCode.Space)){
-				Debug.Log("space pressed");
-				_moveSpeed += 0.1f;
-				_balanceSpeed += _balanceSpeedIncrease;
-			}
-			//temp code for testing jump
-			if(Input.GetKey(KeyCode.UpArrow)){
-				if(!_jumping)
-					StartCoroutine(JumpRoutine());
-			}
-
-			//handle balance logic
-			switch(_balanceState){
-				case 0:
-					//fall to 0
-					LimitVelocity();
-					break;
-				case 1:
-					if(_inputDelayTimer<_inputDelay)
-						_inputDelayTimer+=Time.deltaTime;
-					else{
-						//climb to 1
-						if(!_jumping)
-						{
-							_balanceVelocity=Mathf.Lerp(_balanceVelocity,1f,_balanceAcceleration*Time.deltaTime);
-						}
-						//temp code for air spins
-						else
-							_ethan.Rotate(0,-_spinSpeed*Time.deltaTime, 0);
-						}
-					break;
-				case 2:
-					if(_inputDelayTimer<_inputDelay)
-						_inputDelayTimer+=Time.deltaTime;
-					else{
-						//climb to -1
-						if(!_jumping)
-							_balanceVelocity = Mathf.Lerp(_balanceVelocity,-1f,_balanceAcceleration*Time.deltaTime);
-
-						//temp code for air spins
-						else
-							_ethan.Rotate(0,_spinSpeed*Time.deltaTime, 0);
-					}
-					break;
-				case 3:
-					//jump
-					if(!_jumping)
-						StartCoroutine(JumpRoutine());
-					//and fall to 0
-					LimitVelocity();
-					break;
-			}
-
-			//set player's root position and orientation
-			balance-=_balanceVelocity*Time.deltaTime*_balanceSpeed;
-			Vector3 prevForward = _railTracker.forward;
-			float railT = t-_tOffset;
-			_railTracker.position = _path.GetPoint(railT);
-			_railTracker.forward = _path.GetTangent(railT);
-			Vector3 localEuler = _railTracker.localEulerAngles;
-
-			//physics
-			float grav = Mathf.Abs(balance);
-			grav = grav<_gravityThreshold ? 0 : Mathf.InverseLerp(0,90,grav)*Mathf.Sign(balance)*_gravityPower;
-			float momentum = Vector3.Cross(prevForward, _railTracker.forward).y*_momentumPower;
-			_followTarget.AdjustCamera(momentum);
-			//balance+=grav;
-			//balance-=momentum;
-			localEuler.z = -balance;
-			_railTracker.localEulerAngles=localEuler;
-
-			//Check for point acquisitions
-			foreach(float f in _coins.Keys){
-				if(f>t-1 && f <t+2){
-					Coin c = _coins[f];
-
-					//disable coins
-					if(f<t-.5f)
-						c.mesh.enabled=false;
-
-					//enable coins
-					else
-					{
-						c.mesh.enabled=true;
-
-						Debug.Log(c.collected);
-
-						//coinDetection
-						if(Mathf.Abs(f-t)<.05f && !c.collected){
-							if(Vector3.Dot(c.offset,_railTracker.up)>_coinHitThreshold)
-							{
-								c.collected=true;
-								c.mesh.material.SetColor("_Color",_coinHitColor);
-								AddCoin();
-							}
-						}
-					}
-				}
-			}
-
-			//check for new track gen if only X tracks lie ahead
-			if(t-_tOffset>_knots.Count-_lookAheadTracks){
-
-				int numTracks = GenerateNewTrack();
-
-				int removed = RemoveOldTrack(t);
-
-				ClearOldCoins(_tOffset+removed);
-				ClearOldJumpers(_tOffset+removed);
-
-				ResetRail();
-
-				_tOffset+=removed;
-
-				GenerateCoins(_knots.Count-(numTracks+1),_knots.Count-1);
-				GenerateJumpers(_knots.Count-(numTracks+1),_knots.Count-1);
-			}
 
 			//tick for next frame
 			t+=Time.deltaTime*_moveSpeed;
 			yield return null;
 		}
 	}
+	*/
 
 	void LimitVelocity(){
 		if(_balanceVelocity!=0){
@@ -293,12 +162,17 @@ public class RailGenerator : MonoBehaviour
 	}
 
 	void GenerateStartingSection(){
+		_knots.Add(Vector3.back*_nodeDist);
 		_knots.Add(Vector3.zero);
+		_t=1f;
 		_knots.Add(Vector3.forward*_nodeDist);
 		//Starts out with 3 straights total
 		AddStraight(2);
 		//Then a long curve
 		AddCurve(_nodeDist*Random.Range(3,5f),6,(Random.value < 0.5f));
+		//so we have 11 sections so far
+		_nextGate = Random.Range(12,16);//remember this is not the location of the gate but the tOffset at which the gate spawns
+		_gatePos=1024;//something arbitrarily high at the start - will be reset in AddGate()
 	}
 
 	void GenerateCoins(int startKnot, int endKnot){
@@ -419,6 +293,7 @@ public class RailGenerator : MonoBehaviour
 					Jumper j;
 					j.transform = jumper;
 					j.mesh = jumper.GetComponent<MeshRenderer>();
+					j.mesh.enabled=false;
 					_jumpers.Add(key, j);
 
 					//clear out nearby coins
@@ -426,7 +301,7 @@ public class RailGenerator : MonoBehaviour
 					foreach(float k in _coins.Keys){
 						if(Mathf.Abs(k-key)<_jumpSpacing){
 							Transform trans = _coins[k].transform;
-							Destroy(trans.gameObject);
+							Destroy(trans.gameObject,Random.value*.2f);
 							removeList.Add(k);
 						}
 					}
@@ -441,6 +316,14 @@ public class RailGenerator : MonoBehaviour
 	int GenerateNewTrack(){
 		float val = Random.value;
 		int numTracks = 0;
+		//before we do any of this probability stuff
+		//is current tOffset past or equal to the gate threshold?
+		//if so generate a gate
+		if(_tOffset>=_nextGate){
+			Debug.Log("Time to generate a gate");
+			AddGate();
+			return -1;
+		}
 		if(val<.33f){
 			numTracks = Random.Range(1,4);
 			//add a straight
@@ -524,6 +407,20 @@ public class RailGenerator : MonoBehaviour
 		}
 	}
 
+	void AddGate(){
+		AddStraight(3);
+		_gatePos = _knots.Count-3+_tOffset;
+		_nextGate+=Random.Range(19,22);
+		Vector3 railLine = _knots[_knots.Count-2]-_knots[_knots.Count-3];
+		railLine.Normalize();
+		_gate.position = _knots[_knots.Count-3]+railLine*_nodeDist*.5f;
+		_gate.position+=Vector3.up;
+		_gate.forward=railLine;
+		_gate.localScale = new Vector3(5,5,_nodeDist);
+		_gate.GetComponent<MeshRenderer>().enabled=true;
+	}
+
+
 	void AddStraight(int segments){
 		Vector3 tan = _knots[_knots.Count-1]-_knots[_knots.Count-2];
 		tan.Normalize();
@@ -560,7 +457,7 @@ public class RailGenerator : MonoBehaviour
 		right = toRight? right : right*-1f;
 		float angleOffset = Mathf.Atan2(-right.z,-right.x);
 		turnCenter+=right*radius;
-		_turnCenters.Add(turnCenter); //this is for debugging (remove before ship)
+		//_turnCenters.Add(turnCenter); //this is for debugging (remove before ship)
 
 		//Add knots
 		for(int i=1; i<=sectors; i++){
@@ -578,19 +475,191 @@ public class RailGenerator : MonoBehaviour
 			_collectedCoins=setValue;
 		float coinFrac = _collectedCoins/(float)_requiredCoins;
 		if(coinFrac<1)
-			_shades.SetColor("_EmissionColor",new Color(1f,coinFrac,0));
+			_lineMat.SetColor("_EdgeColor",new Color(1f,coinFrac,1-coinFrac));
 		else
-			_shades.SetColor("_EmissionColor",Color.green);
+			_lineMat.SetColor("_EdgeColor",Color.green);
+	}
+
+	public void StartRiding(){
+		_gameState=1;
 	}
 
 
 	// Update is called once per frame
 	void Update()
 	{
+		switch(_gameState){
+			case 0://menu
+				break;
+			case 1://gameplay
+				//multi-touch input loop
+				_balanceState=0;
+				foreach(Touch touch in Input.touches){
+					Vector2 touchPos = touch.position;
+					if(touchPos.x < Screen.width*0.4f){
+						_balanceState+=1;
+					}
+					else if(touchPos.x > Screen.width*0.6f){
+						_balanceState+=2;
+					}
+				}	
+	#if UNITY_EDITOR
+				float keyInput = Input.GetAxis("Horizontal");
+				if(keyInput<0)
+					_balanceState=1;
+				else if(keyInput>0)
+					_balanceState=2;
+				else
+					_balanceState=0;
+	#endif
+				//reset input delay
+				if(_balanceState==0)
+					_inputDelayTimer=0;
 
+				//temp code for testing speed increase
+				if(Input.GetKeyUp(KeyCode.Space)){
+					Debug.Log("space pressed");
+					_moveSpeed += 0.1f;
+					_balanceSpeed += _balanceSpeedIncrease;
+				}
+				//temp code for testing jump
+				if(Input.GetKey(KeyCode.UpArrow)){
+					if(!_jumping)
+						StartCoroutine(JumpRoutine());
+				}
+
+				//handle balance logic
+				switch(_balanceState){
+					case 0:
+						//fall to 0
+						LimitVelocity();
+						break;
+					case 1:
+						if(_inputDelayTimer<_inputDelay)
+							_inputDelayTimer+=Time.deltaTime;
+						else{
+							//climb to 1
+							if(!_jumping)
+							{
+								_balanceVelocity=Mathf.Lerp(_balanceVelocity,1f,_balanceAcceleration*Time.deltaTime);
+							}
+							//temp code for air spins
+							else
+								_ethan.Rotate(0,-_spinSpeed*Time.deltaTime, 0);
+							}
+						break;
+					case 2:
+						if(_inputDelayTimer<_inputDelay)
+							_inputDelayTimer+=Time.deltaTime;
+						else{
+							//climb to -1
+							if(!_jumping)
+								_balanceVelocity = Mathf.Lerp(_balanceVelocity,-1f,_balanceAcceleration*Time.deltaTime);
+
+							//temp code for air spins
+							else
+								_ethan.Rotate(0,_spinSpeed*Time.deltaTime, 0);
+						}
+						break;
+					case 3:
+						//jump
+						if(!_jumping)
+							StartCoroutine(JumpRoutine());
+						//and fall to 0
+						LimitVelocity();
+						break;
+				}
+
+				//set player's root position and orientation
+				_balance-=_balanceVelocity*Time.deltaTime*_balanceSpeed;
+				Vector3 prevForward = _railTracker.forward;
+				float railT = _t-_tOffset;
+				_railTracker.position = _path.GetPoint(railT);
+				_railTracker.forward = _path.GetTangent(railT);
+				Vector3 localEuler = _railTracker.localEulerAngles;
+
+				//physics
+				//float grav = Mathf.Abs(_balance);
+				//grav = grav<_gravityThreshold ? 0 : Mathf.InverseLerp(0,90,grav)*Mathf.Sign(balance)*_gravityPower;
+				//float momentum = Vector3.Cross(prevForward, _railTracker.forward).y*_momentumPower;
+				//_followTarget.AdjustCamera(momentum);
+				//balance+=grav;
+				//balance-=momentum;
+				localEuler.z = -_balance;
+				_railTracker.localEulerAngles=localEuler;
+
+				//Check for point acquisitions
+				foreach(float f in _coins.Keys){
+					if(f>_t-1 && f <_t+2){
+						Coin c = _coins[f];
+
+						//disable coins
+						if(f<_t-.5f)
+							c.mesh.enabled=false;
+
+						//enable coins
+						else
+						{
+							c.mesh.enabled=true;
+
+							//coinDetection
+							if(Mathf.Abs(f-_t)<.05f && c.transform.tag=="Untagged"){
+								if(Vector3.Dot(c.offset,_railTracker.up)>_coinHitThreshold)
+								{
+									c.collected=true;
+									c.mesh.material.SetColor("_Color",_coinHitColor);
+									c.transform.tag="Collected";
+									AddCoin();
+								}
+							}
+						}
+					}
+				}
+
+				//check for jumper collisions
+				foreach(float f in _jumpers.Keys){
+					if(f>_t-1 && f<_t+2){
+						_jumpers[f].mesh.enabled=true;
+						
+						if(Mathf.Abs(f-_t)<.05f && !_jumping){
+							Debug.Log("Oops hit a jumper");
+							_gameState=2;
+						}
+					}
+				}
+
+				//check for gate
+				if(_t>=_gatePos)
+					Debug.Log("made it to a gate");
+
+				//check for new track gen if only X tracks lie ahead
+				if(_t-_tOffset>_knots.Count-_lookAheadTracks){
+
+					int numTracks = GenerateNewTrack();
+
+					int removed = RemoveOldTrack(_t);
+
+					ClearOldCoins(_tOffset+removed);
+					ClearOldJumpers(_tOffset+removed);
+
+					ResetRail();
+
+					_tOffset+=removed;
+
+					if(numTracks!=-1){
+						GenerateCoins(_knots.Count-(numTracks+1),_knots.Count-1);
+						GenerateJumpers(_knots.Count-(numTracks+1),_knots.Count-1);
+					}
+				}
+				_t+=Time.deltaTime*_moveSpeed;
+				break;
+			case 2://collide with jumper
+				break;
+		}
 	}
 
 	void OnDrawGizmos(){
+		/*
 		if(_line!=null)
 		{
 			Gizmos.color = Color.green;
@@ -611,5 +680,6 @@ public class RailGenerator : MonoBehaviour
 				Gizmos.DrawSphere(_turnCenters[i],1f);
 			}
 		}
+		*/
 	}
 }

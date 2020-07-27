@@ -1,0 +1,36 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class FollowCam : MonoBehaviour
+{
+	Transform _camTransform;
+	Camera _mainCam;
+	public Transform _railTracker;
+	float _followDistance=3f;
+	public Transform _lookTarget;
+
+	// Start is called before the first frame update
+	void Start()
+	{
+		_camTransform = transform.GetChild(0);
+		_mainCam = _camTransform.GetComponent<Camera>();
+	}
+
+	// Update is called once per frame
+	void Update()
+	{
+		//follow rail tracker
+		transform.position = _railTracker.position-_railTracker.forward*_followDistance;
+
+		//look at ethan
+		_camTransform.LookAt(_lookTarget);
+
+		//check for upside down
+		float railRoll = _railTracker.localEulerAngles.z;
+		if(railRoll>90 && railRoll<270){
+			Debug.Log("we upside down mah love");
+		}
+	}
+
+}
