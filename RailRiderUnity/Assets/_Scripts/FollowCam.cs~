@@ -14,8 +14,8 @@ public class FollowCam : MonoBehaviour
 	//1 = intro
 	//2 = gameplay
 	//
-	float _followHeight = 2.8f;
-	float _followPitch = 23.23f;
+	float _followHeight = 2f;
+	float _followPitch = -13.23f;
 	Quaternion _targetRot, _startRot;
 	Vector3 _targetPos, _startPos;
 	float _introTimer;

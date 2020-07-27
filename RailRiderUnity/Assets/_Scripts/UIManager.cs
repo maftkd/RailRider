@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.SceneManagement;
 
 public class UIManager : MonoBehaviour
 {
@@ -43,6 +44,8 @@ public class UIManager : MonoBehaviour
 	}
 	IEnumerator FadeInRoutine(){
 		float timer = 0;
+		_menu.blocksRaycasts=true;
+		_menu.interactable=true;
 		while(timer < 1f){
 			_menu.alpha = timer;
 			timer+=Time.deltaTime;
@@ -54,5 +57,9 @@ public class UIManager : MonoBehaviour
 	public void ToggleAudio(){
 		_muted=!_muted;
 		_mixer.SetFloat("Volume", _muted ? -80f : 0f);
+	}
+
+	public void Reload(){
+		SceneManager.LoadScene(0);
 	}
 }

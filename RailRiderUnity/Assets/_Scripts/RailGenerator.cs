@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using SplineMesh;
 
 public class RailGenerator : MonoBehaviour
@@ -33,9 +34,9 @@ public class RailGenerator : MonoBehaviour
 	//float _indicatorWidth = .9f;
 	FollowTarget _followTarget;
 	float _crossThreshold = 0.001f;
-	float _coinProbability = 0.3f;
+	float _coinProbability = 0.15f;
 	int _minCoinCluster=3;
-	int _maxCoinCluster=8;
+	int _maxCoinCluster=12;
 	int _tOffset=0;
 	int _lookAheadTracks=8;
 	public Transform _jumper;
@@ -45,7 +46,7 @@ public class RailGenerator : MonoBehaviour
 	float _lineResFrac;
 	Transform _ethan;
 	bool _jumping=false;
-	float _jumpHeight = 1.5f;
+	float _jumpHeight = 1.75f;
 	float _jumpDur = 0.65f;
 	public AnimationCurve _jumpCurve;
 	float _spinSpeed=360f;
@@ -61,9 +62,11 @@ public class RailGenerator : MonoBehaviour
 	//0 = menu
 	//1 = play
 	//2 = collided with jumper
+	//3 = gate check
 	int _nextGate;
 	int _gatePos;
 	Transform _gate;
+	public UnityEvent _jumpHit;
 
 	struct Coin {
 		public Transform transform;
@@ -169,7 +172,7 @@ public class RailGenerator : MonoBehaviour
 		//Starts out with 3 straights total
 		AddStraight(2);
 		//Then a long curve
-		AddCurve(_nodeDist*Random.Range(3,5f),6,(Random.value < 0.5f));
+		AddCurve(_nodeDist*Random.Range(3,5f),3,(Random.value < 0.5f));
 		//so we have 11 sections so far
 		_nextGate = Random.Range(12,16);//remember this is not the location of the gate but the tOffset at which the gate spawns
 		_gatePos=1024;//something arbitrarily high at the start - will be reset in AddGate()
@@ -473,11 +476,13 @@ public class RailGenerator : MonoBehaviour
 			_collectedCoins++;
 		else
 			_collectedCoins=setValue;
+		/*
 		float coinFrac = _collectedCoins/(float)_requiredCoins;
 		if(coinFrac<1)
 			_lineMat.SetColor("_EdgeColor",new Color(1f,coinFrac,1-coinFrac));
 		else
 			_lineMat.SetColor("_EdgeColor",Color.green);
+			*/
 	}
 
 	public void StartRiding(){
@@ -624,13 +629,14 @@ public class RailGenerator : MonoBehaviour
 						if(Mathf.Abs(f-_t)<.05f && !_jumping){
 							Debug.Log("Oops hit a jumper");
 							_gameState=2;
+							_jumpHit.Invoke();
 						}
 					}
 				}
 
 				//check for gate
-				if(_t>=_gatePos)
-					Debug.Log("made it to a gate");
+				//if(_t>=_gatePos)
+				//	_gameState=3;
 
 				//check for new track gen if only X tracks lie ahead
 				if(_t-_tOffset>_knots.Count-_lookAheadTracks){
@@ -654,6 +660,8 @@ public class RailGenerator : MonoBehaviour
 				_t+=Time.deltaTime*_moveSpeed;
 				break;
 			case 2://collide with jumper
+				break;
+			case 3://gate check
 				break;
 		}
 	}

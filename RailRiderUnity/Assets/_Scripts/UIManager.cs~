@@ -38,6 +38,21 @@ public class UIManager : MonoBehaviour
 		_menu.alpha=0;
 	}
 
+	public void FadeInMenu(){
+		StartCoroutine(FadeInRoutine());
+	}
+	IEnumerator FadeInRoutine(){
+		float timer = 0;
+		_menu.blocksRaycasts=true;
+		_menu.interactable=true;
+		while(timer < 1f){
+			_menu.alpha = timer;
+			timer+=Time.deltaTime;
+			yield return null;
+		}
+		_menu.alpha=1;
+	}
+
 	public void ToggleAudio(){
 		_muted=!_muted;
 		_mixer.SetFloat("Volume", _muted ? -80f : 0f);
