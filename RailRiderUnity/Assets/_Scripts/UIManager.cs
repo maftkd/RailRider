@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
 
@@ -9,6 +10,9 @@ public class UIManager : MonoBehaviour
 	CanvasGroup _menu;
 	public AudioMixer _mixer;
 	bool _muted=false;
+	public Texture _mutedTex;
+	public Texture _unmutedTex;
+	public RawImage _musicButton;
 	
 	// Start is called before the first frame update
 	void Start()
@@ -57,6 +61,10 @@ public class UIManager : MonoBehaviour
 	public void ToggleAudio(){
 		_muted=!_muted;
 		_mixer.SetFloat("Volume", _muted ? -80f : 0f);
+		if(_muted)
+			_musicButton.texture=_mutedTex;
+		else
+			_musicButton.texture = _unmutedTex;
 	}
 
 	public void Reload(){

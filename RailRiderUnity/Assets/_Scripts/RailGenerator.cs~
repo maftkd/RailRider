@@ -9,8 +9,6 @@ public class RailGenerator : MonoBehaviour
 {
 	CubicBezierPath _path;
 	List<Vector3> _knots = new List<Vector3>();
-	//temp code for debugging
-	//List<Vector3> _turnCenters = new List<Vector3>();
 	LineRenderer _line;
 	public Material _lineMat;
 	float _nodeDist = 16f;//approximate segment length
@@ -24,16 +22,10 @@ public class RailGenerator : MonoBehaviour
 	int _balanceState = 0;//0=no input, 1=left input, 2=right input
 	float _balanceVelocity = 0;//rate at which Character rotates
 	float _balanceAcceleration = 4f;//rate at which touch input affects velocity
-	//float _gravityPower = 2f;//linear offset to balance
-	//float _gravityThreshold = 10f;//min angle for grav to kick in
-	//float _momentumPower = 50f;//strength of momentum along curvature
 	Transform _helmet;
 	Dictionary<float, Coin> _coins = new Dictionary<float, Coin>();
 	public Transform _coin;
-	public AnimationCurve _indicatorCurve;
-	float _indicatorHeight = 1.5f;
-	//float _indicatorWidth = .9f;
-	FollowTarget _followTarget;
+	float _coinHeight = 1.5f;
 	float _crossThreshold = 0.001f;
 	float _coinProbability = 0.15f;
 	int _minCoinCluster=3;
@@ -49,7 +41,7 @@ public class RailGenerator : MonoBehaviour
 	bool _jumping=false;
 	float _jumpHeight = 1.85f;
 	float _jumpDur = 0.65f;
-	float _minJumpY = 0.5f;
+	float _minJumpY = 1f;//min height to clear a coin
 	public AnimationCurve _jumpCurve;
 	float _spinSpeed=360f;
 	float _inputDelayTimer=0;
@@ -57,7 +49,6 @@ public class RailGenerator : MonoBehaviour
 	Dictionary<float, Jumper> _jumpers = new Dictionary<float, Jumper>();
 	[ColorUsageAttribute(false,true)]
 	public Color _coinHitColor;
-	//int _requiredCoins;
 	int _collectedCoins;
 	float _coinHitThreshold = .97f;
 	int _gameState=0;
@@ -65,15 +56,19 @@ public class RailGenerator : MonoBehaviour
 	//1 = play
 	//2 = collided with jumper
 	//3 = gate check
-	int _nextGate;
-	int _gatePos;
+	float _nextGate;//The time at which a new gate will be generated
+	int _gatePos;//The position of the new gate
 	Transform _gate;
-	public UnityEvent _jumpHit;
+	float _minGateSpace=5;
+	float _maxGateSpace=7;
+	float _gateGrowth = 1.2f;
+	public UnityEvent _jumpHit;//essentially game over event
 	CanvasGroup _gateMenu;
 	Text _scoreText;
 	float _maxSpeed=1f;
-	float _speedIncreaseRate = 0.15f;
+	float _speedIncreaseRate = 0.1f;//rate of speed increase 
 	float _balanceSpeedMultiplier=200;
+	public Text _tDebug,_ngDebug,_gpDebug;
 
 	struct Coin {
 		public Transform transform;
@@ -112,45 +107,20 @@ public class RailGenerator : MonoBehaviour
 		//set speed
 		_balanceSpeed = _moveSpeed*_balanceSpeedMultiplier;
 
-		GenerateJumpers(0,_knots.Count-1);
-
-		//temp code - just set the required number of coins to an arbitrary amount to test the sunglass color change
-		//_requiredCoins=20;
+		//GenerateJumpers(0,_knots.Count-1);
 
 		//This sets number of coins to 0
 		AddCoin(0);
 
 		//Get some references
 		_helmet = GameObject.FindGameObjectWithTag("Helmet").transform;
-		_followTarget = Camera.main.transform.GetComponent<FollowTarget>();
 		_ethan = _railTracker.GetChild(0); 
 		_gate = GameObject.FindGameObjectWithTag("Gate").transform;
 		_gateMenu = GameObject.Find("GateMenu").GetComponent<CanvasGroup>();
 		_scoreText = _gateMenu.transform.Find("Score").GetComponent<Text>();
-
-		//start test
-		//StartCoroutine(Ride());
 	}
 	
-	/*
-	IEnumerator Ride(){
-		float t=0;
-		float balance=0;
-		//todo - when we have a start menu, a fail state, special state, then we will modify this I THINK
-		//this might need to get changed for an infinite track
-		//more of a state based riding condition
-		while(t-_tOffset<_knots.Count-1){
-
-			//get input
-
-
-			//tick for next frame
-			t+=Time.deltaTime*_moveSpeed;
-			yield return null;
-		}
-	}
-	*/
-
+	//function used in update loop to reset velocity towards 0
 	void LimitVelocity(){
 		if(_balanceVelocity!=0){
 			_balanceVelocity=Mathf.Lerp(_balanceVelocity,0,_balanceAcceleration*Time.deltaTime);
@@ -159,6 +129,7 @@ public class RailGenerator : MonoBehaviour
 		}
 	}
 
+	//jump
 	IEnumerator JumpRoutine(){
 		_jumping=true;
 		_balanceVelocity=0;
@@ -177,16 +148,21 @@ public class RailGenerator : MonoBehaviour
 	}
 
 	void GenerateStartingSection(){
+		//we add the previous node just so it looks like there's a stretch
+		//of rail from the start menu
 		_knots.Add(Vector3.back*_nodeDist);
 		_knots.Add(Vector3.zero);
 		_t=1f;
 		_knots.Add(Vector3.forward*_nodeDist);
+
 		//Starts out with 3 straights total
 		AddStraight(2);
+
 		//Then a long curve
 		AddCurve(_nodeDist*Random.Range(3,5f),3,(Random.value < 0.5f));
+
 		//so we have 11 sections so far
-		_nextGate = 0;//Random.Range(2,6);//remember this is not the location of the gate but the tOffset at which the gate spawns
+		_nextGate = Random.Range(_minGateSpace,_maxGateSpace);//remember this is not the location of the gate but the tOffset at which the gate spawns
 		_gatePos=1024;//something arbitrarily high at the start - will be reset in AddGate()
 	}
 
@@ -229,7 +205,7 @@ public class RailGenerator : MonoBehaviour
 						c.offset=offset;
 
 						//instance the coin
-						Transform curCoin = Instantiate(_coin,railPos+offset*_indicatorHeight,Quaternion.identity, null);
+						Transform curCoin = Instantiate(_coin,railPos+offset*_coinHeight,Quaternion.identity, null);
 						curCoin.LookAt(railPos);
 						curCoin.localScale=new Vector3(.5f,1f,2f);
 						c.transform = curCoin;
@@ -334,8 +310,7 @@ public class RailGenerator : MonoBehaviour
 		//before we do any of this probability stuff
 		//is current tOffset past or equal to the gate threshold?
 		//if so generate a gate
-		if(_tOffset>=_nextGate){
-			Debug.Log("Time to generate a gate");
+		if(_t>=_nextGate){
 			AddGate();
 			return -1;
 		}
@@ -387,8 +362,8 @@ public class RailGenerator : MonoBehaviour
 		//Destroy coins and remove from dict
 		foreach(float f in deleteKeys){
 			Transform t = _coins[f].transform;
-			_coins.Remove(f);
 			Destroy(t.gameObject,Random.value);//stagger the recycling process over a second
+			_coins.Remove(f);
 		}
 	}
 
@@ -402,8 +377,8 @@ public class RailGenerator : MonoBehaviour
 		}
 		foreach(float f in deleteKeys){
 			Transform t = _jumpers[f].transform;
-			_jumpers.Remove(f);
 			Destroy(t.gameObject, Random.value);
+			_jumpers.Remove(f);
 		}
 	}
 
@@ -425,7 +400,7 @@ public class RailGenerator : MonoBehaviour
 	void AddGate(){
 		AddStraight(3);
 		_gatePos = _knots.Count-3+_tOffset;
-		_nextGate+=Random.Range(19,22);
+		_nextGate=_gatePos+Random.Range(_minGateSpace,_maxGateSpace);
 		Vector3 railLine = _knots[_knots.Count-2]-_knots[_knots.Count-3];
 		railLine.Normalize();
 		_gate.position = _knots[_knots.Count-3]+railLine*_nodeDist*.5f;
@@ -538,7 +513,6 @@ public class RailGenerator : MonoBehaviour
 
 				//temp code for testing speed increase
 				if(Input.GetKeyUp(KeyCode.Space)){
-					Debug.Log("space pressed");
 					_moveSpeed += 0.1f;
 					_balanceSpeed += _balanceSpeedIncrease;
 				}
@@ -629,7 +603,6 @@ public class RailGenerator : MonoBehaviour
 						_jumpers[f].mesh.enabled=true;
 						
 						if(Mathf.Abs(f-_t)<.02f && _ethan.localPosition.y < _minJumpY){
-							Debug.Log("Oops hit a jumper");
 							_gameState=2;
 							_jumpHit.Invoke();
 						}
@@ -669,6 +642,9 @@ public class RailGenerator : MonoBehaviour
 			case 3://gate check
 				break;
 		}
+		_tDebug.text="T: "+_t.ToString("#.#");
+		_ngDebug.text="NG: "+_nextGate.ToString("#.#");
+		_gpDebug.text="GP: "+_gatePos.ToString("#.#");
 	}
 
 	void SetPosition(){
@@ -681,7 +657,6 @@ public class RailGenerator : MonoBehaviour
 		//float grav = Mathf.Abs(_balance);
 		//grav = grav<_gravityThreshold ? 0 : Mathf.InverseLerp(0,90,grav)*Mathf.Sign(balance)*_gravityPower;
 		//float momentum = Vector3.Cross(prevForward, _railTracker.forward).y*_momentumPower;
-		//_followTarget.AdjustCamera(momentum);
 		//balance+=grav;
 		//balance-=momentum;
 		localEuler.z = -_balance;
@@ -733,7 +708,9 @@ public class RailGenerator : MonoBehaviour
 		_moveSpeed = Mathf.Lerp(_moveSpeed,_maxSpeed,_speedIncreaseRate);
 		_balanceSpeed = _moveSpeed*_balanceSpeedMultiplier;
 
-		_gatePos=_nextGate+50;//this will get reset when the next gate is generated
+		_minGateSpace*=_gateGrowth;
+		_maxGateSpace*=_gateGrowth;
+		_gatePos=Mathf.FloorToInt(_nextGate)+50;//this will get reset when the next gate is generated
 		StartRiding();
 	}
 
