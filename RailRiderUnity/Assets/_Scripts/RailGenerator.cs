@@ -21,7 +21,7 @@ public class RailGenerator : MonoBehaviour
 	float _balanceSpeedIncrease = 20;
 	int _balanceState = 0;//0=no input, 1=left input, 2=right input
 	float _balanceVelocity = 0;//rate at which Character rotates
-	float _balanceAcceleration = 4f;//rate at which touch input affects velocity
+	float _balanceAcceleration = 8f;//rate at which touch input affects velocity
 	Transform _helmet;
 	Dictionary<float, Coin> _coins = new Dictionary<float, Coin>();
 	public Transform _coin;
@@ -35,7 +35,9 @@ public class RailGenerator : MonoBehaviour
 	public Transform _jumper;
 	float _lastJump;
 	float _jumpThreshold=1.1f;//spacing between jumps and other jumps
+	float _minJumpThreshold=0.6f;
 	float _jumpSpacing=0.5f;//spacing between coins and jumps
+	float _minJumpSpacing=0.2f;
 	float _lineResFrac;
 	Transform _ethan;
 	bool _jumping=false;
@@ -50,7 +52,7 @@ public class RailGenerator : MonoBehaviour
 	[ColorUsageAttribute(false,true)]
 	public Color _coinHitColor;
 	int _collectedCoins;
-	float _coinHitThreshold = .97f;
+	float _coinHitThreshold = .96f;
 	int _gameState=0;
 	//0 = menu
 	//1 = play
@@ -67,7 +69,7 @@ public class RailGenerator : MonoBehaviour
 	Text _scoreText;
 	float _maxSpeed=1f;
 	float _speedIncreaseRate = 0.1f;//rate of speed increase 
-	float _balanceSpeedMultiplier=200;
+	float _balanceSpeedMultiplier=250;
 	public Text _tDebug,_ngDebug,_gpDebug;
 
 	struct Coin {
@@ -529,31 +531,23 @@ public class RailGenerator : MonoBehaviour
 						LimitVelocity();
 						break;
 					case 1:
-						if(_inputDelayTimer<_inputDelay)
-							_inputDelayTimer+=Time.deltaTime;
-						else{
-							//climb to 1
-							if(!_jumping)
-							{
-								_balanceVelocity=Mathf.Lerp(_balanceVelocity,1f,_balanceAcceleration*Time.deltaTime);
-							}
-							//temp code for air spins
-							else
-								_ethan.Rotate(0,-_spinSpeed*Time.deltaTime, 0);
-							}
+						//climb to 1
+						if(!_jumping)
+						{
+							_balanceVelocity=Mathf.Lerp(_balanceVelocity,1f,_balanceAcceleration*Time.deltaTime);
+						}
+						//temp code for air spins
+						else
+							_ethan.Rotate(0,-_spinSpeed*Time.deltaTime, 0);
 						break;
 					case 2:
-						if(_inputDelayTimer<_inputDelay)
-							_inputDelayTimer+=Time.deltaTime;
-						else{
-							//climb to -1
-							if(!_jumping)
-								_balanceVelocity = Mathf.Lerp(_balanceVelocity,-1f,_balanceAcceleration*Time.deltaTime);
+						//climb to -1
+						if(!_jumping)
+							_balanceVelocity = Mathf.Lerp(_balanceVelocity,-1f,_balanceAcceleration*Time.deltaTime);
 
-							//temp code for air spins
-							else
-								_ethan.Rotate(0,_spinSpeed*Time.deltaTime, 0);
-						}
+						//temp code for air spins
+						else
+							_ethan.Rotate(0,_spinSpeed*Time.deltaTime, 0);
 						break;
 					case 3:
 						//jump
@@ -673,14 +667,14 @@ public class RailGenerator : MonoBehaviour
 		}
 		//raise menu
 		float timer = 0;
-		while(timer < 0.5f){
+		while(timer < 0.5f && !Input.GetMouseButtonDown(0)){
 			timer+=Time.deltaTime;
 			_gateMenu.alpha=timer*2f;
 			yield return null;
 		}
 		_gateMenu.alpha=1;
-		yield return new WaitForSeconds(0.2f);
 		//increase score
+		/*
 		int prevScore = -1;
 		if(int.TryParse(_scoreText.text, out prevScore)){
 			_scoreText.fontSize=250;
@@ -691,6 +685,7 @@ public class RailGenerator : MonoBehaviour
 			}
 			_scoreText.fontSize=200;
 		}
+		*/
 		//prompt continue
 		while(!Input.GetMouseButtonDown(0)){
 			yield return null;
@@ -704,9 +699,13 @@ public class RailGenerator : MonoBehaviour
 		}
 		_gateMenu.alpha=0;
 		
+		//Actually try not increasing speed
+		//maybe temporary speed boosts could be fun though...
 		//increase speed
-		_moveSpeed = Mathf.Lerp(_moveSpeed,_maxSpeed,_speedIncreaseRate);
+		//_moveSpeed = Mathf.Lerp(_moveSpeed,_maxSpeed,_speedIncreaseRate);
 		_balanceSpeed = _moveSpeed*_balanceSpeedMultiplier;
+		_jumpSpacing = Mathf.Lerp(_jumpSpacing,_minJumpSpacing,_speedIncreaseRate);
+		_jumpThreshold = Mathf.Lerp(_jumpThreshold,_minJumpThreshold,_speedIncreaseRate);	
 
 		_minGateSpace*=_gateGrowth;
 		_maxGateSpace*=_gateGrowth;

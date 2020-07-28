@@ -19,6 +19,17 @@ public class UIManager : MonoBehaviour
 	{
 
 		_menu = GetComponent<CanvasGroup>();
+		
+		if(_musicButton!=null){
+			if(PlayerPrefs.HasKey("Mute")){
+				if(PlayerPrefs.GetInt("Mute")==1){
+					_musicButton.texture=_mutedTex;
+					_mixer.SetFloat("Volume", -80f);
+					_muted=true;
+				}
+			}
+		}
+
 	}
 
 	// Update is called once per frame
@@ -65,6 +76,11 @@ public class UIManager : MonoBehaviour
 			_musicButton.texture=_mutedTex;
 		else
 			_musicButton.texture = _unmutedTex;
+		if(PlayerPrefs.HasKey("Mute")){
+			PlayerPrefs.DeleteKey("Mute");
+		}
+		PlayerPrefs.SetInt("Mute",_muted ? 1 : 0);
+		PlayerPrefs.Save();
 	}
 
 	public void Reload(){
