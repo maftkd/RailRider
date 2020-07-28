@@ -174,7 +174,7 @@ public class RailGenerator : MonoBehaviour
 		//Then a long curve
 		AddCurve(_nodeDist*Random.Range(3,5f),3,(Random.value < 0.5f));
 		//so we have 11 sections so far
-		_nextGate = Random.Range(12,16);//remember this is not the location of the gate but the tOffset at which the gate spawns
+		_nextGate = Random.Range(2,6);//remember this is not the location of the gate but the tOffset at which the gate spawns
 		_gatePos=1024;//something arbitrarily high at the start - will be reset in AddGate()
 	}
 
@@ -419,7 +419,7 @@ public class RailGenerator : MonoBehaviour
 		_gate.position = _knots[_knots.Count-3]+railLine*_nodeDist*.5f;
 		_gate.position+=Vector3.up;
 		_gate.forward=railLine;
-		_gate.localScale = new Vector3(5,5,_nodeDist);
+		//_gate.localScale = new Vector3(5,5,_nodeDist);
 		_gate.GetComponent<MeshRenderer>().enabled=true;
 	}
 
