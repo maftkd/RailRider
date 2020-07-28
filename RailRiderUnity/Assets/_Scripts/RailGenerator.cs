@@ -14,6 +14,8 @@ public class RailGenerator : MonoBehaviour
 	float _nodeDist = 16f;//approximate segment length
 	int _lineResolution = 10;//Number of points on line per segment
 	float _moveSpeed=0.35f;//rate at which char moves along rail in segments/sec
+	float _targetMoveSpeed=0.35f;
+	float _speedChangeLerp=.1f;
 	Transform _railTracker;
 	float _balance;
 	float _t;
@@ -61,8 +63,8 @@ public class RailGenerator : MonoBehaviour
 	float _nextGate;//The time at which a new gate will be generated
 	int _gatePos;//The position of the new gate
 	Transform _gate;
-	float _minGateSpace=5;
-	float _maxGateSpace=7;
+	float _minGateSpace=2;
+	float _maxGateSpace=10;
 	float _gateGrowth = 1.2f;
 	public UnityEvent _jumpHit;//essentially game over event
 	CanvasGroup _gateMenu;
@@ -107,6 +109,7 @@ public class RailGenerator : MonoBehaviour
 		GenerateCoins(0,_knots.Count-1);
 
 		//set speed
+		_targetMoveSpeed=_moveSpeed;
 		_balanceSpeed = _moveSpeed*_balanceSpeedMultiplier;
 
 		//GenerateJumpers(0,_knots.Count-1);
@@ -606,8 +609,9 @@ public class RailGenerator : MonoBehaviour
 				//check for gate
 				if(_t>=_gatePos)
 				{
-					_gameState=3;
-					StartCoroutine(GateRoutine());
+					//_gameState=3;
+					//StartCoroutine(GateRoutine());
+					GateEvent();
 				}
 
 				//check for new track gen if only X tracks lie ahead
@@ -629,6 +633,8 @@ public class RailGenerator : MonoBehaviour
 						GenerateJumpers(_knots.Count-(numTracks+1),_knots.Count-1);
 					}
 				}
+				_moveSpeed = Mathf.Lerp(_moveSpeed,_targetMoveSpeed,_speedChangeLerp*Time.deltaTime);
+				_balanceSpeed = _moveSpeed*_balanceSpeedMultiplier;
 				_t+=Time.deltaTime*_moveSpeed;
 				break;
 			case 2://collide with jumper
@@ -655,6 +661,18 @@ public class RailGenerator : MonoBehaviour
 		//balance-=momentum;
 		localEuler.z = -_balance;
 		_railTracker.localEulerAngles=localEuler;
+	}
+
+	void GateEvent(){
+		_jumpSpacing = Mathf.Lerp(_jumpSpacing,_minJumpSpacing,_speedIncreaseRate);
+		_jumpThreshold = Mathf.Lerp(_jumpThreshold,_minJumpThreshold,_speedIncreaseRate);	
+
+		//_minGateSpace*=_gateGrowth;
+		//_maxGateSpace*=_gateGrowth;
+		_gatePos=Mathf.FloorToInt(_nextGate)+50;//this will get reset when the next gate is generated
+		_moveSpeed=_maxSpeed;
+
+		//_targetMoveSpeed=_maxSpeed;
 	}
 
 	IEnumerator GateRoutine(){
@@ -707,8 +725,8 @@ public class RailGenerator : MonoBehaviour
 		_jumpSpacing = Mathf.Lerp(_jumpSpacing,_minJumpSpacing,_speedIncreaseRate);
 		_jumpThreshold = Mathf.Lerp(_jumpThreshold,_minJumpThreshold,_speedIncreaseRate);	
 
-		_minGateSpace*=_gateGrowth;
-		_maxGateSpace*=_gateGrowth;
+		//_minGateSpace*=_gateGrowth;
+		//_maxGateSpace*=_gateGrowth;
 		_gatePos=Mathf.FloorToInt(_nextGate)+50;//this will get reset when the next gate is generated
 		StartRiding();
 	}
