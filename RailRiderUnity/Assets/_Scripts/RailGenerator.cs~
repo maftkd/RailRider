@@ -47,8 +47,9 @@ public class RailGenerator : MonoBehaviour
 	float _lineResFrac;
 	Transform _ethan;
 	bool _jumping=false;
-	float _jumpHeight = 1.75f;
+	float _jumpHeight = 1.85f;
 	float _jumpDur = 0.65f;
+	float _minJumpY = 0.5f;
 	public AnimationCurve _jumpCurve;
 	float _spinSpeed=360f;
 	float _inputDelayTimer=0;
@@ -111,7 +112,7 @@ public class RailGenerator : MonoBehaviour
 		//set speed
 		_balanceSpeed = _moveSpeed*_balanceSpeedMultiplier;
 
-		//GenerateJumpers(0,_knots.Count-1);
+		GenerateJumpers(0,_knots.Count-1);
 
 		//temp code - just set the required number of coins to an arbitrary amount to test the sunglass color change
 		//_requiredCoins=20;
@@ -301,7 +302,7 @@ public class RailGenerator : MonoBehaviour
 					
 					_lastJump=key;
 					Transform jumper = Instantiate(_jumper,railPos,Quaternion.identity, null);
-					jumper.up=curForward;
+					jumper.forward=-curForward;
 
 					//add to jumper dict
 					Jumper j;
@@ -593,17 +594,6 @@ public class RailGenerator : MonoBehaviour
 				_balance-=_balanceVelocity*Time.deltaTime*_balanceSpeed;
 				Vector3 prevForward = _railTracker.forward;
 				SetPosition();
-				Vector3 localEuler = _railTracker.localEulerAngles;
-
-				//physics
-				//float grav = Mathf.Abs(_balance);
-				//grav = grav<_gravityThreshold ? 0 : Mathf.InverseLerp(0,90,grav)*Mathf.Sign(balance)*_gravityPower;
-				//float momentum = Vector3.Cross(prevForward, _railTracker.forward).y*_momentumPower;
-				//_followTarget.AdjustCamera(momentum);
-				//balance+=grav;
-				//balance-=momentum;
-				localEuler.z = -_balance;
-				_railTracker.localEulerAngles=localEuler;
 
 				//Check for point acquisitions
 				foreach(float f in _coins.Keys){
@@ -638,7 +628,7 @@ public class RailGenerator : MonoBehaviour
 					if(f>_t-1 && f<_t+2){
 						_jumpers[f].mesh.enabled=true;
 						
-						if(Mathf.Abs(f-_t)<.05f && !_jumping){
+						if(Mathf.Abs(f-_t)<.02f && _ethan.localPosition.y < _minJumpY){
 							Debug.Log("Oops hit a jumper");
 							_gameState=2;
 							_jumpHit.Invoke();
@@ -685,25 +675,26 @@ public class RailGenerator : MonoBehaviour
 		float railT = _t-_tOffset;
 		_railTracker.position = _path.GetPoint(railT);
 		_railTracker.forward = _path.GetTangent(railT);
+		Vector3 localEuler = _railTracker.localEulerAngles;
+
+		//physics
+		//float grav = Mathf.Abs(_balance);
+		//grav = grav<_gravityThreshold ? 0 : Mathf.InverseLerp(0,90,grav)*Mathf.Sign(balance)*_gravityPower;
+		//float momentum = Vector3.Cross(prevForward, _railTracker.forward).y*_momentumPower;
+		//_followTarget.AdjustCamera(momentum);
+		//balance+=grav;
+		//balance-=momentum;
+		localEuler.z = -_balance;
+		_railTracker.localEulerAngles=localEuler;
 	}
 
 	IEnumerator GateRoutine(){
 		//ease out speed from t = _gatePos to t = _gatePos+.5
 		yield return null;
-		float startSpeed = _moveSpeed;
-		while(_t < _gatePos+.5f && startSpeed > .25f){
-			startSpeed-=.5f*Time.deltaTime;
+		while(_t < _gatePos+.5f){
 			SetPosition();
-			_t+=startSpeed*Time.deltaTime;
+			_t+=_moveSpeed*Time.deltaTime;
 			yield return null;
-		}
-		if(startSpeed<.25f){
-			startSpeed=.25f;
-			while(_t<_gatePos+.5f){
-				_t+=startSpeed*Time.deltaTime;
-				SetPosition();
-				yield return null;
-			}
 		}
 		//raise menu
 		float timer = 0;
@@ -741,13 +732,6 @@ public class RailGenerator : MonoBehaviour
 		//increase speed
 		_moveSpeed = Mathf.Lerp(_moveSpeed,_maxSpeed,_speedIncreaseRate);
 		_balanceSpeed = _moveSpeed*_balanceSpeedMultiplier;
-		startSpeed=0;
-		while(startSpeed<_moveSpeed){
-			startSpeed+=.5f*Time.deltaTime;
-			SetPosition();
-			_t+=startSpeed*Time.deltaTime;
-			yield return null;
-		}
 
 		_gatePos=_nextGate+50;//this will get reset when the next gate is generated
 		StartRiding();
