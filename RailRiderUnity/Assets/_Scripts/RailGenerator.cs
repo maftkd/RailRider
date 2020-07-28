@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.Events;
 using SplineMesh;
 
@@ -23,9 +24,9 @@ public class RailGenerator : MonoBehaviour
 	int _balanceState = 0;//0=no input, 1=left input, 2=right input
 	float _balanceVelocity = 0;//rate at which Character rotates
 	float _balanceAcceleration = 4f;//rate at which touch input affects velocity
-	float _gravityPower = 2f;//linear offset to balance
-	float _gravityThreshold = 10f;//min angle for grav to kick in
-	float _momentumPower = 50f;//strength of momentum along curvature
+	//float _gravityPower = 2f;//linear offset to balance
+	//float _gravityThreshold = 10f;//min angle for grav to kick in
+	//float _momentumPower = 50f;//strength of momentum along curvature
 	Transform _helmet;
 	Dictionary<float, Coin> _coins = new Dictionary<float, Coin>();
 	public Transform _coin;
@@ -55,7 +56,7 @@ public class RailGenerator : MonoBehaviour
 	Dictionary<float, Jumper> _jumpers = new Dictionary<float, Jumper>();
 	[ColorUsageAttribute(false,true)]
 	public Color _coinHitColor;
-	int _requiredCoins;
+	//int _requiredCoins;
 	int _collectedCoins;
 	float _coinHitThreshold = .97f;
 	int _gameState=0;
@@ -67,6 +68,11 @@ public class RailGenerator : MonoBehaviour
 	int _gatePos;
 	Transform _gate;
 	public UnityEvent _jumpHit;
+	CanvasGroup _gateMenu;
+	Text _scoreText;
+	float _maxSpeed=1f;
+	float _speedIncreaseRate = 0.15f;
+	float _balanceSpeedMultiplier=200;
 
 	struct Coin {
 		public Transform transform;
@@ -102,10 +108,13 @@ public class RailGenerator : MonoBehaviour
 
 		GenerateCoins(0,_knots.Count-1);
 
+		//set speed
+		_balanceSpeed = _moveSpeed*_balanceSpeedMultiplier;
+
 		//GenerateJumpers(0,_knots.Count-1);
 
 		//temp code - just set the required number of coins to an arbitrary amount to test the sunglass color change
-		_requiredCoins=20;
+		//_requiredCoins=20;
 
 		//This sets number of coins to 0
 		AddCoin(0);
@@ -115,6 +124,8 @@ public class RailGenerator : MonoBehaviour
 		_followTarget = Camera.main.transform.GetComponent<FollowTarget>();
 		_ethan = _railTracker.GetChild(0); 
 		_gate = GameObject.FindGameObjectWithTag("Gate").transform;
+		_gateMenu = GameObject.Find("GateMenu").GetComponent<CanvasGroup>();
+		_scoreText = _gateMenu.transform.Find("Score").GetComponent<Text>();
 
 		//start test
 		//StartCoroutine(Ride());
@@ -174,7 +185,7 @@ public class RailGenerator : MonoBehaviour
 		//Then a long curve
 		AddCurve(_nodeDist*Random.Range(3,5f),3,(Random.value < 0.5f));
 		//so we have 11 sections so far
-		_nextGate = Random.Range(2,6);//remember this is not the location of the gate but the tOffset at which the gate spawns
+		_nextGate = 0;//Random.Range(2,6);//remember this is not the location of the gate but the tOffset at which the gate spawns
 		_gatePos=1024;//something arbitrarily high at the start - will be reset in AddGate()
 	}
 
@@ -417,8 +428,11 @@ public class RailGenerator : MonoBehaviour
 		Vector3 railLine = _knots[_knots.Count-2]-_knots[_knots.Count-3];
 		railLine.Normalize();
 		_gate.position = _knots[_knots.Count-3]+railLine*_nodeDist*.5f;
-		_gate.position+=Vector3.up;
-		_gate.forward=railLine;
+		_gate.position+=Vector3.up*1.5f;
+		_gate.up=railLine;
+		Vector3 localEulers = _gate.localEulerAngles;
+		localEulers.x=90f;
+		_gate.localEulerAngles = localEulers;
 		//_gate.localScale = new Vector3(5,5,_nodeDist);
 		_gate.GetComponent<MeshRenderer>().enabled=true;
 	}
@@ -578,9 +592,7 @@ public class RailGenerator : MonoBehaviour
 				//set player's root position and orientation
 				_balance-=_balanceVelocity*Time.deltaTime*_balanceSpeed;
 				Vector3 prevForward = _railTracker.forward;
-				float railT = _t-_tOffset;
-				_railTracker.position = _path.GetPoint(railT);
-				_railTracker.forward = _path.GetTangent(railT);
+				SetPosition();
 				Vector3 localEuler = _railTracker.localEulerAngles;
 
 				//physics
@@ -635,8 +647,11 @@ public class RailGenerator : MonoBehaviour
 				}
 
 				//check for gate
-				//if(_t>=_gatePos)
-				//	_gameState=3;
+				if(_t>=_gatePos)
+				{
+					_gameState=3;
+					StartCoroutine(GateRoutine());
+				}
 
 				//check for new track gen if only X tracks lie ahead
 				if(_t-_tOffset>_knots.Count-_lookAheadTracks){
@@ -664,6 +679,79 @@ public class RailGenerator : MonoBehaviour
 			case 3://gate check
 				break;
 		}
+	}
+
+	void SetPosition(){
+		float railT = _t-_tOffset;
+		_railTracker.position = _path.GetPoint(railT);
+		_railTracker.forward = _path.GetTangent(railT);
+	}
+
+	IEnumerator GateRoutine(){
+		//ease out speed from t = _gatePos to t = _gatePos+.5
+		yield return null;
+		float startSpeed = _moveSpeed;
+		while(_t < _gatePos+.5f && startSpeed > .25f){
+			startSpeed-=.5f*Time.deltaTime;
+			SetPosition();
+			_t+=startSpeed*Time.deltaTime;
+			yield return null;
+		}
+		if(startSpeed<.25f){
+			startSpeed=.25f;
+			while(_t<_gatePos+.5f){
+				_t+=startSpeed*Time.deltaTime;
+				SetPosition();
+				yield return null;
+			}
+		}
+		//raise menu
+		float timer = 0;
+		while(timer < 0.5f){
+			timer+=Time.deltaTime;
+			_gateMenu.alpha=timer*2f;
+			yield return null;
+		}
+		_gateMenu.alpha=1;
+		yield return new WaitForSeconds(0.2f);
+		//increase score
+		int prevScore = -1;
+		if(int.TryParse(_scoreText.text, out prevScore)){
+			_scoreText.fontSize=250;
+			while(prevScore<_collectedCoins){
+				prevScore++;
+				_scoreText.text = prevScore.ToString();
+				yield return null;
+			}
+			_scoreText.fontSize=200;
+		}
+		//prompt continue
+		while(!Input.GetMouseButtonDown(0)){
+			yield return null;
+		}
+		//hide menu
+		timer=0;
+		while(timer < 0.5f){
+			timer+=Time.deltaTime;
+			_gateMenu.alpha=1-timer*2f;
+			yield return null;
+		}
+		_gateMenu.alpha=0;
+		
+		//increase speed
+		_moveSpeed = Mathf.Lerp(_moveSpeed,_maxSpeed,_speedIncreaseRate);
+		_balanceSpeed = _moveSpeed*_balanceSpeedMultiplier;
+		startSpeed=0;
+		while(startSpeed<_moveSpeed){
+			startSpeed+=.5f*Time.deltaTime;
+			_t+=startSpeed*Time.deltaTime;
+			SetPosition();
+			yield return null;
+		}
+		_t+=startSpeed*Time.deltaTime;
+
+		_gatePos=_nextGate+50;//this will get reset when the next gate is generated
+		StartRiding();
 	}
 
 	void OnDrawGizmos(){
