@@ -13,9 +13,9 @@ public class RailGenerator : MonoBehaviour
 	public Material _lineMat;
 	float _nodeDist = 16f;//approximate segment length
 	int _lineResolution = 10;//Number of points on line per segment
-	float _moveSpeed=0.35f;//rate at which char moves along rail in segments/sec
-	float _targetMoveSpeed=0.35f;
-	float _speedChangeLerp=.1f;
+	float _moveSpeed=0.4f;//rate at which char moves along rail in segments/sec
+	float _targetMoveSpeed=0.4f;
+	float _speedChangeLerp=.05f;
 	Transform _railTracker;
 	float _balance;
 	float _t;
@@ -23,7 +23,7 @@ public class RailGenerator : MonoBehaviour
 	float _balanceSpeedIncrease = 20;
 	int _balanceState = 0;//0=no input, 1=left input, 2=right input
 	float _balanceVelocity = 0;//rate at which Character rotates
-	float _balanceAcceleration = 8f;//rate at which touch input affects velocity
+	float _balanceAcceleration = 6f;//rate at which touch input affects velocity
 	Transform _helmet;
 	Dictionary<float, Coin> _coins = new Dictionary<float, Coin>();
 	public Transform _coin;
@@ -36,17 +36,17 @@ public class RailGenerator : MonoBehaviour
 	int _lookAheadTracks=8;
 	public Transform _jumper;
 	float _lastJump;
-	float _jumpProbability = 0.05f;
-	float _maxJumpProbability = .2f;
-	float _jumpThreshold=1.1f;//spacing between jumps and other jumps
-	float _minJumpThreshold=0.6f;
-	float _jumpSpacing=0.5f;//spacing between coins and jumps
-	float _minJumpSpacing=0.2f;
+	float _jumpProbability = 0.0f;
+	float _maxJumpProbability = .1f;
+	float _jumpThreshold=1.5f;//spacing between jumps and other jumps
+	float _minJumpThreshold=0.5f;
+	float _jumpSpacing=0.6f;//spacing between coins and jumps
+	float _minJumpSpacing=0.1f;
 	float _lineResFrac;
 	Transform _ethan;
 	bool _jumping=false;
 	float _jumpHeight = 1.85f;
-	float _jumpDur = 0.65f;
+	float _jumpDur = 0.5f;
 	float _minJumpY = 1f;//min height to clear a coin
 	public AnimationCurve _jumpCurve;
 	float _spinSpeed=360f;
@@ -67,14 +67,17 @@ public class RailGenerator : MonoBehaviour
 	Transform _gate;
 	float _minGateSpace=2;
 	float _maxGateSpace=10;
-	float _gateGrowth = 1.2f;
 	public UnityEvent _jumpHit;//essentially game over event
-	CanvasGroup _gateMenu;
 	Text _scoreText;
-	float _maxSpeed=1.5f;
+	CanvasGroup _scoreCanvas;
+	float _maxSpeed=.8f;
 	float _speedIncreaseRate = 0.1f;//rate of speed increase 
-	float _balanceSpeedMultiplier=250;
+	float _balanceSpeedMultiplier=200;
 	public Text _tDebug,_ngDebug,_gpDebug;
+	public GameObject[] _wsText;
+	float _scoreChangeTimer;
+	int _defaultScoreFont;
+	int _boldScoreFont;
 
 	struct Coin {
 		public Transform transform;
@@ -117,21 +120,23 @@ public class RailGenerator : MonoBehaviour
 		//GenerateJumpers(0,_knots.Count-1);
 
 		//This sets number of coins to 0
-		AddCoin(0);
+		_collectedCoins=0;
 
 		//Get some references
 		_helmet = GameObject.FindGameObjectWithTag("Helmet").transform;
 		_ethan = _railTracker.GetChild(0); 
 		_gate = GameObject.FindGameObjectWithTag("Gate").transform;
-		_gateMenu = GameObject.Find("GateMenu").GetComponent<CanvasGroup>();
-		_scoreText = _gateMenu.transform.Find("Score").GetComponent<Text>();
+		_scoreText = GameObject.FindGameObjectWithTag("Score").GetComponent<Text>();
+		_scoreCanvas = _scoreText.transform.GetComponent<CanvasGroup>();
+		_defaultScoreFont=_scoreText.fontSize;
+		_boldScoreFont=Mathf.FloorToInt(_defaultScoreFont*1.4f);
 	}
 	
 	//function used in update loop to reset velocity towards 0
 	void LimitVelocity(){
 		if(_balanceVelocity!=0){
 			_balanceVelocity=Mathf.Lerp(_balanceVelocity,0,_balanceAcceleration*Time.deltaTime);
-			if(Mathf.Abs(_balanceVelocity)<0.01f)
+			if(Mathf.Abs(_balanceVelocity)<0.15f)
 				_balanceVelocity=0;
 		}
 	}
@@ -281,7 +286,7 @@ public class RailGenerator : MonoBehaviour
 			if(i<_line.positionCount-1){
 
 				//if jump is far enough from another jump and rng hits, then spawn a jumper
-				if(key-_lastJump>_jumpThreshold && Random.value<_jumpProbability){
+				if(key-_lastJump>_jumpThreshold && Random.value<_jumpProbability && Mathf.Abs(key-_gatePos)>2f){
 					
 					_lastJump=key;
 					Transform jumper = Instantiate(_jumper,railPos,Quaternion.identity, null);
@@ -298,13 +303,14 @@ public class RailGenerator : MonoBehaviour
 					List<float> removeList = new List<float>();
 					foreach(float k in _coins.Keys){
 						if(Mathf.Abs(k-key)<_jumpSpacing){
-							Transform trans = _coins[k].transform;
-							Destroy(trans.gameObject,Random.value*.2f);
 							removeList.Add(k);
 						}
 					}
 					foreach(float k in removeList){
+						Transform trans = _coins[k].transform;
 						_coins.Remove(k);
+						trans.name="destroyed";
+						Destroy(trans.gameObject);
 					}
 				}
 			}
@@ -473,17 +479,14 @@ public class RailGenerator : MonoBehaviour
 			_collectedCoins++;
 		else
 			_collectedCoins=setValue;
-		/*
-		float coinFrac = _collectedCoins/(float)_requiredCoins;
-		if(coinFrac<1)
-			_lineMat.SetColor("_EdgeColor",new Color(1f,coinFrac,1-coinFrac));
-		else
-			_lineMat.SetColor("_EdgeColor",Color.green);
-			*/
+		_scoreText.text=_collectedCoins.ToString();
+		_scoreText.fontSize=_boldScoreFont;
+		_scoreChangeTimer=.4f;
 	}
 
 	public void StartRiding(){
 		_gameState=1;
+		StartCoroutine(FadeInScoreText());
 	}
 
 
@@ -570,7 +573,7 @@ public class RailGenerator : MonoBehaviour
 
 				//Check for point acquisitions
 				foreach(float f in _coins.Keys){
-					if(f>_t-1 && f <_t+2){
+					if(f>_t-1 && f <_t+4){
 						Coin c = _coins[f];
 
 						//disable coins
@@ -598,7 +601,7 @@ public class RailGenerator : MonoBehaviour
 
 				//check for jumper collisions
 				foreach(float f in _jumpers.Keys){
-					if(f>_t-1 && f<_t+2){
+					if(f>_t-1 && f<_t+4){
 						_jumpers[f].mesh.enabled=true;
 						
 						if(Mathf.Abs(f-_t)<.02f && _ethan.localPosition.y < _minJumpY){
@@ -630,10 +633,8 @@ public class RailGenerator : MonoBehaviour
 
 					_tOffset+=removed;
 
-					if(numTracks!=-1){
-						GenerateCoins(_knots.Count-(numTracks+1),_knots.Count-1);
-						GenerateJumpers(_knots.Count-(numTracks+1),_knots.Count-1);
-					}
+					GenerateCoins(_knots.Count-(numTracks+1),_knots.Count-1);
+					GenerateJumpers(_knots.Count-(numTracks+1),_knots.Count-1);
 				}
 				_moveSpeed = Mathf.Lerp(_moveSpeed,_targetMoveSpeed,_speedChangeLerp*Time.deltaTime);
 				_balanceSpeed = _moveSpeed*_balanceSpeedMultiplier;
@@ -643,6 +644,11 @@ public class RailGenerator : MonoBehaviour
 				break;
 			case 3://gate check
 				break;
+		}
+		if(_scoreChangeTimer>0){
+			_scoreChangeTimer-=Time.deltaTime;
+			if(_scoreChangeTimer<=0)
+				_scoreText.fontSize=_defaultScoreFont;
 		}
 		//_tDebug.text="T: "+_t.ToString("#.#");
 		//_ngDebug.text="NG: "+_nextGate.ToString("#.#");
@@ -666,97 +672,33 @@ public class RailGenerator : MonoBehaviour
 	}
 
 	void GateEvent(){
+		//tighten up jumps
 		_jumpSpacing = Mathf.Lerp(_jumpSpacing,_minJumpSpacing,_speedIncreaseRate);
 		_jumpThreshold = Mathf.Lerp(_jumpThreshold,_minJumpThreshold,_speedIncreaseRate);	
-
-		//_minGateSpace*=_gateGrowth;
-		//_maxGateSpace*=_gateGrowth;
-		_gatePos=Mathf.FloorToInt(_nextGate)+50;//this will get reset when the next gate is generated
-		_moveSpeed=_maxSpeed;
-
 		_jumpProbability = Mathf.Lerp(_jumpProbability,_maxJumpProbability,_speedIncreaseRate);
 
-		//_targetMoveSpeed=_maxSpeed;
+		//determine next gate position
+		_gatePos=Mathf.FloorToInt(_nextGate)+50;//this will get reset when the next gate is generated
+
+		//speed boost
+		_moveSpeed=_maxSpeed;
 	}
 
-	IEnumerator GateRoutine(){
-		//ease out speed from t = _gatePos to t = _gatePos+.5
-		yield return null;
-		while(_t < _gatePos+.5f){
-			SetPosition();
-			_t+=_moveSpeed*Time.deltaTime;
-			yield return null;
-		}
-		//raise menu
-		float timer = 0;
-		while(timer < 0.5f && !Input.GetMouseButtonDown(0)){
+	IEnumerator FadeInScoreText(){
+		yield return new WaitForSeconds(4f);
+		float timer=0;
+		while(timer<1){
 			timer+=Time.deltaTime;
-			_gateMenu.alpha=timer*2f;
+			_scoreCanvas.alpha=timer;
 			yield return null;
 		}
-		_gateMenu.alpha=1;
-		//increase score
-		/*
-		int prevScore = -1;
-		if(int.TryParse(_scoreText.text, out prevScore)){
-			_scoreText.fontSize=250;
-			while(prevScore<_collectedCoins){
-				prevScore++;
-				_scoreText.text = prevScore.ToString();
-				yield return null;
-			}
-			_scoreText.fontSize=200;
+		_scoreCanvas.alpha=1f;
+		//destroy world space text
+		for(int i=_wsText.Length-1; i>=0; i--){
+			Destroy(_wsText[i]);
 		}
-		*/
-		//prompt continue
-		while(!Input.GetMouseButtonDown(0)){
-			yield return null;
-		}
-		//hide menu
-		timer=0;
-		while(timer < 0.5f){
-			timer+=Time.deltaTime;
-			_gateMenu.alpha=1-timer*2f;
-			yield return null;
-		}
-		_gateMenu.alpha=0;
-		
-		//Actually try not increasing speed
-		//maybe temporary speed boosts could be fun though...
-		//increase speed
-		//_moveSpeed = Mathf.Lerp(_moveSpeed,_maxSpeed,_speedIncreaseRate);
-		_balanceSpeed = _moveSpeed*_balanceSpeedMultiplier;
-		_jumpSpacing = Mathf.Lerp(_jumpSpacing,_minJumpSpacing,_speedIncreaseRate);
-		_jumpThreshold = Mathf.Lerp(_jumpThreshold,_minJumpThreshold,_speedIncreaseRate);	
-
-		//_minGateSpace*=_gateGrowth;
-		//_maxGateSpace*=_gateGrowth;
-		_gatePos=Mathf.FloorToInt(_nextGate)+50;//this will get reset when the next gate is generated
-		StartRiding();
 	}
 
 	void OnDrawGizmos(){
-		/*
-		if(_line!=null)
-		{
-			Gizmos.color = Color.green;
-			for(int i=0; i<_line.positionCount; i++){
-				Gizmos.DrawSphere(_line.GetPosition(i),.1f);
-			}
-		}
-		if(_knots!=null)
-		{
-			Gizmos.color = Color.red;
-			for(int i=0; i<_knots.Count; i++){
-				Gizmos.DrawSphere(_knots[i],.5f);
-			}
-		}
-		if(_turnCenters!=null){
-			Gizmos.color = Color.blue;
-			for(int i=0; i<_turnCenters.Count; i++){
-				Gizmos.DrawSphere(_turnCenters[i],1f);
-			}
-		}
-		*/
 	}
 }
