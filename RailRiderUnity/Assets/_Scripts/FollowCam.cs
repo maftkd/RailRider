@@ -5,7 +5,7 @@ using UnityEngine;
 public class FollowCam : MonoBehaviour
 {
 	Transform _camTransform;
-	Camera _mainCam;
+	Camera _cam;
 	public Transform _railTracker;
 	float _followDistance=3f;
 	public Transform _lookTarget;
@@ -19,12 +19,14 @@ public class FollowCam : MonoBehaviour
 	Quaternion _targetRot, _startRot;
 	Vector3 _targetPos, _startPos;
 	float _introTimer;
+	float _lerpSpeed=4f;
+	float _slerpSpeed=4f;
 
 	// Start is called before the first frame update
 	void Start()
 	{
 		_camTransform = transform.GetChild(0);
-		_mainCam = _camTransform.GetComponent<Camera>();
+		_cam =_camTransform.GetComponent<Camera>();
 		transform.position = _railTracker.position-_railTracker.forward*_followDistance;
 	}
 
@@ -33,6 +35,7 @@ public class FollowCam : MonoBehaviour
 	{
 		transform.position = _railTracker.position-_railTracker.forward*_followDistance;
 		_camTransform.LookAt(_lookTarget);
+		transform.up = _railTracker.up;
 		switch(_camState){
 			case 0:
 				break;
@@ -40,7 +43,6 @@ public class FollowCam : MonoBehaviour
 				//here we want to swing the camTransform to its position behind ethan
 				_introTimer+=Time.deltaTime;
 				if(_introTimer<3f){
-					//_camTransform.rotation = Quaternion.Slerp(_startRot,_targetRot,_introTimer/3f);
 					_camTransform.localPosition = Vector3.Lerp(_startPos,_targetPos,_introTimer/3f);
 				}
 				else
@@ -50,29 +52,15 @@ public class FollowCam : MonoBehaviour
 
 				break;
 			case 2:
-				//follow rail tracker
-				//transform.position = _railTracker.position-_railTracker.forward*_followDistance;
-
-				//look at ethan
-				//_camTransform.LookAt(_lookTarget);
-
-				//check for upside down
-				float railRoll = _railTracker.localEulerAngles.z;
-				if(railRoll>90 && railRoll<270){
-					Debug.Log("we upside down mah love");
-				}
 				break;
 		}
+		Vector3 eulers = _camTransform.eulerAngles;
+		eulers.z=0;
+		_camTransform.eulerAngles=eulers;
 	}
 
 	public void SetCamToFollow(){
 		_camState=1;
-		//_startRot = _camTransform.rotation;
-		//_camTransform.localEulerAngles = Vector3.right*_followPitch;
-		//_camTransform.LookAt(_lookTarget);
-		//_targetRot=_camTransform.rotation;
-		//_camTransform.rotation=_startRot;
-
 		_targetPos=Vector3.up*_followHeight;
 		_startPos=_camTransform.localPosition;
 	}

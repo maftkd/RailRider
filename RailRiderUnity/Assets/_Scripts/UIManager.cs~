@@ -25,6 +25,7 @@ public class UIManager : MonoBehaviour
 				if(PlayerPrefs.GetInt("Mute")==1){
 					_musicButton.texture=_mutedTex;
 					_mixer.SetFloat("Volume", -80f);
+					_muted=true;
 				}
 			}
 		}

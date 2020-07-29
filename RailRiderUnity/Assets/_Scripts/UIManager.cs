@@ -47,7 +47,7 @@ public class UIManager : MonoBehaviour
 		_menu.interactable=false;
 		float timer = 0;
 		while (timer<1f){
-			_menu.alpha = 1-timer;
+			_menu.alpha = 1-timer*2;
 			timer+=Time.deltaTime;
 			yield return null;
 		}

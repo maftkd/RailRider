@@ -72,7 +72,7 @@ public class RailGenerator : MonoBehaviour
 	CanvasGroup _scoreCanvas;
 	float _maxSpeed=.8f;
 	float _speedIncreaseRate = 0.1f;//rate of speed increase 
-	float _balanceSpeedMultiplier=200;
+	float _balanceSpeedMultiplier=220;
 	public Text _tDebug,_ngDebug,_gpDebug;
 	public GameObject[] _wsText;
 	float _scoreChangeTimer;
@@ -83,6 +83,8 @@ public class RailGenerator : MonoBehaviour
 	bool _tutorial;
 	public AudioSource _music;
 	public GameObject _tutorialObjs;
+	Camera _main;
+	float _fovMultiplier=175f;
 
 	struct Coin {
 		public Transform transform;
@@ -146,6 +148,8 @@ public class RailGenerator : MonoBehaviour
 			_hsText.text=PlayerPrefs.GetInt("hs").ToString("HIGH SCORE: #");
 		}
 		_sun = FindObjectOfType<SunRotator>();
+		_main = Camera.main;
+		_main.fieldOfView = _moveSpeed*_fovMultiplier;
 	}
 	
 	//function used in update loop to reset velocity towards 0
@@ -555,6 +559,9 @@ public class RailGenerator : MonoBehaviour
 	public void PlayTutorial(){
 		_gameState=1;
 		_tutorial=true;
+		_coins.Clear();
+		_jumpers.Clear();
+		_knots.Clear();
 		GenerateTutorialSection();
 	}
 
@@ -719,6 +726,7 @@ public class RailGenerator : MonoBehaviour
 				}
 				_moveSpeed = Mathf.Lerp(_moveSpeed,_targetMoveSpeed,_speedChangeLerp*Time.deltaTime);
 				_balanceSpeed = _moveSpeed*_balanceSpeedMultiplier;
+				_main.fieldOfView = _moveSpeed*_fovMultiplier;
 				_t+=Time.deltaTime*_moveSpeed;
 				if(_tutorial && _t > 13){
 					_tutorialObjs.SetActive(false);
