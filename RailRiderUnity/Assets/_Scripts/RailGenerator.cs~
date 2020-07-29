@@ -552,6 +552,12 @@ public class RailGenerator : MonoBehaviour
 		}
 	}
 
+	public void PlayTutorial(){
+		_gameState=1;
+		_tutorial=true;
+		GenerateTutorialSection();
+	}
+
 
 	// Update is called once per frame
 	void Update()
@@ -715,7 +721,6 @@ public class RailGenerator : MonoBehaviour
 				_balanceSpeed = _moveSpeed*_balanceSpeedMultiplier;
 				_t+=Time.deltaTime*_moveSpeed;
 				if(_tutorial && _t > 13){
-					Debug.Log("Tutorial complete");
 					_tutorialObjs.SetActive(false);
 					_tutorial=false;
 					PlayerPrefs.SetInt("tut",1);

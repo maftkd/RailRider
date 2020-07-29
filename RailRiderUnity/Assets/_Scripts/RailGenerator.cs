@@ -552,6 +552,15 @@ public class RailGenerator : MonoBehaviour
 		}
 	}
 
+	public void PlayTutorial(){
+		_gameState=1;
+		_tutorial=true;
+		_coins.Clear();
+		_jumpers.Clear();
+		_knots.Clear();
+		GenerateTutorialSection();
+	}
+
 
 	// Update is called once per frame
 	void Update()
