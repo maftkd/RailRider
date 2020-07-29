@@ -56,7 +56,7 @@ public class RailGenerator : MonoBehaviour
 	[ColorUsageAttribute(false,true)]
 	public Color _coinHitColor;
 	int _collectedCoins;
-	float _coinHitThreshold = .96f;
+	float _coinHitThreshold = .95f;
 	int _gameState=0;
 	//0 = menu
 	//1 = play
@@ -78,6 +78,11 @@ public class RailGenerator : MonoBehaviour
 	float _scoreChangeTimer;
 	int _defaultScoreFont;
 	int _boldScoreFont;
+	public Text _hsText;
+	SunRotator _sun;
+	bool _tutorial;
+	public AudioSource _music;
+	public GameObject _tutorialObjs;
 
 	struct Coin {
 		public Transform transform;
@@ -107,11 +112,18 @@ public class RailGenerator : MonoBehaviour
 		//configure railTracker
 		_railTracker=transform.GetChild(0);
 
-		GenerateStartingSection();
-		
-		ResetRail();
+		//generate track starter
+		if(PlayerPrefs.HasKey("tut"))
+		{
+			GenerateStartingSection();
+			_tutorial=false;
+		}
+		else{
+			//generate tutorial section
+			GenerateTutorialSection();
+			_tutorial=true;
+		}
 
-		GenerateCoins(0,_knots.Count-1);
 
 		//set speed
 		_targetMoveSpeed=_moveSpeed;
@@ -129,7 +141,11 @@ public class RailGenerator : MonoBehaviour
 		_scoreText = GameObject.FindGameObjectWithTag("Score").GetComponent<Text>();
 		_scoreCanvas = _scoreText.transform.GetComponent<CanvasGroup>();
 		_defaultScoreFont=_scoreText.fontSize;
-		_boldScoreFont=Mathf.FloorToInt(_defaultScoreFont*1.1f);
+		_boldScoreFont=Mathf.FloorToInt(_defaultScoreFont*1.4f);
+		if(PlayerPrefs.HasKey("hs")){
+			_hsText.text=PlayerPrefs.GetInt("hs").ToString("HIGH SCORE: #");
+		}
+		_sun = FindObjectOfType<SunRotator>();
 	}
 	
 	//function used in update loop to reset velocity towards 0
@@ -157,6 +173,13 @@ public class RailGenerator : MonoBehaviour
 		_ethan.localPosition=startPos;
 		_jumping=false;
 		_inputDelayTimer=-_inputDelay*2;
+
+		//snap rotation
+		Vector3 localE = _ethan.localEulerAngles;
+		float yLocal = localE.y;
+		yLocal = Mathf.Round(yLocal/90f)*90;
+		localE.y=yLocal;
+		_ethan.localEulerAngles=localE;
 	}
 
 	void GenerateStartingSection(){
@@ -173,15 +196,50 @@ public class RailGenerator : MonoBehaviour
 		//Then a long curve
 		AddCurve(_nodeDist*Random.Range(3,5f),3,(Random.value < 0.5f));
 
-		//so we have 11 sections so far
+		ResetRail();
+
+		GenerateCoins(0,_knots.Count-1);
+
 		_nextGate = Random.Range(_minGateSpace,_maxGateSpace);//remember this is not the location of the gate but the tOffset at which the gate spawns
 		_gatePos=1024;//something arbitrarily high at the start - will be reset in AddGate()
 	}
 
-	void GenerateCoins(int startKnot, int endKnot){
+	void GenerateTutorialSection(){
+		_knots.Add(Vector3.back*_nodeDist);
+		_knots.Add(Vector3.zero);
+		_t=1f;
+		//_knots.Add(Vector3.forward*_nodeDist);
+		AddStraight(2);
+
+		//instance some world space text items
+		_tutorialObjs.SetActive(true);
+
+		//add a right curve
+		AddCurve(_nodeDist*2f,3,true);
+		AddStraight(2);
+		//add a left curve
+		AddCurve(_nodeDist*2f,3,false);
+		//add some straights
+		AddStraight(2);
+
+		ResetRail();
+
+		//spawn coins along curves
+		GenerateCoins(4,5,1);
+		GenerateCoins(8,9,1);
+		//Spawn a jumper
+		GenerateJumpers(11,12,1);
+
+
+		_nextGate = Random.Range(_minGateSpace,_maxGateSpace);//remember this is not the location of the gate but the tOffset at which the gate spawns
+		_gatePos=1024;//something arbitrarily high at the start - will be reset in AddGate()
+	}
+
+	void GenerateCoins(int startKnot, int endKnot,float probOverride=-1){
 		//coin generation
 		int clusterCounter=0;
 		float prevCross=0;
+		float prob = probOverride==-1? _coinProbability : probOverride;
 		//more temp code for jumper
 		for(int i=startKnot*_lineResolution; i<endKnot*_lineResolution; i++){
 			//converts line space to coin space
@@ -254,7 +312,7 @@ public class RailGenerator : MonoBehaviour
 					}
 						
 					//see if we randomly create a cluster
-					if(!nearJump && Random.value<_coinProbability)
+					if(!nearJump && Random.value<prob)
 					{
 						//Make sure we don't generate coins on straight sections because that is boring and the coins are harder to see
 						Vector3 nextForward = _path.GetTangent(t+1f/(float)_lineResolution);
@@ -271,8 +329,9 @@ public class RailGenerator : MonoBehaviour
 		}
 	}
 
-	void GenerateJumpers(int startKnot, int endKnot){
+	void GenerateJumpers(int startKnot, int endKnot, float probOverride=-1){
 		
+		float prob = probOverride == -1 ? _jumpProbability : probOverride;
 		for(int i=startKnot*_lineResolution; i<endKnot*_lineResolution; i++){
 			//converts line space to coin space
 			float t = i/(float)_lineResolution;
@@ -286,7 +345,7 @@ public class RailGenerator : MonoBehaviour
 			if(i<_line.positionCount-1){
 
 				//if jump is far enough from another jump and rng hits, then spawn a jumper
-				if(key-_lastJump>_jumpThreshold && Random.value<_jumpProbability && Mathf.Abs(key-_gatePos)>2f){
+				if(key-_lastJump>_jumpThreshold && Random.value<prob && Mathf.Abs(key-_gatePos)>2f){
 					
 					_lastJump=key;
 					Transform jumper = Instantiate(_jumper,railPos,Quaternion.identity, null);
@@ -417,7 +476,7 @@ public class RailGenerator : MonoBehaviour
 		Vector3 railLine = _knots[_knots.Count-2]-_knots[_knots.Count-3];
 		railLine.Normalize();
 		_gate.position = _knots[_knots.Count-3]+railLine*_nodeDist*.5f;
-		_gate.position+=Vector3.up*1.5f;
+		_gate.position+=Vector3.up;
 		_gate.up=railLine;
 		Vector3 localEulers = _gate.localEulerAngles;
 		localEulers.x=90f;
@@ -486,7 +545,11 @@ public class RailGenerator : MonoBehaviour
 
 	public void StartRiding(){
 		_gameState=1;
-		StartCoroutine(FadeInScoreText());
+		if(!_tutorial)
+		{
+			_sun._rotating=true;
+			StartCoroutine(FadeInScoreText());
+		}
 	}
 
 
@@ -605,8 +668,20 @@ public class RailGenerator : MonoBehaviour
 						_jumpers[f].mesh.enabled=true;
 						
 						if(Mathf.Abs(f-_t)<.02f && _ethan.localPosition.y < _minJumpY){
-							_gameState=2;
-							_jumpHit.Invoke();
+							if(!_tutorial){
+								_sun._rotating=false;
+								_gameState=2;
+								_jumpHit.Invoke();
+								if(PlayerPrefs.HasKey("hs"))
+									PlayerPrefs.DeleteKey("hs");
+								PlayerPrefs.SetInt("hs",_collectedCoins);
+								PlayerPrefs.Save();
+							}
+							else{
+								_gameState=2;
+								StartCoroutine(Rewind());
+								return;
+							}
 						}
 					}
 				}
@@ -639,6 +714,17 @@ public class RailGenerator : MonoBehaviour
 				_moveSpeed = Mathf.Lerp(_moveSpeed,_targetMoveSpeed,_speedChangeLerp*Time.deltaTime);
 				_balanceSpeed = _moveSpeed*_balanceSpeedMultiplier;
 				_t+=Time.deltaTime*_moveSpeed;
+				if(_tutorial && _t > 13){
+					Debug.Log("Tutorial complete");
+					_tutorialObjs.SetActive(false);
+					_tutorial=false;
+					PlayerPrefs.SetInt("tut",1);
+					PlayerPrefs.Save();
+					_sun._rotating=true;
+					_collectedCoins=0;
+					AddCoin(0);
+					StartCoroutine(FadeInScoreText(0));
+				}
 				break;
 			case 2://collide with jumper
 				break;
@@ -653,6 +739,10 @@ public class RailGenerator : MonoBehaviour
 		//_tDebug.text="T: "+_t.ToString("#.#");
 		//_ngDebug.text="NG: "+_nextGate.ToString("#.#");
 		//_gpDebug.text="GP: "+_gatePos.ToString("#.#");
+#if UNITY_EDITOR
+		if(Input.GetKeyDown(KeyCode.T))
+			PlayerPrefs.DeleteKey("tut");
+#endif
 	}
 
 	void SetPosition(){
@@ -684,8 +774,8 @@ public class RailGenerator : MonoBehaviour
 		_moveSpeed=_maxSpeed;
 	}
 
-	IEnumerator FadeInScoreText(){
-		yield return new WaitForSeconds(4f);
+	IEnumerator FadeInScoreText(float delay=4f){
+		yield return new WaitForSeconds(delay);
 		float timer=0;
 		while(timer<1){
 			timer+=Time.deltaTime;
@@ -697,6 +787,19 @@ public class RailGenerator : MonoBehaviour
 		for(int i=_wsText.Length-1; i>=0; i--){
 			Destroy(_wsText[i]);
 		}
+	}
+
+	IEnumerator Rewind(){
+		float timer=0;
+		_music.pitch=2;
+		while(timer<1){
+			timer+=Time.deltaTime;
+			_t-=Time.deltaTime;
+			SetPosition();
+			yield return null;
+		}
+		_music.pitch=1;
+		_gameState=1;
 	}
 
 	void OnDrawGizmos(){
