@@ -36,6 +36,8 @@ public class RailGenerator : MonoBehaviour
 	int _lookAheadTracks=8;
 	public Transform _jumper;
 	float _lastJump;
+	float _jumpProbability = 0.05f;
+	float _maxJumpProbability = .2f;
 	float _jumpThreshold=1.1f;//spacing between jumps and other jumps
 	float _minJumpThreshold=0.6f;
 	float _jumpSpacing=0.5f;//spacing between coins and jumps
@@ -69,7 +71,7 @@ public class RailGenerator : MonoBehaviour
 	public UnityEvent _jumpHit;//essentially game over event
 	CanvasGroup _gateMenu;
 	Text _scoreText;
-	float _maxSpeed=1f;
+	float _maxSpeed=1.5f;
 	float _speedIncreaseRate = 0.1f;//rate of speed increase 
 	float _balanceSpeedMultiplier=250;
 	public Text _tDebug,_ngDebug,_gpDebug;
@@ -279,7 +281,7 @@ public class RailGenerator : MonoBehaviour
 			if(i<_line.positionCount-1){
 
 				//if jump is far enough from another jump and rng hits, then spawn a jumper
-				if(key-_lastJump>_jumpThreshold && Random.value<0.05){
+				if(key-_lastJump>_jumpThreshold && Random.value<_jumpProbability){
 					
 					_lastJump=key;
 					Transform jumper = Instantiate(_jumper,railPos,Quaternion.identity, null);
@@ -671,6 +673,8 @@ public class RailGenerator : MonoBehaviour
 		//_maxGateSpace*=_gateGrowth;
 		_gatePos=Mathf.FloorToInt(_nextGate)+50;//this will get reset when the next gate is generated
 		_moveSpeed=_maxSpeed;
+
+		_jumpProbability = Mathf.Lerp(_jumpProbability,_maxJumpProbability,_speedIncreaseRate);
 
 		//_targetMoveSpeed=_maxSpeed;
 	}

@@ -56,7 +56,7 @@
 		//half maxCap = .1*IN.screenPos.w;
 		//half divisor = step(2,maxCap);
 		//divisor = divisor*maxCap+(1-divisor)*1;
-            o.Alpha = a*(min(1,(IN.screenPos.w-_VanishDepth)));///divisor);
+            o.Alpha = c.a*a*(IN.screenPos.w-_VanishDepth);
         }
         ENDCG
     }
