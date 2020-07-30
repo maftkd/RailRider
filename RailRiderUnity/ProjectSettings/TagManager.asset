@@ -8,6 +8,8 @@ TagManager:
   - Gate
   - Helmet
   - Score
+  - helmet
+  - Explosion
   layers:
   - Default
   - TransparentFX

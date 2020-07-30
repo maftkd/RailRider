@@ -79,13 +79,17 @@ public class RailGenerator : MonoBehaviour
 	int _defaultScoreFont;
 	int _boldScoreFont;
 	public Text _hsText;
-	SunRotator _sun;
 	bool _tutorial;
 	public AudioSource _music;
 	public GameObject _tutorialObjs;
 	Camera _main;
 	float _crossMultiplier=-250f;
 	float _corkAngle;
+	Transform _explosion;
+	float _invincibleSpeed=.65f;
+	float _invincibleWarning=.05f;
+	public Material _ethanMat;
+	public Gradient _invincibilityGrad;
 
 	struct Coin {
 		public Transform transform;
@@ -146,8 +150,9 @@ public class RailGenerator : MonoBehaviour
 		if(PlayerPrefs.HasKey("hs")){
 			_hsText.text=PlayerPrefs.GetInt("hs").ToString("HIGH SCORE: #");
 		}
-		_sun = FindObjectOfType<SunRotator>();
 		_main = Camera.main;
+		_explosion = GameObject.FindGameObjectWithTag("Explosion").transform;
+		_ethanMat.SetColor("_EmissionColor",Color.black);
 	}
 	
 	//function used in update loop to reset velocity towards 0
@@ -245,6 +250,7 @@ public class RailGenerator : MonoBehaviour
 		float prevCross=0;
 		float prob = probOverride==-1? _coinProbability : probOverride;
 		bool cork=false;
+		_corkAngle=0;
 		float corkInc=0;
 		//Debug.Log("generating coins");
 		//more temp code for jumper
@@ -612,7 +618,6 @@ public class RailGenerator : MonoBehaviour
 		_gameState=1;
 		if(!_tutorial)
 		{
-			_sun._rotating=true;
 			StartCoroutine(FadeInScoreText());
 		}
 	}
@@ -723,7 +728,7 @@ public class RailGenerator : MonoBehaviour
 							c.mesh.enabled=true;
 
 							//coinDetection
-							if(Mathf.Abs(f-_t)<.05f && c.transform.tag=="Untagged"){
+							if(Mathf.Abs(f-_t)<.05f && c.transform.tag!="Collected"){
 								float dot =Vector3.Dot(c.offset,_railTracker.up); 
 								if(dot>_coinHitThreshold)
 								{
@@ -739,27 +744,43 @@ public class RailGenerator : MonoBehaviour
 				//check for jumper collisions
 				foreach(float f in _jumpers.Keys){
 					if(f>_t-1 && f<_t+4){
-						_jumpers[f].mesh.enabled=true;
-						
-						if(Mathf.Abs(f-_t)<.02f && _ethan.localPosition.y < _minJumpY){
-							if(!_tutorial){
-								_sun._rotating=false;
-								_gameState=2;
-								_jumpHit.Invoke();
-								if(!PlayerPrefs.HasKey("hs"))
-									PlayerPrefs.SetInt("hs",_collectedCoins);
-								else{
-									if(PlayerPrefs.GetInt("hs")<_collectedCoins){
-										PlayerPrefs.DeleteKey("hs");
-										PlayerPrefs.SetInt("hs",_collectedCoins);
+						//only process jumpers that haven't been 'collected' or 'destroyed'
+						bool notCol = _jumpers[f].transform.tag!="Collected";
+						if(notCol)
+						{
+							_jumpers[f].mesh.enabled=true;
+							
+							if(Mathf.Abs(f-_t)<.02f && _ethan.localPosition.y < _minJumpY){
+								if(!_tutorial){
+									if(_moveSpeed>_invincibleSpeed){
+										//destroy the gear
+										//play particle
+										Transform vfx = _jumpers[f].transform.GetChild(0);
+										vfx.GetComponent<ParticleSystem>().Play();
+										_jumpers[f].transform.tag="Collected";
+										_jumpers[f].mesh.enabled=false;
+									}
+									else{
+										_gameState=2;
+										_jumpHit.Invoke();
+										if(!PlayerPrefs.HasKey("hs"))
+											PlayerPrefs.SetInt("hs",_collectedCoins);
+										else{
+											if(PlayerPrefs.GetInt("hs")<_collectedCoins){
+												PlayerPrefs.DeleteKey("hs");
+												PlayerPrefs.SetInt("hs",_collectedCoins);
+											}
+										}
+										PlayerPrefs.Save();
+										_explosion.position = _ethan.position;
+										_explosion.GetComponent<ParticleSystem>().Play();
 									}
 								}
-								PlayerPrefs.Save();
-							}
-							else{
-								_gameState=2;
-								StartCoroutine(Rewind());
-								return;
+								else{
+									_gameState=2;
+									StartCoroutine(Rewind());
+									return;
+								}
 							}
 						}
 					}
@@ -800,11 +821,23 @@ public class RailGenerator : MonoBehaviour
 					_tutorial=false;
 					PlayerPrefs.SetInt("tut",1);
 					PlayerPrefs.Save();
-					_sun._rotating=true;
 					_collectedCoins=0;
 					AddCoin(0);
 					StartCoroutine(FadeInScoreText(0));
 				}
+				if(_moveSpeed>_invincibleSpeed){
+					//invincinbility effect
+					Color color;
+					if(_moveSpeed>_invincibleSpeed+_invincibleWarning){
+						color = _invincibilityGrad.Evaluate(Mathf.PingPong(_t,1f));
+					}
+					else{
+						color = Color.white*Mathf.PingPong(_t,0.2f)*5f;
+					}
+					_ethanMat.SetColor("_EmissionColor",color);
+				}
+				else
+					_ethanMat.SetColor("_EmissionColor",Color.black);
 				break;
 			case 2://collide with jumper
 				break;
@@ -816,7 +849,7 @@ public class RailGenerator : MonoBehaviour
 			if(_scoreChangeTimer<=0)
 				_scoreText.fontSize=_defaultScoreFont;
 		}
-		//_tDebug.text="T: "+_t.ToString("#.#");
+		//_tDebug.text="speed: "+_moveSpeed.ToString("#.##");
 		//_ngDebug.text="NG: "+_nextGate.ToString("#.#");
 		//_gpDebug.text="GP: "+_gatePos.ToString("#.#");
 #if UNITY_EDITOR
