@@ -36,8 +36,8 @@ public class RailGenerator : MonoBehaviour
 	int _lookAheadTracks=8;
 	public Transform _jumper;
 	float _lastJump;
-	float _jumpProbability = 0.01f;
-	float _maxJumpProbability = .1f;
+	float _jumpProbability = 0.02f;
+	float _maxJumpProbability = .12f;
 	float _jumpThreshold=1.5f;//spacing between jumps and other jumps
 	float _minJumpThreshold=0.5f;
 	float _jumpSpacing=0.6f;//spacing between coins and jumps
@@ -69,6 +69,7 @@ public class RailGenerator : MonoBehaviour
 	float _maxGateSpace=25;
 	public UnityEvent _jumpHit;//essentially game over event
 	Text _scoreText;
+	Text _comboText;
 	CanvasGroup _scoreCanvas;
 	float _maxSpeed=.8f;
 	float _speedIncreaseRate = 0.1f;//rate of speed increase 
@@ -96,6 +97,9 @@ public class RailGenerator : MonoBehaviour
 	public AudioSource _smash;
 	public AudioSource _gearHit;
 	public TrailRenderer _lTrail,_rTrail;
+	public Transform _coinFx;
+	int _combo;
+	AudioSource _comboSfx;
 
 	struct Coin {
 		public Transform transform;
@@ -150,6 +154,8 @@ public class RailGenerator : MonoBehaviour
 		_ethan = _railTracker.GetChild(0); 
 		_gate = GameObject.FindGameObjectWithTag("Gate").transform;
 		_scoreText = GameObject.FindGameObjectWithTag("Score").GetComponent<Text>();
+		_comboText = _scoreText.transform.GetChild(0).GetComponent<Text>();
+		_comboSfx = _comboText.transform.GetComponent<AudioSource>();
 		_scoreCanvas = _scoreText.transform.GetComponent<CanvasGroup>();
 		_defaultScoreFont=_scoreText.fontSize;
 		_boldScoreFont=Mathf.FloorToInt(_defaultScoreFont*1.4f);
@@ -173,6 +179,7 @@ public class RailGenerator : MonoBehaviour
 	//jump
 	IEnumerator JumpRoutine(){
 		_jumping=true;
+		_takeOff.pitch = Random.Range(.8f,1.4f);
 		_takeOff.Play();
 		_lTrail.emitting=true;
 		_rTrail.emitting=true;
@@ -191,6 +198,7 @@ public class RailGenerator : MonoBehaviour
 		_inputDelayTimer=-_inputDelay*2;
 
 		//snap rotation
+		_landing.pitch = Random.Range(1,1.4f);
 		_landing.Play();
 		Vector3 localE = _ethan.localEulerAngles;
 		float yLocal = localE.y;
@@ -619,9 +627,24 @@ public class RailGenerator : MonoBehaviour
 
 	void AddCoin(int setValue=-1){
 		if(setValue==-1)
+		{
 			_collectedCoins++;
+			Transform coinSfx = Instantiate(_coinFx);
+			AudioSource coinAudio = coinSfx.GetComponent<AudioSource>();
+			coinAudio.pitch=Mathf.Lerp(.5f,1.5f,_combo/(float)10);
+			coinAudio.Play();
+			Destroy(coinSfx.gameObject,.2f);
+			_combo++;
+			_comboText.text=_combo.ToString("+#");
+		}
 		else
+		{
 			_collectedCoins=setValue;
+			_comboText.text="";
+			if(_combo>3)
+				_comboSfx.Play();
+			_combo=0;
+		}
 		_scoreText.text=_collectedCoins.ToString();
 		_scoreText.fontSize=_boldScoreFont;
 		_scoreChangeTimer=.4f;
@@ -748,6 +771,13 @@ public class RailGenerator : MonoBehaviour
 									c.mesh.material.SetColor("_Color",_coinHitColor);
 									c.transform.tag="Collected";
 									AddCoin();
+								}
+							}
+							else if(_t-f>.05f && c.transform.tag!="Collected"){
+								if(_combo>0){
+								_collectedCoins+=_combo;
+								AddCoin(_collectedCoins);
+								c.transform.tag="Collected";
 								}
 							}
 						}
