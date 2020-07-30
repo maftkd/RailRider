@@ -29,7 +29,7 @@ public class RailGenerator : MonoBehaviour
 	public Transform _coin;
 	float _coinHeight = 1.5f;
 	float _crossThreshold = 0.001f;
-	float _coinProbability = 0.15f;
+	float _coinProbability = 1;//0.15f;
 	int _minCoinCluster=3;
 	int _maxCoinCluster=12;
 	int _tOffset=0;
@@ -56,7 +56,7 @@ public class RailGenerator : MonoBehaviour
 	[ColorUsageAttribute(false,true)]
 	public Color _coinHitColor;
 	int _collectedCoins;
-	float _coinHitThreshold = .95f;
+	float _coinHitThreshold = .98f;
 	int _gameState=0;
 	//0 = menu
 	//1 = play
@@ -72,7 +72,7 @@ public class RailGenerator : MonoBehaviour
 	CanvasGroup _scoreCanvas;
 	float _maxSpeed=.8f;
 	float _speedIncreaseRate = 0.1f;//rate of speed increase 
-	float _balanceSpeedMultiplier=220;
+	float _balanceSpeedMultiplier=280;
 	public Text _tDebug,_ngDebug,_gpDebug;
 	public GameObject[] _wsText;
 	float _scoreChangeTimer;
@@ -85,13 +85,11 @@ public class RailGenerator : MonoBehaviour
 	public GameObject _tutorialObjs;
 	Camera _main;
 	float _fovMultiplier=175f;
-	//ParticleSystem [] _speedParts;
+	public float _crossMultiplier=-90f;
 
 	struct Coin {
 		public Transform transform;
-		public LineRenderer line;
 		public MeshRenderer mesh;
-		public bool collected;
 		public Vector3 offset;
 	}
 
@@ -206,7 +204,7 @@ public class RailGenerator : MonoBehaviour
 
 		//AddStraight(3);//was 2 - is 3 to test corkscrews
 
-		GenerateCoins(0,_knots.Count-1);
+		GenerateCoins(3,_knots.Count-1);
 
 		_nextGate = Random.Range(_minGateSpace,_maxGateSpace);//remember this is not the location of the gate but the tOffset at which the gate spawns
 		_gatePos=1024;//something arbitrarily high at the start - will be reset in AddGate()
@@ -249,6 +247,8 @@ public class RailGenerator : MonoBehaviour
 		float prevCross=0;
 		float prob = probOverride==-1? _coinProbability : probOverride;
 		bool cork=false;
+		float corkAngle=0;
+		//Debug.Log("generating coins");
 		//more temp code for jumper
 		for(int i=startKnot*_lineResolution; i<endKnot*_lineResolution; i++){
 			//converts line space to coin space
@@ -279,14 +279,31 @@ public class RailGenerator : MonoBehaviour
 						//rail curvature is OK
 						//calculate the coins offset direction
 						Vector3 right = Vector3.Cross(Vector3.up,curForward);
-						Vector3 offset = Vector3.LerpUnclamped(Vector3.up,right,cross);
-						offset.Normalize();
-						c.offset=offset;
+
+						Vector3 offset;
+						if(!cork){
+							offset = Vector3.LerpUnclamped(Vector3.up,right,cross);
+						}
+						else{
+							offset = Vector3.LerpUnclamped(Vector3.up,right,corkAngle);
+						}
 
 						//instance the coin
-						Transform curCoin = Instantiate(_coin,railPos+offset*_coinHeight,Quaternion.identity, null);
-						curCoin.LookAt(railPos);
-						curCoin.localScale=new Vector3(.5f,1f,2f);
+						Transform curCoin = Instantiate(_coin,railPos+Vector3.up*_coinHeight,Quaternion.identity, null);
+						curCoin.LookAt(curCoin.position+curForward);
+						//Vector3 coinEulers = curCoin.eulerAngles;
+						//coinEulers.y=0;
+						//curCoin.eulerAngles=coinEulers;
+						if(!cork)
+							curCoin.RotateAround(railPos,curForward,cross*_crossMultiplier);
+						else
+						{
+							curCoin.RotateAround(railPos,curForward, corkAngle*_crossMultiplier);
+							corkAngle+=.1f;
+						}
+						c.offset=curCoin.up;
+
+						curCoin.localScale=new Vector3(1f,2f,.5f);
 						c.transform = curCoin;
 
 						//get the coin mesh data
@@ -297,11 +314,11 @@ public class RailGenerator : MonoBehaviour
 							_coins.Add(key,c);
 						}
 						clusterCounter--;
-						prevCross=cross;
 					}
 				}
 				//If we are not currently generating a cluster
 				else{
+					//Debug.Log("Cluster count = 0");
 					bool nearJump=false;
 					foreach(float k in _jumpers.Keys){
 						if(Mathf.Abs(k-key)<_jumpSpacing)
@@ -314,6 +331,7 @@ public class RailGenerator : MonoBehaviour
 					//see if we randomly create a cluster
 					if(!nearJump && Random.value<prob)
 					{
+						//Debug.Log("Not near jump & rando < 1");
 						//Make sure we don't generate coins on straight sections because that is boring and the coins are harder to see
 						Vector3 nextForward = _path.GetTangent(t+1f/(float)_lineResolution);
 						float cross = Vector3.Cross(curForward,nextForward).y*.1f;
@@ -321,12 +339,15 @@ public class RailGenerator : MonoBehaviour
 						{
 							//Determine cluster size
 							clusterCounter=Random.Range(_minCoinCluster,_maxCoinCluster+1);
-							prevCross=0;
+							cork=false;
+							//Debug.Log("not a cork");
 						}
 						else{
 							//gen corkscrew
 							clusterCounter=10;
-							
+							cork=true;	
+							corkAngle=0;
+							//Debug.Log("yes a cork");
 						}
 					}
 				}
@@ -391,14 +412,10 @@ public class RailGenerator : MonoBehaviour
 			AddGate();
 			return -1;
 		}
-		if(val<.33f){
+		if(val<1){//.33f){
 			numTracks = Random.Range(1,5);
 			//add a straight
 			AddStraight(numTracks);
-			if(numTracks>2){
-				//generate some corkscrews
-				return -1;
-			}
 		}
 		else if(val<.67f){
 			//add a curve
@@ -708,9 +725,9 @@ public class RailGenerator : MonoBehaviour
 
 							//coinDetection
 							if(Mathf.Abs(f-_t)<.05f && c.transform.tag=="Untagged"){
-								if(Vector3.Dot(c.offset,_railTracker.up)>_coinHitThreshold)
+								float dot =Vector3.Dot(c.offset,_railTracker.up); 
+								if(dot>_coinHitThreshold)
 								{
-									c.collected=true;
 									c.mesh.material.SetColor("_Color",_coinHitColor);
 									c.transform.tag="Collected";
 									AddCoin();
