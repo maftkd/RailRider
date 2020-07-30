@@ -36,8 +36,8 @@ public class RailGenerator : MonoBehaviour
 	int _lookAheadTracks=8;
 	public Transform _jumper;
 	float _lastJump;
-	float _jumpProbability = 0.0f;
-	float _maxJumpProbability = .1f;
+	float _jumpProbability = 0.02f;
+	float _maxJumpProbability = .12f;
 	float _jumpThreshold=1.5f;//spacing between jumps and other jumps
 	float _minJumpThreshold=0.5f;
 	float _jumpSpacing=0.6f;//spacing between coins and jumps
@@ -95,6 +95,7 @@ public class RailGenerator : MonoBehaviour
 	public AudioSource _woosh;
 	public AudioSource _smash;
 	public AudioSource _gearHit;
+	public TrailRenderer _lTrail,_rTrail;
 
 	struct Coin {
 		public Transform transform;
@@ -173,6 +174,8 @@ public class RailGenerator : MonoBehaviour
 	IEnumerator JumpRoutine(){
 		_jumping=true;
 		_takeOff.Play();
+		_lTrail.emitting=true;
+		_rTrail.emitting=true;
 		_balanceVelocity=0;
 		_inputDelayTimer=0;
 		float timer=0;
@@ -194,6 +197,8 @@ public class RailGenerator : MonoBehaviour
 		yLocal = Mathf.Round(yLocal/90f)*90;
 		localE.y=yLocal;
 		_ethan.localEulerAngles=localE;
+		_lTrail.emitting=false;
+		_rTrail.emitting=false;
 	}
 
 	void GenerateStartingSection(){
@@ -284,7 +289,6 @@ public class RailGenerator : MonoBehaviour
 					//make sure the delta isn't nuts
 					if(Mathf.Abs(cross-prevCross)>0.1f)
 					{
-						Debug.Log("resetting cluster after: "+clusterCounter);
 						clusterCounter=0;
 					}
 					else{
@@ -356,14 +360,12 @@ public class RailGenerator : MonoBehaviour
 							//Determine cluster size
 							clusterCounter=Random.Range(_minCoinCluster,_maxCoinCluster+1);
 							cork=false;
-							Debug.Log("not a cork: "+clusterCounter);
 						}
 						else{
 							//gen corkscrew
 							clusterCounter=Random.Range(5,25);;
 							cork=true;	
 							corkInc=Random.Range(-.1f,.1f);
-							Debug.Log("generating cork");
 						}
 					}
 				}
