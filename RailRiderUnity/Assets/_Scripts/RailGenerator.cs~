@@ -65,8 +65,8 @@ public class RailGenerator : MonoBehaviour
 	float _nextGate;//The time at which a new gate will be generated
 	int _gatePos;//The position of the new gate
 	Transform _gate;
-	float _minGateSpace=2;
-	float _maxGateSpace=10;
+	float _minGateSpace=10;
+	float _maxGateSpace=25;
 	public UnityEvent _jumpHit;//essentially game over event
 	Text _scoreText;
 	CanvasGroup _scoreCanvas;
@@ -90,6 +90,11 @@ public class RailGenerator : MonoBehaviour
 	float _invincibleWarning=.05f;
 	public Material _ethanMat;
 	public Gradient _invincibilityGrad;
+	public AudioSource _takeOff;
+	public AudioSource _landing;
+	public AudioSource _woosh;
+	public AudioSource _smash;
+	public AudioSource _gearHit;
 
 	struct Coin {
 		public Transform transform;
@@ -167,6 +172,7 @@ public class RailGenerator : MonoBehaviour
 	//jump
 	IEnumerator JumpRoutine(){
 		_jumping=true;
+		_takeOff.Play();
 		_balanceVelocity=0;
 		_inputDelayTimer=0;
 		float timer=0;
@@ -182,6 +188,7 @@ public class RailGenerator : MonoBehaviour
 		_inputDelayTimer=-_inputDelay*2;
 
 		//snap rotation
+		_landing.Play();
 		Vector3 localE = _ethan.localEulerAngles;
 		float yLocal = localE.y;
 		yLocal = Mathf.Round(yLocal/90f)*90;
@@ -277,6 +284,7 @@ public class RailGenerator : MonoBehaviour
 					//make sure the delta isn't nuts
 					if(Mathf.Abs(cross-prevCross)>0.1f)
 					{
+						Debug.Log("resetting cluster after: "+clusterCounter);
 						clusterCounter=0;
 					}
 					else{
@@ -320,6 +328,7 @@ public class RailGenerator : MonoBehaviour
 							_coins.Add(key,c);
 						}
 						clusterCounter--;
+						prevCross=cross;
 					}
 				}
 				//If we are not currently generating a cluster
@@ -341,18 +350,20 @@ public class RailGenerator : MonoBehaviour
 						//Make sure we don't generate coins on straight sections because that is boring and the coins are harder to see
 						Vector3 nextForward = _path.GetTangent(t+1f/(float)_lineResolution);
 						float cross = Vector3.Cross(curForward,nextForward).y*.1f;
+						prevCross=cross;//need this to ensure the thing doesn't get insta cancelled
 						if(Mathf.Abs(cross)>_crossThreshold)
 						{
 							//Determine cluster size
 							clusterCounter=Random.Range(_minCoinCluster,_maxCoinCluster+1);
 							cork=false;
-							//Debug.Log("not a cork");
+							Debug.Log("not a cork: "+clusterCounter);
 						}
 						else{
 							//gen corkscrew
 							clusterCounter=Random.Range(5,25);;
 							cork=true;	
 							corkInc=Random.Range(-.1f,.1f);
+							Debug.Log("generating cork");
 						}
 					}
 				}
@@ -759,6 +770,7 @@ public class RailGenerator : MonoBehaviour
 										vfx.GetComponent<ParticleSystem>().Play();
 										_jumpers[f].transform.tag="Collected";
 										_jumpers[f].mesh.enabled=false;
+										_smash.Play();
 									}
 									else{
 										_gameState=2;
@@ -778,6 +790,7 @@ public class RailGenerator : MonoBehaviour
 								}
 								else{
 									_gameState=2;
+									_gearHit.Play();
 									StartCoroutine(Rewind());
 									return;
 								}
@@ -885,6 +898,8 @@ public class RailGenerator : MonoBehaviour
 
 		//speed boost
 		_moveSpeed=_maxSpeed;
+
+		_woosh.Play();
 
 		//particles
 		/*

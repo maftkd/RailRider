@@ -9,10 +9,12 @@ public class UIManager : MonoBehaviour
 {
 	CanvasGroup _menu;
 	public AudioMixer _mixer;
-	bool _muted=false;
-	public Texture _mutedTex;
+	bool _musicMuted=false;
+	bool _sfxMuted=false;
+	public Texture _musicMutedTex;
 	public Texture _unmutedTex;
 	public RawImage _musicButton;
+	public RawImage _littleEx;
 	
 	// Start is called before the first frame update
 	void Start()
@@ -21,11 +23,19 @@ public class UIManager : MonoBehaviour
 		_menu = GetComponent<CanvasGroup>();
 		
 		if(_musicButton!=null){
-			if(PlayerPrefs.HasKey("Mute")){
-				if(PlayerPrefs.GetInt("Mute")==1){
-					_musicButton.texture=_mutedTex;
-					_mixer.SetFloat("Volume", -80f);
-					_muted=true;
+			if(PlayerPrefs.HasKey("Music")){
+				if(PlayerPrefs.GetInt("Music")==1){
+					_musicButton.texture=_musicMutedTex;
+					_mixer.SetFloat("MusicVolume", -80f);
+					_musicMuted=true;
+				}
+			}
+			if(PlayerPrefs.HasKey("Sfx")){
+				if(PlayerPrefs.GetInt("Sfx")==1){
+					//sfx texture = muted
+					_littleEx.enabled=true;
+					_mixer.SetFloat("SfxVolume",-80f);
+					_sfxMuted=true;
 				}
 			}
 		}
@@ -69,17 +79,31 @@ public class UIManager : MonoBehaviour
 		_menu.alpha=1;
 	}
 
-	public void ToggleAudio(){
-		_muted=!_muted;
-		_mixer.SetFloat("Volume", _muted ? -80f : 0f);
-		if(_muted)
-			_musicButton.texture=_mutedTex;
+	public void ToggleMusic(){
+		_musicMuted=!_musicMuted;
+		_mixer.SetFloat("MusicVolume", _musicMuted ? -80f : 0f);
+		if(_musicMuted)
+			_musicButton.texture=_musicMutedTex;
 		else
 			_musicButton.texture = _unmutedTex;
-		if(PlayerPrefs.HasKey("Mute")){
-			PlayerPrefs.DeleteKey("Mute");
+		if(PlayerPrefs.HasKey("Music")){
+			PlayerPrefs.DeleteKey("Music");
 		}
-		PlayerPrefs.SetInt("Mute",_muted ? 1 : 0);
+		PlayerPrefs.SetInt("Music",_musicMuted ? 1 : 0);
+		PlayerPrefs.Save();
+	}
+	
+	public void ToggleSfx(){
+		_sfxMuted=!_sfxMuted;
+		_mixer.SetFloat("SfxVolume", _sfxMuted ? -80f : 0f);
+		if(_sfxMuted)
+			_littleEx.enabled=true;
+		else
+			_littleEx.enabled=false;
+		if(PlayerPrefs.HasKey("Sfx")){
+			PlayerPrefs.DeleteKey("Sfx");
+		}
+		PlayerPrefs.SetInt("Sfx",_sfxMuted ? 1 : 0);
 		PlayerPrefs.Save();
 	}
 
