@@ -29,7 +29,7 @@ public class RailGenerator : MonoBehaviour
 	public Transform _coin;
 	float _coinHeight = 1.5f;
 	float _crossThreshold = 0.001f;
-	float _coinProbability = 1;//0.15f;
+	float _coinProbability = 0.15f;
 	int _minCoinCluster=3;
 	int _maxCoinCluster=12;
 	int _tOffset=0;
@@ -84,8 +84,8 @@ public class RailGenerator : MonoBehaviour
 	public AudioSource _music;
 	public GameObject _tutorialObjs;
 	Camera _main;
-	float _fovMultiplier=175f;
-	public float _crossMultiplier=-90f;
+	float _crossMultiplier=-250f;
+	float _corkAngle;
 
 	struct Coin {
 		public Transform transform;
@@ -148,8 +148,6 @@ public class RailGenerator : MonoBehaviour
 		}
 		_sun = FindObjectOfType<SunRotator>();
 		_main = Camera.main;
-		//_speedParts = _main.transform.GetComponentsInChildren<ParticleSystem>();
-		//_main.fieldOfView = _moveSpeed*_fovMultiplier;
 	}
 	
 	//function used in update loop to reset velocity towards 0
@@ -247,7 +245,8 @@ public class RailGenerator : MonoBehaviour
 		float prevCross=0;
 		float prob = probOverride==-1? _coinProbability : probOverride;
 		bool cork=false;
-		float corkAngle=0;
+		_corkAngle=0;
+		float corkInc=0;
 		//Debug.Log("generating coins");
 		//more temp code for jumper
 		for(int i=startKnot*_lineResolution; i<endKnot*_lineResolution; i++){
@@ -285,7 +284,7 @@ public class RailGenerator : MonoBehaviour
 							offset = Vector3.LerpUnclamped(Vector3.up,right,cross);
 						}
 						else{
-							offset = Vector3.LerpUnclamped(Vector3.up,right,corkAngle);
+							offset = Vector3.LerpUnclamped(Vector3.up,right,_corkAngle);
 						}
 
 						//instance the coin
@@ -298,8 +297,10 @@ public class RailGenerator : MonoBehaviour
 							curCoin.RotateAround(railPos,curForward,cross*_crossMultiplier);
 						else
 						{
-							curCoin.RotateAround(railPos,curForward, corkAngle*_crossMultiplier);
-							corkAngle+=.1f;
+							curCoin.RotateAround(railPos,curForward, _corkAngle*_crossMultiplier);
+							if(Random.value<.1f)
+								corkInc*=-1f;
+							_corkAngle+=corkInc;
 						}
 						c.offset=curCoin.up;
 
@@ -344,10 +345,9 @@ public class RailGenerator : MonoBehaviour
 						}
 						else{
 							//gen corkscrew
-							clusterCounter=10;
+							clusterCounter=Random.Range(5,25);;
 							cork=true;	
-							corkAngle=0;
-							//Debug.Log("yes a cork");
+							corkInc=Random.Range(-.1f,.1f);
 						}
 					}
 				}
@@ -412,7 +412,7 @@ public class RailGenerator : MonoBehaviour
 			AddGate();
 			return -1;
 		}
-		if(val<1){//.33f){
+		if(val<.33f){
 			numTracks = Random.Range(1,5);
 			//add a straight
 			AddStraight(numTracks);
@@ -795,7 +795,6 @@ public class RailGenerator : MonoBehaviour
 				}
 				_moveSpeed = Mathf.Lerp(_moveSpeed,_targetMoveSpeed,_speedChangeLerp*Time.deltaTime);
 				_balanceSpeed = _moveSpeed*_balanceSpeedMultiplier;
-				//_main.fieldOfView = _moveSpeed*_fovMultiplier;
 				_t+=Time.deltaTime*_moveSpeed;
 				if(_tutorial && _t > 13){
 					_tutorialObjs.SetActive(false);

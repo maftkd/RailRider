@@ -20,8 +20,8 @@ public class FollowCam : MonoBehaviour
 	Quaternion _targetRot, _startRot;
 	Vector3 _targetPos, _startPos;
 	float _introTimer;
-	float _lerpSpeed=4f;
-	float _slerpSpeed=4f;
+	float _lerpSpeed=2f;
+	float _slerpSpeed=2f;
 
 	// Start is called before the first frame update
 	void Start()
