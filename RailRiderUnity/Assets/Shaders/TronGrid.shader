@@ -10,9 +10,8 @@
     }
     SubShader
     {
-        Tags { "RenderType"="Opaque" }
+        Tags { "RenderType"="Opaque" "RenderQueue"="Geometry"}
         LOD 200
-
         CGPROGRAM
         // Physically based Standard lighting model, and enable shadows on all light types
         #pragma surface surf Standard fullforwardshadows
@@ -46,7 +45,7 @@
             //fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
 		float green = step(_GridScale.w,frac(IN.worldPos.x*_GridScale.x));
 		green += step(_GridScale.w,frac(IN.worldPos.z*_GridScale.z))*(1-green);
-		o.Albedo = green*_Color;
+		o.Emission = green*_Color;
             //o.Albedo = c.rgb;
             // Metallic and smoothness come from slider variables
             o.Metallic = _Metallic;
