@@ -85,6 +85,7 @@ public class RailGenerator : MonoBehaviour
 	public GameObject _tutorialObjs;
 	Camera _main;
 	float _fovMultiplier=175f;
+	ParticleSystem [] _speedParts;
 
 	struct Coin {
 		public Transform transform;
@@ -149,7 +150,8 @@ public class RailGenerator : MonoBehaviour
 		}
 		_sun = FindObjectOfType<SunRotator>();
 		_main = Camera.main;
-		_main.fieldOfView = _moveSpeed*_fovMultiplier;
+		_speedParts = _main.transform.GetComponentsInChildren<ParticleSystem>();
+		//_main.fieldOfView = _moveSpeed*_fovMultiplier;
 	}
 	
 	//function used in update loop to reset velocity towards 0
@@ -479,8 +481,8 @@ public class RailGenerator : MonoBehaviour
 		_nextGate=_gatePos+Random.Range(_minGateSpace,_maxGateSpace);
 		Vector3 railLine = _knots[_knots.Count-2]-_knots[_knots.Count-3];
 		railLine.Normalize();
-		_gate.position = _knots[_knots.Count-3]+railLine*_nodeDist*.5f;
-		_gate.position+=Vector3.up;
+		_gate.position = _knots[_knots.Count-3]+railLine*_nodeDist*1.25f;
+		//_gate.position+=Vector3.up;
 		_gate.up=railLine;
 		Vector3 localEulers = _gate.localEulerAngles;
 		localEulers.x=90f;
@@ -685,9 +687,14 @@ public class RailGenerator : MonoBehaviour
 								_sun._rotating=false;
 								_gameState=2;
 								_jumpHit.Invoke();
-								if(PlayerPrefs.HasKey("hs"))
-									PlayerPrefs.DeleteKey("hs");
-								PlayerPrefs.SetInt("hs",_collectedCoins);
+								if(!PlayerPrefs.HasKey("hs"))
+									PlayerPrefs.SetInt("hs",_collectedCoins);
+								else{
+									if(PlayerPrefs.GetInt("hs")<_collectedCoins){
+										PlayerPrefs.DeleteKey("hs");
+										PlayerPrefs.SetInt("hs",_collectedCoins);
+									}
+								}
 								PlayerPrefs.Save();
 							}
 							else{
@@ -726,7 +733,7 @@ public class RailGenerator : MonoBehaviour
 				}
 				_moveSpeed = Mathf.Lerp(_moveSpeed,_targetMoveSpeed,_speedChangeLerp*Time.deltaTime);
 				_balanceSpeed = _moveSpeed*_balanceSpeedMultiplier;
-				_main.fieldOfView = _moveSpeed*_fovMultiplier;
+				//_main.fieldOfView = _moveSpeed*_fovMultiplier;
 				_t+=Time.deltaTime*_moveSpeed;
 				if(_tutorial && _t > 13){
 					_tutorialObjs.SetActive(false);
@@ -785,6 +792,11 @@ public class RailGenerator : MonoBehaviour
 
 		//speed boost
 		_moveSpeed=_maxSpeed;
+
+		//particles
+		foreach(ParticleSystem ps in _speedParts){
+			ps.Play();
+		}
 	}
 
 	IEnumerator FadeInScoreText(float delay=4f){

@@ -26,7 +26,7 @@ public class FollowCam : MonoBehaviour
 	void Start()
 	{
 		_camTransform = transform.GetChild(0);
-		_cam = _mainCam.GetComponent<Camera>();
+		_cam =_camTransform.GetComponent<Camera>();
 		transform.position = _railTracker.position-_railTracker.forward*_followDistance;
 	}
 
