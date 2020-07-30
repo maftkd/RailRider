@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class FollowCam : MonoBehaviour
 {
+	Transform _camLerpTarget;
 	Transform _camTransform;
 	Camera _cam;
 	public Transform _railTracker;
@@ -25,7 +26,8 @@ public class FollowCam : MonoBehaviour
 	// Start is called before the first frame update
 	void Start()
 	{
-		_camTransform = transform.GetChild(0);
+		_camLerpTarget = transform.GetChild(0);
+		_camTransform = transform.GetChild(1);
 		_cam =_camTransform.GetComponent<Camera>();
 		transform.position = _railTracker.position-_railTracker.forward*_followDistance;
 	}
@@ -34,7 +36,7 @@ public class FollowCam : MonoBehaviour
 	void Update()
 	{
 		transform.position = _railTracker.position-_railTracker.forward*_followDistance;
-		_camTransform.LookAt(_lookTarget);
+		_camLerpTarget.LookAt(_lookTarget);
 		transform.up = _railTracker.up;
 		switch(_camState){
 			case 0:
@@ -43,7 +45,7 @@ public class FollowCam : MonoBehaviour
 				//here we want to swing the camTransform to its position behind ethan
 				_introTimer+=Time.deltaTime;
 				if(_introTimer<3f){
-					_camTransform.localPosition = Vector3.Lerp(_startPos,_targetPos,_introTimer/3f);
+					_camLerpTarget.localPosition = Vector3.Lerp(_startPos,_targetPos,_introTimer/3f);
 				}
 				else
 				{
@@ -54,6 +56,8 @@ public class FollowCam : MonoBehaviour
 			case 2:
 				break;
 		}
+		_camTransform.localPosition = Vector3.Lerp(_camTransform.localPosition,_camLerpTarget.localPosition,_lerpSpeed*Time.deltaTime);
+		_camTransform.rotation = Quaternion.Slerp(_camTransform.rotation,_camLerpTarget.rotation,_slerpSpeed*Time.deltaTime);
 		Vector3 eulers = _camTransform.eulerAngles;
 		eulers.z=0;
 		_camTransform.eulerAngles=eulers;
@@ -62,7 +66,7 @@ public class FollowCam : MonoBehaviour
 	public void SetCamToFollow(){
 		_camState=1;
 		_targetPos=Vector3.up*_followHeight;
-		_startPos=_camTransform.localPosition;
+		_startPos=_camLerpTarget.localPosition;
 	}
 
 }
