@@ -89,6 +89,8 @@ public class RailGenerator : MonoBehaviour
 	Transform _explosion;
 	float _invincibleSpeed=.65f;
 	float _invincibleWarning=.05f;
+	CanvasGroup _invincDisplay;
+	Image _invincMeter;
 	public Material _ethanMat;
 	public Gradient _invincibilityGrad;
 	public AudioSource _takeOff;
@@ -99,6 +101,7 @@ public class RailGenerator : MonoBehaviour
 	public TrailRenderer _lTrail,_rTrail;
 	public Transform _coinFx;
 	int _combo;
+	float _comboPitch=.5f;
 	AudioSource _comboSfx;
 
 	struct Coin {
@@ -156,6 +159,8 @@ public class RailGenerator : MonoBehaviour
 		_scoreText = GameObject.FindGameObjectWithTag("Score").GetComponent<Text>();
 		_comboText = _scoreText.transform.GetChild(0).GetComponent<Text>();
 		_comboSfx = _comboText.transform.GetComponent<AudioSource>();
+		_invincDisplay = _scoreText.transform.GetChild(1).GetComponent<CanvasGroup>();
+		_invincMeter = _invincDisplay.transform.GetChild(0).GetComponent<Image>();
 		_scoreCanvas = _scoreText.transform.GetComponent<CanvasGroup>();
 		_defaultScoreFont=_scoreText.fontSize;
 		_boldScoreFont=Mathf.FloorToInt(_defaultScoreFont*1.4f);
@@ -632,7 +637,8 @@ public class RailGenerator : MonoBehaviour
 			_combo++;
 			Transform coinSfx = Instantiate(_coinFx);
 			AudioSource coinAudio = coinSfx.GetComponent<AudioSource>();
-			coinAudio.pitch=Mathf.Lerp(.5f,1.5f,_combo/(float)10);
+			_comboPitch = Mathf.Lerp(_comboPitch,1.5f,.1f);
+			coinAudio.pitch=_comboPitch;
 			coinAudio.Play();
 			Destroy(coinSfx.gameObject,.2f);
 			_comboText.text=_combo.ToString("+#");
@@ -644,6 +650,7 @@ public class RailGenerator : MonoBehaviour
 			if(_combo>3)
 				_comboSfx.Play();
 			_combo=0;
+			_comboPitch=.5f;
 		}
 		_scoreText.text=_collectedCoins.ToString();
 		_scoreText.fontSize=_boldScoreFont;
@@ -880,9 +887,13 @@ public class RailGenerator : MonoBehaviour
 						color = Color.white*Mathf.PingPong(_t,0.2f)*5f;
 					}
 					_ethanMat.SetColor("_EmissionColor",color);
+					_invincMeter.fillAmount=Mathf.InverseLerp(_invincibleSpeed,_maxSpeed,_moveSpeed);
 				}
 				else
+				{
 					_ethanMat.SetColor("_EmissionColor",Color.black);
+					_invincDisplay.alpha=0;
+				}
 				break;
 			case 2://collide with jumper
 				break;
@@ -932,6 +943,9 @@ public class RailGenerator : MonoBehaviour
 		_moveSpeed=_maxSpeed;
 
 		_woosh.Play();
+
+		_invincDisplay.alpha=1f;
+		_invincMeter.fillAmount=1f;
 
 		//particles
 		/*
