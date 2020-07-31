@@ -11,6 +11,7 @@ namespace cakeslice
         // Use this for initialization
         void Start()
         {
+		_rotSpeed = Random.Range(_rotSpeed*.5f,_rotSpeed);
 		if(Random.value<0.5f)
 			_rotSpeed*=-1f;
         }

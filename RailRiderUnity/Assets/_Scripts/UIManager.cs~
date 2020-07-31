@@ -14,6 +14,7 @@ public class UIManager : MonoBehaviour
 	public Texture _musicMutedTex;
 	public Texture _unmutedTex;
 	public RawImage _musicButton;
+	public RawImage _littleEx;
 	
 	// Start is called before the first frame update
 	void Start()
@@ -32,6 +33,7 @@ public class UIManager : MonoBehaviour
 			if(PlayerPrefs.HasKey("Sfx")){
 				if(PlayerPrefs.GetInt("Sfx")==1){
 					//sfx texture = muted
+					_littleEx.enabled=true;
 					_mixer.SetFloat("SfxVolume",-80f);
 					_sfxMuted=true;
 				}
@@ -95,9 +97,9 @@ public class UIManager : MonoBehaviour
 		_sfxMuted=!_sfxMuted;
 		_mixer.SetFloat("SfxVolume", _sfxMuted ? -80f : 0f);
 		if(_sfxMuted)
-			_musicButton.texture=_musicMutedTex;//change to sfx button
+			_littleEx.enabled=true;
 		else
-			_musicButton.texture = _unmutedTex;//change to sfx button
+			_littleEx.enabled=false;
 		if(PlayerPrefs.HasKey("Sfx")){
 			PlayerPrefs.DeleteKey("Sfx");
 		}

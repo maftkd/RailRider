@@ -7,13 +7,16 @@ namespace cakeslice
     public class Rotate : MonoBehaviour
     {
         public float _rotSpeed;
+	public bool _hardSet=false;
 
         // Use this for initialization
         void Start()
         {
-		_rotSpeed = Random.Range(_rotSpeed*.5f,_rotSpeed);
-		if(Random.value<0.5f)
-			_rotSpeed*=-1f;
+		if(!_hardSet){
+			_rotSpeed = Random.Range(_rotSpeed*.5f,_rotSpeed);
+			if(Random.value<0.5f)
+				_rotSpeed*=-1f;
+		}
         }
 
         // Update is called once per frame

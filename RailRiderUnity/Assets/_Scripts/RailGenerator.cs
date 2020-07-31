@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.UI;
 using UnityEngine.Events;
 using SplineMesh;
@@ -132,6 +133,8 @@ public class RailGenerator : MonoBehaviour
 			_line = GetComponent<LineRenderer>();
 		_line.widthMultiplier=0.8f;
 		_line.material=_lineMat;
+		_line.receiveShadows=false;
+		_line.shadowCastingMode=ShadowCastingMode.Off;
 		_lineResFrac=1/(float)_lineResolution;
 		
 		//configure railTracker
@@ -850,6 +853,8 @@ public class RailGenerator : MonoBehaviour
 									}
 									else{
 										_gameState=2;
+										_collectedCoins+=_combo;
+										AddCoin(_collectedCoins);
 										_jumpHit.Invoke();
 										if(!PlayerPrefs.HasKey("hs"))
 											PlayerPrefs.SetInt("hs",_collectedCoins);

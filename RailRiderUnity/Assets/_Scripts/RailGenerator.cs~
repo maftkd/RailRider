@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.UI;
 using UnityEngine.Events;
 using SplineMesh;
@@ -53,7 +54,7 @@ public class RailGenerator : MonoBehaviour
 	float _jumpDur = 0.7f;
 	float _minJumpY = 1f;//min height to clear a coin
 	public AnimationCurve _jumpCurve;
-	float _spinSpeed=360f;
+	float _spinSpeed=540f;
 	float _inputDelayTimer=0;
 	float _inputDelay=.05f;
 	Dictionary<float, Jumper> _jumpers = new Dictionary<float, Jumper>();
@@ -132,6 +133,8 @@ public class RailGenerator : MonoBehaviour
 			_line = GetComponent<LineRenderer>();
 		_line.widthMultiplier=0.8f;
 		_line.material=_lineMat;
+		_line.receiveShadows=false;
+		_line.shadowCastingMode=ShadowCastingMode.Off;
 		_lineResFrac=1/(float)_lineResolution;
 		
 		//configure railTracker

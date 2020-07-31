@@ -4,8 +4,7 @@ using UnityEngine;
 
 public class SunRotator : MonoBehaviour
 {
-	[HideInInspector]
-	public bool _rotating=false;
+	public bool _rotating=true;
 	public float _spinSpeed;
 	// Start is called before the first frame update
 	void Start()

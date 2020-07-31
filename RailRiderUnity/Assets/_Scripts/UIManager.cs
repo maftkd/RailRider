@@ -108,6 +108,6 @@ public class UIManager : MonoBehaviour
 	}
 
 	public void Reload(){
-		SceneManager.LoadScene(0);
+		SceneManager.LoadScene(1);
 	}
 }
