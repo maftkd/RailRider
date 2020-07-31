@@ -923,7 +923,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 9, y: -90, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -2.49, y: 4.6}
+  m_AnchoredPosition: {x: -2.49, y: 4.57}
   m_SizeDelta: {x: 1, y: 1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &302429387
@@ -970,7 +970,7 @@ AudioSource:
     type: 2}
   m_audioClip: {fileID: 8300000, guid: aeb46b982c859456799275b972b20e3c, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 0.25
+  m_Volume: 0.3
   m_Pitch: 1.35
   Loop: 0
   Mute: 0
@@ -1861,7 +1861,7 @@ AudioSource:
     type: 2}
   m_audioClip: {fileID: 8300000, guid: 49bdebb1e0ad34f2ba36de604cb5b060, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 0.135
+  m_Volume: 0.3
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -2002,7 +2002,7 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: bdaf36c42f6187a4f925190cc780e199, type: 3}
-    m_FontSize: 172
+    m_FontSize: 194
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 1
@@ -2013,7 +2013,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: RAIL RIDER
+  m_Text: THE RAIL
 --- !u!222 &619207619
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -7823,7 +7823,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 2800000, guid: 0d3f8494176e10643a281ef2ffc7afe0, type: 3}
+  m_Texture: {fileID: 2800000, guid: 2965771e258514408a90f125796f312e, type: 3}
   m_UVRect:
     serializedVersion: 2
     x: 0
@@ -8096,7 +8096,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 1, b: 0.56078434, a: 1}
+  m_Color: {r: 0.09411766, g: 1, b: 0.9215687, a: 1}
   m_RaycastTarget: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
@@ -15053,7 +15053,7 @@ AudioSource:
     type: 2}
   m_audioClip: {fileID: 8300000, guid: 52540df74a66d4dd29be2b4b14666753, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 0.281
+  m_Volume: 0.3
   m_Pitch: 1
   Loop: 0
   Mute: 0

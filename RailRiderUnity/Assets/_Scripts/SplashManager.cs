@@ -27,13 +27,13 @@ public class SplashManager : MonoBehaviour
 
 	IEnumerator SplashHelper(){
 		float timer = 0;
-		while(!Input.GetMouseButtonDown(0) && timer < 3f)
+		while(!Input.GetMouseButtonUp(0) && timer < 3f)
 		{
 			timer+=Time.deltaTime;
 			yield return null;
 		}
 		timer=0;
-		while(timer<3f && !Input.GetMouseButtonDown(0)){
+		while(timer<3f && !Input.GetMouseButtonUp(0)){
 			timer+=Time.deltaTime;
 			//pe.value=timer;
 			cg.postExposure.value=timer*2;
