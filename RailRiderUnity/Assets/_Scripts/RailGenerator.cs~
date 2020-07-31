@@ -13,9 +13,9 @@ public class RailGenerator : MonoBehaviour
 	public Material _lineMat;
 	float _nodeDist = 16f;//approximate segment length
 	int _lineResolution = 10;//Number of points on line per segment
-	float _moveSpeed=0.4f;//rate at which char moves along rail in segments/sec
-	float _targetMoveSpeed=0.4f;
-	float _speedChangeLerp=.05f;
+	float _moveSpeed=0.35f;//rate at which char moves along rail in segments/sec
+	float _targetMoveSpeed=0.35f;
+	float _speedChangeLerp=.12f;
 	Transform _railTracker;
 	float _balance;
 	float _t;
@@ -37,16 +37,20 @@ public class RailGenerator : MonoBehaviour
 	public Transform _jumper;
 	float _lastJump;
 	float _jumpProbability = 0.02f;
-	float _maxJumpProbability = .12f;
+	float _maxJumpProbability = .15f;
 	float _jumpThreshold=1.5f;//spacing between jumps and other jumps
-	float _minJumpThreshold=0.5f;
+	float _minJumpThreshold=0.4f;
 	float _jumpSpacing=0.6f;//spacing between coins and jumps
 	float _minJumpSpacing=0.1f;
+	float _doubleJumpThreshold=0.05f;
+	float _tripleJumpThreshold=0.1f;
+	float _doubleJumpProbability=0.5f;
+	float _tripleJumpProbability=0.25f;
 	float _lineResFrac;
 	Transform _ethan;
 	bool _jumping=false;
-	float _jumpHeight = 1.85f;
-	float _jumpDur = 0.5f;
+	float _jumpHeight = 2.1f;//1.85f;
+	float _jumpDur = 0.7f;
 	float _minJumpY = 1f;//min height to clear a coin
 	public AnimationCurve _jumpCurve;
 	float _spinSpeed=360f;
@@ -56,7 +60,7 @@ public class RailGenerator : MonoBehaviour
 	[ColorUsageAttribute(false,true)]
 	public Color _coinHitColor;
 	int _collectedCoins;
-	float _coinHitThreshold = .98f;
+	float _coinHitThreshold = .95f;
 	int _gameState=0;
 	//0 = menu
 	//1 = play
@@ -65,14 +69,14 @@ public class RailGenerator : MonoBehaviour
 	float _nextGate;//The time at which a new gate will be generated
 	int _gatePos;//The position of the new gate
 	Transform _gate;
-	float _minGateSpace=10;
-	float _maxGateSpace=25;
+	float _minGateSpace=1;
+	float _maxGateSpace=30;
 	public UnityEvent _jumpHit;//essentially game over event
 	Text _scoreText;
 	Text _comboText;
 	CanvasGroup _scoreCanvas;
-	float _maxSpeed=.8f;
-	float _speedIncreaseRate = 0.1f;//rate of speed increase 
+	float _maxSpeed=.6f;
+	float _jumpIncreaseRate = 0.3f;//rate of speed increase 
 	float _balanceSpeedMultiplier=280;
 	public Text _tDebug,_ngDebug,_gpDebug;
 	public GameObject[] _wsText;
@@ -86,8 +90,9 @@ public class RailGenerator : MonoBehaviour
 	Camera _main;
 	float _crossMultiplier=-250f;
 	float _corkAngle;
+	float _corkSpacing;
 	Transform _explosion;
-	float _invincibleSpeed=.65f;
+	float _invincibleSpeed=.37f;
 	float _invincibleWarning=.05f;
 	CanvasGroup _invincDisplay;
 	Image _invincMeter;
@@ -101,7 +106,9 @@ public class RailGenerator : MonoBehaviour
 	public TrailRenderer _lTrail,_rTrail;
 	public Transform _coinFx;
 	int _combo;
-	float _comboPitche=.5f;
+	float _comboPitch=1f;
+	float _minComboPitch=1f;
+	float _maxComboPitch=1.5f;
 	AudioSource _comboSfx;
 
 	struct Coin {
@@ -275,7 +282,7 @@ public class RailGenerator : MonoBehaviour
 		float prevCross=0;
 		float prob = probOverride==-1? _coinProbability : probOverride;
 		bool cork=false;
-		_corkAngle=0;
+		//_corkAngle=0;
 		float corkInc=0;
 		//Debug.Log("generating coins");
 		//more temp code for jumper
@@ -303,6 +310,7 @@ public class RailGenerator : MonoBehaviour
 					if(Mathf.Abs(cross-prevCross)>0.1f)
 					{
 						clusterCounter=0;
+						cork=false;//reset to use for corkSpacing
 					}
 					else{
 						//rail curvature is OK
@@ -370,18 +378,26 @@ public class RailGenerator : MonoBehaviour
 						prevCross=cross;//need this to ensure the cluster doesn't get insta cancelled
 						if(Mathf.Abs(cross)>_crossThreshold)
 						{
-							//Determine cluster size
-							clusterCounter=Random.Range(_minCoinCluster,_maxCoinCluster+1);
-							cork=false;
+							if(_corkSpacing >1f)
+							{
+								//Determine cluster size
+								clusterCounter=Random.Range(_minCoinCluster,_maxCoinCluster+1);
+								cork=false;
+								_corkAngle=0;
+							}
 						}
 						else{
 							//gen corkscrew
 							clusterCounter=Random.Range(5,25);;
 							cork=true;	
 							corkInc=Random.Range(-.1f,.1f);
+							_corkSpacing=0;
 						}
 					}
 				}
+			}
+			if(!cork){
+				_corkSpacing+=1/(float)_lineResolution;
 			}
 		}
 	}
@@ -405,15 +421,49 @@ public class RailGenerator : MonoBehaviour
 				if(key-_lastJump>_jumpThreshold && Random.value<prob && Mathf.Abs(key-_gatePos)>2f){
 					
 					_lastJump=key;
-					Transform jumper = Instantiate(_jumper,railPos,Quaternion.identity, null);
-					jumper.forward=-curForward;
+					int jumpCount=1;
+					if(prob<_doubleJumpThreshold ){
+						jumpCount=1;
+					}
+					else if(prob < _tripleJumpThreshold){
+						float val = Random.value;
+						if(val<_doubleJumpProbability)
+							jumpCount=2;
+					}
+					else if(prob <=_maxJumpProbability){
+						float val = Random.value;
+						if(val<_doubleJumpProbability)
+							jumpCount=2;
+						else if(val<_doubleJumpProbability+_tripleJumpProbability)
+							jumpCount=3;
+					}
 
-					//add to jumper dict
-					Jumper j;
-					j.transform = jumper;
-					j.mesh = jumper.GetComponent<MeshRenderer>();
-					j.mesh.enabled=false;
-					_jumpers.Add(key, j);
+					for(int j=0; j<jumpCount; j++){
+						//Transform jumper = Instantiate(_jumper,railPos,Quaternion.identity, null);
+						//jumper.forward=-curForward;
+
+						//add to jumper dict
+						//Jumper j;
+						//j.transform = jumper;
+						//j.mesh = jumper.GetComponent<MeshRenderer>();
+						//j.mesh.enabled=false;
+						//_jumpers.Add(key, j);
+
+						float nextT = (i+j)/(float)_lineResolution;
+						Vector3 nextPos = _path.GetPoint(nextT);
+						Vector3 nextForward = _path.GetTangent(nextT);
+						Transform jumper2 = Instantiate(_jumper,nextPos,Quaternion.identity, null);
+						jumper2.forward=-nextForward;
+						Jumper j2;
+						j2.transform = jumper2;
+						j2.mesh=jumper2.GetComponent<MeshRenderer>();
+						j2.mesh.enabled=false;
+						_jumpers.Add(nextT+_tOffset,j2);
+					}
+
+					//test code - testing double jump
+					/*
+					*/
 
 					//clear out nearby coins
 					List<float> removeList = new List<float>();
@@ -637,10 +687,10 @@ public class RailGenerator : MonoBehaviour
 			_combo++;
 			Transform coinSfx = Instantiate(_coinFx);
 			AudioSource coinAudio = coinSfx.GetComponent<AudioSource>();
-			_comboPitch = Mathf.Lerp(_comboPitch,1.5f,.1f);
+			_comboPitch = Mathf.Lerp(_comboPitch,_maxComboPitch,.1f);
 			coinAudio.pitch=_comboPitch;
-			coinAudio.Play();
-			Destroy(coinSfx.gameObject,.2f);
+			coinAudio.PlayScheduled(AudioSettings.dspTime+Random.value*.2);
+			Destroy(coinSfx.gameObject,.5f);
 			_comboText.text=_combo.ToString("+#");
 		}
 		else
@@ -650,7 +700,7 @@ public class RailGenerator : MonoBehaviour
 			if(_combo>3)
 				_comboSfx.Play();
 			_combo=0;
-			_comboPitch=.5f;
+			_comboPitch=_minComboPitch;
 		}
 		_scoreText.text=_collectedCoins.ToString();
 		_scoreText.fontSize=_boldScoreFont;
@@ -905,7 +955,7 @@ public class RailGenerator : MonoBehaviour
 			if(_scoreChangeTimer<=0)
 				_scoreText.fontSize=_defaultScoreFont;
 		}
-		//_tDebug.text="speed: "+_moveSpeed.ToString("#.##");
+		_tDebug.text="jumpProb: "+_jumpProbability.ToString("#.##");
 		//_ngDebug.text="NG: "+_nextGate.ToString("#.#");
 		//_gpDebug.text="GP: "+_gatePos.ToString("#.#");
 #if UNITY_EDITOR
@@ -932,9 +982,9 @@ public class RailGenerator : MonoBehaviour
 
 	void GateEvent(){
 		//tighten up jumps
-		_jumpSpacing = Mathf.Lerp(_jumpSpacing,_minJumpSpacing,_speedIncreaseRate);
-		_jumpThreshold = Mathf.Lerp(_jumpThreshold,_minJumpThreshold,_speedIncreaseRate);	
-		_jumpProbability = Mathf.Lerp(_jumpProbability,_maxJumpProbability,_speedIncreaseRate);
+		_jumpSpacing = Mathf.Lerp(_jumpSpacing,_minJumpSpacing,_jumpIncreaseRate);
+		_jumpThreshold = Mathf.Lerp(_jumpThreshold,_minJumpThreshold,_jumpIncreaseRate);	
+		_jumpProbability = Mathf.Lerp(_jumpProbability,_maxJumpProbability,_jumpIncreaseRate);
 
 		//determine next gate position
 		_gatePos=Mathf.FloorToInt(_nextGate)+50;//this will get reset when the next gate is generated
