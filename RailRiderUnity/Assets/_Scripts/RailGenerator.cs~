@@ -45,7 +45,7 @@ public class RailGenerator : MonoBehaviour
 	float _doubleJumpThreshold=0.05f;
 	float _tripleJumpThreshold=0.1f;
 	float _doubleJumpProbability=0.5f;
-	float _tripleJumpProbability=0.25f;
+	float _tripleJumpProbability=0.35f;
 	float _lineResFrac;
 	Transform _ethan;
 	bool _jumping=false;
@@ -421,7 +421,7 @@ public class RailGenerator : MonoBehaviour
 				if(key-_lastJump>_jumpThreshold && Random.value<prob && Mathf.Abs(key-_gatePos)>2f){
 					
 					_lastJump=key;
-					int jumpCount=3;
+					int jumpCount=1;
 					if(prob<_doubleJumpThreshold ){
 						jumpCount=1;
 					}

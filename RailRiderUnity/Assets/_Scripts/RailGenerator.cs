@@ -53,7 +53,7 @@ public class RailGenerator : MonoBehaviour
 	float _jumpDur = 0.7f;
 	float _minJumpY = 1f;//min height to clear a coin
 	public AnimationCurve _jumpCurve;
-	float _spinSpeed=360f;
+	float _spinSpeed=540f;
 	float _inputDelayTimer=0;
 	float _inputDelay=.05f;
 	Dictionary<float, Jumper> _jumpers = new Dictionary<float, Jumper>();
