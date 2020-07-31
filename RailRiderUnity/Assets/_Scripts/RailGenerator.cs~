@@ -421,7 +421,7 @@ public class RailGenerator : MonoBehaviour
 				if(key-_lastJump>_jumpThreshold && Random.value<prob && Mathf.Abs(key-_gatePos)>2f){
 					
 					_lastJump=key;
-					int jumpCount=1;
+					int jumpCount=3;
 					if(prob<_doubleJumpThreshold ){
 						jumpCount=1;
 					}
@@ -439,17 +439,8 @@ public class RailGenerator : MonoBehaviour
 					}
 
 					for(int j=0; j<jumpCount; j++){
-						//Transform jumper = Instantiate(_jumper,railPos,Quaternion.identity, null);
-						//jumper.forward=-curForward;
 
-						//add to jumper dict
-						//Jumper j;
-						//j.transform = jumper;
-						//j.mesh = jumper.GetComponent<MeshRenderer>();
-						//j.mesh.enabled=false;
-						//_jumpers.Add(key, j);
-
-						float nextT = (i+j)/(float)_lineResolution;
+						float nextT = (i+j*0.5f)/(float)_lineResolution;
 						Vector3 nextPos = _path.GetPoint(nextT);
 						Vector3 nextForward = _path.GetTangent(nextT);
 						Transform jumper2 = Instantiate(_jumper,nextPos,Quaternion.identity, null);
@@ -460,10 +451,6 @@ public class RailGenerator : MonoBehaviour
 						j2.mesh.enabled=false;
 						_jumpers.Add(nextT+_tOffset,j2);
 					}
-
-					//test code - testing double jump
-					/*
-					*/
 
 					//clear out nearby coins
 					List<float> removeList = new List<float>();
@@ -955,7 +942,7 @@ public class RailGenerator : MonoBehaviour
 			if(_scoreChangeTimer<=0)
 				_scoreText.fontSize=_defaultScoreFont;
 		}
-		_tDebug.text="jumpProb: "+_jumpProbability.ToString("#.##");
+		//_tDebug.text="jumpProb: "+_jumpProbability.ToString("#.##");
 		//_ngDebug.text="NG: "+_nextGate.ToString("#.#");
 		//_gpDebug.text="GP: "+_gatePos.ToString("#.#");
 #if UNITY_EDITOR

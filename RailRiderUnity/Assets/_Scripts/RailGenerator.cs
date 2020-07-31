@@ -45,7 +45,7 @@ public class RailGenerator : MonoBehaviour
 	float _doubleJumpThreshold=0.05f;
 	float _tripleJumpThreshold=0.1f;
 	float _doubleJumpProbability=0.5f;
-	float _tripleJumpProbability=0.25f;
+	float _tripleJumpProbability=0.35f;
 	float _lineResFrac;
 	Transform _ethan;
 	bool _jumping=false;
@@ -439,17 +439,8 @@ public class RailGenerator : MonoBehaviour
 					}
 
 					for(int j=0; j<jumpCount; j++){
-						//Transform jumper = Instantiate(_jumper,railPos,Quaternion.identity, null);
-						//jumper.forward=-curForward;
 
-						//add to jumper dict
-						//Jumper j;
-						//j.transform = jumper;
-						//j.mesh = jumper.GetComponent<MeshRenderer>();
-						//j.mesh.enabled=false;
-						//_jumpers.Add(key, j);
-
-						float nextT = (i+j)/(float)_lineResolution;
+						float nextT = (i+j*0.5f)/(float)_lineResolution;
 						Vector3 nextPos = _path.GetPoint(nextT);
 						Vector3 nextForward = _path.GetTangent(nextT);
 						Transform jumper2 = Instantiate(_jumper,nextPos,Quaternion.identity, null);
@@ -460,10 +451,6 @@ public class RailGenerator : MonoBehaviour
 						j2.mesh.enabled=false;
 						_jumpers.Add(nextT+_tOffset,j2);
 					}
-
-					//test code - testing double jump
-					/*
-					*/
 
 					//clear out nearby coins
 					List<float> removeList = new List<float>();
