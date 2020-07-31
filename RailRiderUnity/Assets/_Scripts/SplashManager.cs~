@@ -33,13 +33,14 @@ public class SplashManager : MonoBehaviour
 			yield return null;
 		}
 		timer=0;
-		while(timer<5f && !Input.GetMouseButtonDown(0)){
+		while(timer<3f && !Input.GetMouseButtonDown(0)){
 			timer+=Time.deltaTime;
 			//pe.value=timer;
-			cg.postExposure.value=timer;
+			cg.postExposure.value=timer*2;
 			//animate post exposure of post procesing profile
 			yield return null;
 		}
+		cg.postExposure.value=0;
 		SceneManager.LoadScene(1);
 	}
 }

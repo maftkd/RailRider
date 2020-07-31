@@ -40,7 +40,6 @@ public class SplashManager : MonoBehaviour
 			//animate post exposure of post procesing profile
 			yield return null;
 		}
-		cg.postExposure.value=0;
 		SceneManager.LoadScene(1);
 	}
 }
