@@ -853,6 +853,8 @@ public class RailGenerator : MonoBehaviour
 									}
 									else{
 										_gameState=2;
+										_collectedCoins+=_combo;
+										AddCoin(_collectedCoins);
 										_jumpHit.Invoke();
 										if(!PlayerPrefs.HasKey("hs"))
 											PlayerPrefs.SetInt("hs",_collectedCoins);

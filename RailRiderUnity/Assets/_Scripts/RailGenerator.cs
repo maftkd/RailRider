@@ -589,48 +589,7 @@ public class RailGenerator : MonoBehaviour
 		for(int i=0; i<segments; i++){
 			_knots.Add(_knots[_knots.Count-1]+tan*_nodeDist);
 		}
-		/*
-		if(allowCorks && segments>2){
-			ResetRail();
-			//add corkscrew coins
-			float corkScrewStart = (float)(_knots.Count-1-(segments-1)+_tOffset);
-			float corkScrewEnd = corkScrewStart+(segments-2);//minus 2 for s and e
-			AddCorkscrewCoins(corkScrewStart,corkScrewEnd);
-		}
-		*/
 	}
-
-	void AddCorkscrewCoins(float tStart, float tEnd){
-		Debug.Log("Adding corkscrew coins between "+tStart+" and "+tEnd);
-		float inc = 1f/(float)_lineResolution;
-		float angle=0;
-		int endLoop = 10*(Mathf.RoundToInt(tEnd-tStart));
-		for(int i=0; i<endLoop; i++){
-			float key = tStart+inc*i;
-			Debug.Log("key: "+key);
-			Coin c = new Coin();
-			Vector3 forward = _path.GetTangent(key);
-			Vector3 railPos = _path.GetPoint(key);
-			Vector3 right = Vector3.Cross(Vector3.up,forward);
-			Vector3 offset = Vector3.LerpUnclamped(Vector3.up,right,angle);
-			offset.Normalize();
-			c.offset=offset;
-			Transform curCoin = Instantiate(_coin,railPos+offset*_coinHeight,Quaternion.identity,null);
-			curCoin.LookAt(railPos);
-			//curCoin.RotateAround(curCoin.position,offset,90f);
-			curCoin.localScale = new Vector3(.5f,1f,2f);
-			c.transform=curCoin;
-			c.mesh = curCoin.GetComponent<MeshRenderer>();
-
-			//add coin to coin dict
-			if(!_coins.ContainsKey(key)){
-				_coins.Add(key,c);
-			}
-			angle+=inc;
-		}
-
-	}
-
 
 	void AddZigZag(float angle, int zigzags, bool leftFirst){
 		Vector3 tan = _knots[_knots.Count-1]-_knots[_knots.Count-2];
