@@ -30,7 +30,7 @@ public class RailGenerator : MonoBehaviour
 	public Transform _coin;
 	float _coinHeight = 1.5f;
 	float _crossThreshold = 0.001f;
-	float _coinProbability = 0.15f;
+	float _coinProbability = 0.2f;
 	int _minCoinCluster=3;
 	int _maxCoinCluster=12;
 	int _tOffset=0;
@@ -45,8 +45,8 @@ public class RailGenerator : MonoBehaviour
 	float _minJumpSpacing=0.1f;
 	float _doubleJumpThreshold=0.05f;
 	float _tripleJumpThreshold=0.1f;
-	float _doubleJumpProbability=0.5f;
-	float _tripleJumpProbability=0.35f;
+	float _doubleJumpProbability=0.2f;
+	float _tripleJumpProbability=0.1f;
 	float _lineResFrac;
 	Transform _ethan;
 	bool _jumping=false;
@@ -196,8 +196,8 @@ public class RailGenerator : MonoBehaviour
 		_jumping=true;
 		_takeOff.pitch = Random.Range(.8f,1.4f);
 		_takeOff.Play();
-		_lTrail.emitting=true;
-		_rTrail.emitting=true;
+		//_lTrail.emitting=true;
+		//_rTrail.emitting=true;
 		_balanceVelocity=0;
 		_inputDelayTimer=0;
 		float timer=0;
@@ -220,8 +220,8 @@ public class RailGenerator : MonoBehaviour
 		yLocal = Mathf.Round(yLocal/90f)*90;
 		localE.y=yLocal;
 		_ethan.localEulerAngles=localE;
-		_lTrail.emitting=false;
-		_rTrail.emitting=false;
+		//_lTrail.emitting=false;
+		//_rTrail.emitting=false;
 	}
 
 	void GenerateStartingSection(){
@@ -312,7 +312,6 @@ public class RailGenerator : MonoBehaviour
 					//make sure the delta isn't nuts
 					if(Mathf.Abs(cross-prevCross)>0.1f && probOverride==-1)
 					{
-						Debug.Log("Clearing coins prematurely: start knot: "+startKnot);
 						clusterCounter=0;
 						cork=false;//reset to use for corkSpacing
 					}
@@ -375,7 +374,6 @@ public class RailGenerator : MonoBehaviour
 					//see if we randomly create a cluster
 					if(!nearJump && Random.value<prob)
 					{
-						Debug.Log("Generating cluster at startKnot: "+startKnot);
 						//Debug.Log("Not near jump & rando < 1");
 						//Make sure we don't generate coins on straight sections because that is boring and the coins are harder to see
 						Vector3 nextForward = _path.GetTangent(t+1f/(float)_lineResolution);
@@ -383,7 +381,6 @@ public class RailGenerator : MonoBehaviour
 						prevCross=cross;//need this to ensure the cluster doesn't get insta cancelled
 						if(Mathf.Abs(cross)>_crossThreshold)
 						{
-							Debug.Log("point a");
 							if(_corkSpacing >1f || prob==1)
 							{
 								//Determine cluster size
@@ -394,7 +391,6 @@ public class RailGenerator : MonoBehaviour
 						}
 						else{
 							//gen corkscrew
-							Debug.Log("point b");
 							clusterCounter=Random.Range(5,25);;
 							cork=true;	
 							corkInc=Random.Range(-.1f,.1f);
@@ -662,6 +658,8 @@ public class RailGenerator : MonoBehaviour
 
 	public void StartRiding(){
 		_gameState=1;
+		_lTrail.emitting=true;
+		_rTrail.emitting=true;
 		if(!_tutorial)
 		{
 			StartCoroutine(FadeInScoreText());

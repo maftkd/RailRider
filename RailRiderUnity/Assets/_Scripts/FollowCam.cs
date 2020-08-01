@@ -8,7 +8,7 @@ public class FollowCam : MonoBehaviour
 	Transform _camTransform;
 	Camera _cam;
 	public Transform _railTracker;
-	float _followDistance=3f;
+	float _followDistance=4f;
 	public Transform _lookTarget;
 	int _camState=0;
 	//0 = menu

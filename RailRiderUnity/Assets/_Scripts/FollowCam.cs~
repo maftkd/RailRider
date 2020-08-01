@@ -22,6 +22,7 @@ public class FollowCam : MonoBehaviour
 	float _introTimer;
 	float _lerpSpeed=2f;
 	float _slerpSpeed=2f;
+	float _transitionDur=2f;
 
 	// Start is called before the first frame update
 	void Start()
@@ -44,8 +45,8 @@ public class FollowCam : MonoBehaviour
 			case 1:
 				//here we want to swing the camTransform to its position behind ethan
 				_introTimer+=Time.deltaTime;
-				if(_introTimer<3f){
-					_camLerpTarget.localPosition = Vector3.Lerp(_startPos,_targetPos,_introTimer/3f);
+				if(_introTimer<_transitionDur){
+					_camLerpTarget.localPosition = Vector3.Lerp(_startPos,_targetPos,_introTimer/_transitionDur);
 				}
 				else
 				{

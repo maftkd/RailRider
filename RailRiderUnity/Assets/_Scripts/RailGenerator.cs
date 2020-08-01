@@ -14,8 +14,8 @@ public class RailGenerator : MonoBehaviour
 	public Material _lineMat;
 	float _nodeDist = 16f;//approximate segment length
 	int _lineResolution = 10;//Number of points on line per segment
-	float _moveSpeed=0.35f;//rate at which char moves along rail in segments/sec
-	float _targetMoveSpeed=0.35f;
+	float _moveSpeed=0.45f;//rate at which char moves along rail in segments/sec
+	float _targetMoveSpeed=0.45f;
 	float _speedChangeLerp=.12f;
 	Transform _railTracker;
 	float _balance;
@@ -30,7 +30,7 @@ public class RailGenerator : MonoBehaviour
 	public Transform _coin;
 	float _coinHeight = 1.5f;
 	float _crossThreshold = 0.001f;
-	float _coinProbability = 0.15f;
+	float _coinProbability = 0.2f;
 	int _minCoinCluster=3;
 	int _maxCoinCluster=12;
 	int _tOffset=0;
@@ -45,8 +45,8 @@ public class RailGenerator : MonoBehaviour
 	float _minJumpSpacing=0.1f;
 	float _doubleJumpThreshold=0.05f;
 	float _tripleJumpThreshold=0.1f;
-	float _doubleJumpProbability=0.5f;
-	float _tripleJumpProbability=0.35f;
+	float _doubleJumpProbability=0.2f;
+	float _tripleJumpProbability=0.1f;
 	float _lineResFrac;
 	Transform _ethan;
 	bool _jumping=false;
@@ -76,7 +76,7 @@ public class RailGenerator : MonoBehaviour
 	Text _scoreText;
 	Text _comboText;
 	CanvasGroup _scoreCanvas;
-	float _maxSpeed=.6f;
+	float _maxSpeed=.7f;
 	float _jumpIncreaseRate = 0.3f;//rate of speed increase 
 	float _balanceSpeedMultiplier=280;
 	public Text _tDebug,_ngDebug,_gpDebug;
@@ -93,7 +93,7 @@ public class RailGenerator : MonoBehaviour
 	float _corkAngle;
 	float _corkSpacing;
 	Transform _explosion;
-	float _invincibleSpeed=.37f;
+	float _invincibleSpeed=.5f;
 	float _invincibleWarning=.05f;
 	CanvasGroup _invincDisplay;
 	Image _invincMeter;
@@ -196,8 +196,8 @@ public class RailGenerator : MonoBehaviour
 		_jumping=true;
 		_takeOff.pitch = Random.Range(.8f,1.4f);
 		_takeOff.Play();
-		_lTrail.emitting=true;
-		_rTrail.emitting=true;
+		//_lTrail.emitting=true;
+		//_rTrail.emitting=true;
 		_balanceVelocity=0;
 		_inputDelayTimer=0;
 		float timer=0;
@@ -220,8 +220,8 @@ public class RailGenerator : MonoBehaviour
 		yLocal = Mathf.Round(yLocal/90f)*90;
 		localE.y=yLocal;
 		_ethan.localEulerAngles=localE;
-		_lTrail.emitting=false;
-		_rTrail.emitting=false;
+		//_lTrail.emitting=false;
+		//_rTrail.emitting=false;
 	}
 
 	void GenerateStartingSection(){
@@ -658,6 +658,8 @@ public class RailGenerator : MonoBehaviour
 
 	public void StartRiding(){
 		_gameState=1;
+		_lTrail.emitting=true;
+		_rTrail.emitting=true;
 		if(!_tutorial)
 		{
 			StartCoroutine(FadeInScoreText());

@@ -923,7 +923,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 9, y: -90, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -2.49, y: 4.57}
+  m_AnchoredPosition: {x: -2.49, y: 4.28}
   m_SizeDelta: {x: 1, y: 1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &302429387
@@ -7374,6 +7374,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Jumper
       objectReference: {fileID: 0}
+    - target: {fileID: 2393363297922809913, guid: 73aac87256ddf40c7b8273f11978659d,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6287953402659396341, guid: 73aac87256ddf40c7b8273f11978659d,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -9017,7 +9022,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 9, y: -90, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 1.57, y: 2.94}
+  m_AnchoredPosition: {x: 1.57, y: 2.84}
   m_SizeDelta: {x: 1, y: 1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1436513457
@@ -9515,7 +9520,7 @@ PrefabInstance:
     - target: {fileID: 6287953402659396341, guid: 73aac87256ddf40c7b8273f11978659d,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 4.77
+      value: 6.43
       objectReference: {fileID: 0}
     - target: {fileID: 6287953402659396341, guid: 73aac87256ddf40c7b8273f11978659d,
         type: 3}
@@ -11089,7 +11094,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 20
+      scalar: 40
       minScalar: 10
       maxCurve:
         serializedVersion: 2
