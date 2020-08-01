@@ -310,8 +310,9 @@ public class RailGenerator : MonoBehaviour
 					float cross = Vector3.Cross(curForward,nextForward).y*.1f;
 
 					//make sure the delta isn't nuts
-					if(Mathf.Abs(cross-prevCross)>0.1f)
+					if(Mathf.Abs(cross-prevCross)>0.1f && probOverride==-1)
 					{
+						Debug.Log("Clearing coins prematurely: start knot: "+startKnot);
 						clusterCounter=0;
 						cork=false;//reset to use for corkSpacing
 					}
@@ -374,6 +375,7 @@ public class RailGenerator : MonoBehaviour
 					//see if we randomly create a cluster
 					if(!nearJump && Random.value<prob)
 					{
+						Debug.Log("Generating cluster at startKnot: "+startKnot);
 						//Debug.Log("Not near jump & rando < 1");
 						//Make sure we don't generate coins on straight sections because that is boring and the coins are harder to see
 						Vector3 nextForward = _path.GetTangent(t+1f/(float)_lineResolution);
@@ -381,7 +383,8 @@ public class RailGenerator : MonoBehaviour
 						prevCross=cross;//need this to ensure the cluster doesn't get insta cancelled
 						if(Mathf.Abs(cross)>_crossThreshold)
 						{
-							if(_corkSpacing >1f)
+							Debug.Log("point a");
+							if(_corkSpacing >1f || prob==1)
 							{
 								//Determine cluster size
 								clusterCounter=Random.Range(_minCoinCluster,_maxCoinCluster+1);
@@ -391,6 +394,7 @@ public class RailGenerator : MonoBehaviour
 						}
 						else{
 							//gen corkscrew
+							Debug.Log("point b");
 							clusterCounter=Random.Range(5,25);;
 							cork=true;	
 							corkInc=Random.Range(-.1f,.1f);
@@ -589,48 +593,7 @@ public class RailGenerator : MonoBehaviour
 		for(int i=0; i<segments; i++){
 			_knots.Add(_knots[_knots.Count-1]+tan*_nodeDist);
 		}
-		/*
-		if(allowCorks && segments>2){
-			ResetRail();
-			//add corkscrew coins
-			float corkScrewStart = (float)(_knots.Count-1-(segments-1)+_tOffset);
-			float corkScrewEnd = corkScrewStart+(segments-2);//minus 2 for s and e
-			AddCorkscrewCoins(corkScrewStart,corkScrewEnd);
-		}
-		*/
 	}
-
-	void AddCorkscrewCoins(float tStart, float tEnd){
-		Debug.Log("Adding corkscrew coins between "+tStart+" and "+tEnd);
-		float inc = 1f/(float)_lineResolution;
-		float angle=0;
-		int endLoop = 10*(Mathf.RoundToInt(tEnd-tStart));
-		for(int i=0; i<endLoop; i++){
-			float key = tStart+inc*i;
-			Debug.Log("key: "+key);
-			Coin c = new Coin();
-			Vector3 forward = _path.GetTangent(key);
-			Vector3 railPos = _path.GetPoint(key);
-			Vector3 right = Vector3.Cross(Vector3.up,forward);
-			Vector3 offset = Vector3.LerpUnclamped(Vector3.up,right,angle);
-			offset.Normalize();
-			c.offset=offset;
-			Transform curCoin = Instantiate(_coin,railPos+offset*_coinHeight,Quaternion.identity,null);
-			curCoin.LookAt(railPos);
-			//curCoin.RotateAround(curCoin.position,offset,90f);
-			curCoin.localScale = new Vector3(.5f,1f,2f);
-			c.transform=curCoin;
-			c.mesh = curCoin.GetComponent<MeshRenderer>();
-
-			//add coin to coin dict
-			if(!_coins.ContainsKey(key)){
-				_coins.Add(key,c);
-			}
-			angle+=inc;
-		}
-
-	}
-
 
 	void AddZigZag(float angle, int zigzags, bool leftFirst){
 		Vector3 tan = _knots[_knots.Count-1]-_knots[_knots.Count-2];
@@ -1023,6 +986,12 @@ public class RailGenerator : MonoBehaviour
 		}
 		_music.pitch=1;
 		_gameState=1;
+	}
+
+	[ContextMenu("Clear tut")]
+	public void ClearTut(){
+		PlayerPrefs.DeleteKey("tut");
+		PlayerPrefs.Save();
 	}
 
 	void OnDrawGizmos(){

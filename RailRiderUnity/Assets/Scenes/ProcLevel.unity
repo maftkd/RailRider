@@ -17,7 +17,7 @@ RenderSettings:
   m_Fog: 1
   m_FogColor: {r: 1, g: 1, b: 1, a: 1}
   m_FogMode: 3
-  m_FogDensity: 0.017
+  m_FogDensity: 0.02
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
   m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
@@ -8682,6 +8682,11 @@ PrefabInstance:
       propertyPath: m_ReceiveShadows
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5530887627035830188, guid: 8e5df86e71eab594c923ee6c6ad59d69,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 75db23e76bd94d844aeb168a3f602f32, type: 2}
     - target: {fileID: 5530887627035830190, guid: 8e5df86e71eab594c923ee6c6ad59d69,
         type: 3}
       propertyPath: m_CastShadows

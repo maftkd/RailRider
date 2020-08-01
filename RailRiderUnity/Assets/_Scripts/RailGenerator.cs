@@ -310,7 +310,7 @@ public class RailGenerator : MonoBehaviour
 					float cross = Vector3.Cross(curForward,nextForward).y*.1f;
 
 					//make sure the delta isn't nuts
-					if(Mathf.Abs(cross-prevCross)>0.1f)
+					if(Mathf.Abs(cross-prevCross)>0.1f && probOverride==-1)
 					{
 						clusterCounter=0;
 						cork=false;//reset to use for corkSpacing
@@ -381,7 +381,7 @@ public class RailGenerator : MonoBehaviour
 						prevCross=cross;//need this to ensure the cluster doesn't get insta cancelled
 						if(Mathf.Abs(cross)>_crossThreshold)
 						{
-							if(_corkSpacing >1f)
+							if(_corkSpacing >1f || prob==1)
 							{
 								//Determine cluster size
 								clusterCounter=Random.Range(_minCoinCluster,_maxCoinCluster+1);
@@ -982,6 +982,12 @@ public class RailGenerator : MonoBehaviour
 		}
 		_music.pitch=1;
 		_gameState=1;
+	}
+
+	[ContextMenu("Clear tut")]
+	public void ClearTut(){
+		PlayerPrefs.DeleteKey("tut");
+		PlayerPrefs.Save();
 	}
 
 	void OnDrawGizmos(){
