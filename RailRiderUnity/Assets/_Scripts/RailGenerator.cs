@@ -580,6 +580,7 @@ public class RailGenerator : MonoBehaviour
 		_gate.localEulerAngles = localEulers;
 		//_gate.localScale = new Vector3(5,5,_nodeDist);
 		_gate.GetComponent<MeshRenderer>().enabled=true;
+		_gate.GetChild(0).GetComponent<ParticleSystem>().Play();
 	}
 
 
