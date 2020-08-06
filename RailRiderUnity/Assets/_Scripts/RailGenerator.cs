@@ -884,7 +884,7 @@ public class RailGenerator : MonoBehaviour
 					//invincinbility effect
 					Color color;
 					if(_moveSpeed>_invincibleSpeed+_invincibleWarning){
-						color = _invincibilityGrad.Evaluate(Mathf.PingPong(_t,1f));
+						color = _invincibilityGrad.Evaluate(Mathf.PingPong(_t,1f))*.5f;
 					}
 					else{
 						color = Color.white*Mathf.PingPong(_t,0.2f)*5f;
