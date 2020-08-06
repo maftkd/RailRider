@@ -55,7 +55,7 @@
             // Metallic and smoothness come from slider variables
             o.Metallic = _Metallic;
 		//o.Emission = (1-edge)*(_EdgeColor*(1+abs(.5-frac(_Time.y*.25))*3));
-		//o.Emission = (1-edge)*lerp(_EdgeColor,_Color,abs(.5-frac(_Time.y*.2)));
+		o.Emission = (1-edge)*lerp(_EdgeColor,_Color,abs(.5-frac(_Time.y*.5)));
             o.Smoothness = _Glossiness;
             o.Alpha = 1;
         }
