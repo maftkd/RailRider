@@ -62,7 +62,7 @@ public class RailGenerator : MonoBehaviour
 	public Color _coinHitColor;
 	int _collectedCoins;
 	float _coinHitThreshold = .95f;
-	int _gameState=0;
+	public int _gameState=0;
 	//0 = menu
 	//1 = play
 	//2 = collided with jumper
@@ -990,6 +990,14 @@ public class RailGenerator : MonoBehaviour
 	public void ClearTut(){
 		PlayerPrefs.DeleteKey("tut");
 		PlayerPrefs.Save();
+	}
+
+	public void Pause(){
+		_gameState=0;
+	}
+
+	public void Resume(){
+		_gameState=1;
 	}
 
 	void OnDrawGizmos(){

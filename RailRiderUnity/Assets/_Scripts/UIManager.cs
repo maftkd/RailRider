@@ -15,6 +15,8 @@ public class UIManager : MonoBehaviour
 	public Texture _unmutedTex;
 	public RawImage _musicButton;
 	public RawImage _littleEx;
+	RailGenerator _railGen;
+	public CanvasGroup _pauseMenu;
 	
 	// Start is called before the first frame update
 	void Start()
@@ -39,7 +41,7 @@ public class UIManager : MonoBehaviour
 				}
 			}
 		}
-
+		_railGen = GameObject.FindGameObjectWithTag("GameController").GetComponent<RailGenerator>();	
 	}
 
 	// Update is called once per frame
@@ -109,5 +111,21 @@ public class UIManager : MonoBehaviour
 
 	public void Reload(){
 		SceneManager.LoadScene(1);
+	}
+
+	public void Pause(){
+		if(_railGen._gameState==1){
+			_railGen.Pause();		
+			_pauseMenu.alpha=1;
+			_pauseMenu.blocksRaycasts=true;
+			_pauseMenu.interactable=true;
+		}
+	}
+
+	public void Resume(){
+		_railGen.Resume();
+		_pauseMenu.alpha=0;
+		_pauseMenu.blocksRaycasts=false;
+		_pauseMenu.interactable=false;
 	}
 }
