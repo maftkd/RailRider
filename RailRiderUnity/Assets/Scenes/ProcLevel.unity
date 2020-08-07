@@ -8222,8 +8222,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 476.8, y: -603.4}
-  m_SizeDelta: {x: 395.4, y: 106.76}
+  m_AnchoredPosition: {x: 536.6, y: -117.46}
+  m_SizeDelta: {x: 292.93, y: 106.76}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1132229170
 MonoBehaviour:
@@ -9596,8 +9596,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 118.8, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_AnchoredPosition: {x: 95.61, y: -0.7}
+  m_SizeDelta: {x: 75, y: 75}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1407684817
 MonoBehaviour:
@@ -10015,7 +10015,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 528.49, y: -170}
+  m_AnchoredPosition: {x: 528.49, y: -236.48}
   m_SizeDelta: {x: 200, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1577044984
@@ -10483,7 +10483,7 @@ GameObject:
   - component: {fileID: 1749508191}
   - component: {fileID: 1749508190}
   m_Layer: 5
-  m_Name: PauseButton (1)
+  m_Name: PauseText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10505,7 +10505,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -8.4}
+  m_AnchoredPosition: {x: 43.86, y: -8.4}
   m_SizeDelta: {x: 354.9, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1749508190
@@ -10528,7 +10528,7 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: bdaf36c42f6187a4f925190cc780e199, type: 3}
-    m_FontSize: 78
+    m_FontSize: 61
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 10
