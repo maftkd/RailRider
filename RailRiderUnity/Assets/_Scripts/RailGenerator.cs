@@ -169,8 +169,8 @@ public class RailGenerator : MonoBehaviour
 		_scoreText = GameObject.FindGameObjectWithTag("Score").GetComponent<Text>();
 		_comboText = _scoreText.transform.GetChild(0).GetComponent<Text>();
 		_comboSfx = _comboText.transform.GetComponent<AudioSource>();
-		_invincDisplay = _scoreText.transform.GetChild(1).GetComponent<CanvasGroup>();
-		_invincMeter = _invincDisplay.transform.GetChild(0).GetComponent<Image>();
+		//_invincDisplay = _scoreText.transform.GetChild(1).GetComponent<CanvasGroup>();
+		//_invincMeter = _invincDisplay.transform.GetChild(0).GetComponent<Image>();
 		_scoreCanvas = _scoreText.transform.GetComponent<CanvasGroup>();
 		_defaultScoreFont=_scoreText.fontSize;
 		_boldScoreFont=Mathf.FloorToInt(_defaultScoreFont*1.4f);
@@ -285,10 +285,7 @@ public class RailGenerator : MonoBehaviour
 		float prevCross=0;
 		float prob = probOverride==-1? _coinProbability : probOverride;
 		bool cork=false;
-		//_corkAngle=0;
 		float corkInc=0;
-		//Debug.Log("generating coins");
-		//more temp code for jumper
 		for(int i=startKnot*_lineResolution; i<endKnot*_lineResolution; i++){
 			//converts line space to coin space
 			float t = i/(float)_lineResolution;
@@ -331,9 +328,7 @@ public class RailGenerator : MonoBehaviour
 						//instance the coin
 						Transform curCoin = Instantiate(_coin,railPos+Vector3.up*_coinHeight,Quaternion.identity, null);
 						curCoin.LookAt(curCoin.position+curForward);
-						//Vector3 coinEulers = curCoin.eulerAngles;
-						//coinEulers.y=0;
-						//curCoin.eulerAngles=coinEulers;
+						//rotate coin around rail
 						if(!cork)
 							curCoin.RotateAround(railPos,curForward,cross*_crossMultiplier);
 						else
@@ -361,7 +356,6 @@ public class RailGenerator : MonoBehaviour
 				}
 				//If we are not currently generating a cluster
 				else{
-					//Debug.Log("Cluster count = 0");
 					bool nearJump=false;
 					foreach(float k in _jumpers.Keys){
 						if(Mathf.Abs(k-key)<_jumpSpacing)
@@ -374,7 +368,6 @@ public class RailGenerator : MonoBehaviour
 					//see if we randomly create a cluster
 					if(!nearJump && Random.value<prob)
 					{
-						//Debug.Log("Not near jump & rando < 1");
 						//Make sure we don't generate coins on straight sections because that is boring and the coins are harder to see
 						Vector3 nextForward = _path.GetTangent(t+1f/(float)_lineResolution);
 						float cross = Vector3.Cross(curForward,nextForward).y*.1f;
@@ -391,7 +384,7 @@ public class RailGenerator : MonoBehaviour
 						}
 						else{
 							//gen corkscrew
-							clusterCounter=Random.Range(5,25);;
+							clusterCounter=Random.Range(5,25);
 							cork=true;	
 							corkInc=Random.Range(-.1f,.1f);
 							_corkSpacing=0;
@@ -501,6 +494,7 @@ public class RailGenerator : MonoBehaviour
 			numTracks = Random.Range(2,8);
 			AddZigZag(Mathf.PI/Random.Range(5f,12f),numTracks,(Random.value<0.5f));
 		}
+		//what about down slopes?
 		return numTracks;
 	}
 
@@ -630,9 +624,18 @@ public class RailGenerator : MonoBehaviour
 		}
 	}
 
+
+	//event when coin is collected
+	public delegate void EventHandler();
+	public event EventHandler OnCoinCollected;
+	//event when gear is collected
+	public event EventHandler OnGearCollected;
+
 	void AddCoin(int setValue=-1){
 		if(setValue==-1)
 		{
+			if(OnCoinCollected!=null)
+				OnCoinCollected.Invoke();
 			_collectedCoins++;
 			_combo++;
 			Transform coinSfx = Instantiate(_coinFx);
@@ -689,10 +692,10 @@ public class RailGenerator : MonoBehaviour
 				foreach(Touch touch in Input.touches){
 					Vector2 touchPos = touch.position;
 					if(touchPos.x < Screen.width*0.4f){
-						_balanceState+=1;
+						_balanceState=1;
 					}
 					else if(touchPos.x > Screen.width*0.6f){
-						_balanceState+=2;
+						_balanceState=2;
 					}
 				}	
 	#if UNITY_EDITOR
@@ -714,7 +717,7 @@ public class RailGenerator : MonoBehaviour
 					_balanceSpeed += _balanceSpeedIncrease;
 				}
 				//temp code for testing jump
-				if(Input.GetKey(KeyCode.UpArrow)){
+				if(Input.GetAxis("Vertical")>0){
 					if(!_jumping)
 						StartCoroutine(JumpRoutine());
 				}
@@ -812,6 +815,8 @@ public class RailGenerator : MonoBehaviour
 										_jumpers[f].transform.tag="Collected";
 										_jumpers[f].mesh.enabled=false;
 										_smash.Play();
+										if(OnGearCollected!=null)
+											OnGearCollected.Invoke();
 									}
 									else{
 										_gameState=2;
@@ -891,12 +896,12 @@ public class RailGenerator : MonoBehaviour
 						color = Color.white*Mathf.PingPong(_t,0.2f)*5f;
 					}
 					_ethanMat.SetColor("_EmissionColor",color);
-					_invincMeter.fillAmount=Mathf.InverseLerp(_invincibleSpeed,_maxSpeed,_moveSpeed);
+					//_invincMeter.fillAmount=Mathf.InverseLerp(_invincibleSpeed,_maxSpeed,_moveSpeed);
 				}
 				else
 				{
 					_ethanMat.SetColor("_EmissionColor",Color.black);
-					_invincDisplay.alpha=0;
+					//_invincDisplay.alpha=0;
 				}
 				break;
 			case 2://collide with jumper
@@ -948,8 +953,8 @@ public class RailGenerator : MonoBehaviour
 
 		_woosh.Play();
 
-		_invincDisplay.alpha=1f;
-		_invincMeter.fillAmount=1f;
+		//_invincDisplay.alpha=1f;
+		//_invincMeter.fillAmount=1f;
 
 		//particles
 		/*

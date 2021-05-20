@@ -10,6 +10,7 @@ public class FollowCam : MonoBehaviour
 	public Transform _railTracker;
 	float _followDistance=4f;
 	public Transform _lookTarget;
+	public Transform _shopTarget;
 	int _camState=0;
 	//0 = menu
 	//1 = intro
@@ -23,11 +24,17 @@ public class FollowCam : MonoBehaviour
 	float _lerpSpeed=2f;
 	float _slerpSpeed=2f;
 	float _transitionDur=2f;
+	Vector3 _menuPos;
+	Quaternion _menuRot;
+	Transform _menuTarget;
 
 	// Start is called before the first frame update
 	void Start()
 	{
 		_camLerpTarget = transform.GetChild(0);
+		_menuPos = _camLerpTarget.position;
+		_menuRot = _camLerpTarget.rotation;
+		_menuTarget = _lookTarget;
 		_camTransform = transform.GetChild(1);
 		_cam =_camTransform.GetComponent<Camera>();
 		transform.position = _railTracker.position-_railTracker.forward*_followDistance;
@@ -68,6 +75,18 @@ public class FollowCam : MonoBehaviour
 		_camState=1;
 		_targetPos=Vector3.up*_followHeight;
 		_startPos=_camLerpTarget.localPosition;
+	}
+
+	public void SetShopCam(){
+		_camLerpTarget.position = _shopTarget.position;
+		_camLerpTarget.rotation = _shopTarget.rotation;
+		_lookTarget=_shopTarget.GetChild(0);
+	}
+
+	public void SetMenuCam(){
+		_camLerpTarget.position = _menuPos;
+		//_camLerpTarget.rotation = _menuRot;
+		_lookTarget=_menuTarget;
 	}
 
 }

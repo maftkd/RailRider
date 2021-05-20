@@ -17,17 +17,24 @@ public class UIManager : MonoBehaviour
 	public RawImage _littleEx;
 	RailGenerator _railGen;
 	public CanvasGroup _pauseMenu;
+	int _coins;
+	int _gears;
+	public Text _coinText;
+	public Text _gearText;
 	
 	// Start is called before the first frame update
 	void Start()
 	{
+		//get menu
+		_menu = transform.GetChild(0).GetComponent<CanvasGroup>();
 
-		_menu = GetComponent<CanvasGroup>();
+		//get rail gen
+		_railGen = GameObject.FindGameObjectWithTag("GameController").GetComponent<RailGenerator>();	
 		
 		if(_musicButton!=null){
 			if(PlayerPrefs.HasKey("Music")){
 				if(PlayerPrefs.GetInt("Music")==1){
-					_musicButton.texture=_musicMutedTex;
+					_musicButton.enabled=true;
 					_mixer.SetFloat("MusicVolume", -80f);
 					_musicMuted=true;
 				}
@@ -41,7 +48,30 @@ public class UIManager : MonoBehaviour
 				}
 			}
 		}
-		_railGen = GameObject.FindGameObjectWithTag("GameController").GetComponent<RailGenerator>();	
+		//get coins
+		if(_coinText!=null){
+			if(PlayerPrefs.HasKey("Coin")){
+				_coins = PlayerPrefs.GetInt("Coin");
+			}
+			if(PlayerPrefs.HasKey("Gear")){
+				_gears = PlayerPrefs.GetInt("Gear");
+			}
+			_coinText.text=_coins.ToString("0");
+			_gearText.text=_gears.ToString("0");
+			_railGen.OnCoinCollected+=CoinCollected;
+			_railGen.OnGearCollected+=GearCollected;
+		}
+	}
+
+	public void CoinCollected(){
+		_coins++;
+		_coinText.text=_coins.ToString("0");
+		PlayerPrefs.SetInt("Coin",_coins);
+	}
+	public void GearCollected(){
+		_gears++;
+		_gearText.text=_gears.ToString("0");
+		PlayerPrefs.SetInt("Gear",_gears);
 	}
 
 	// Update is called once per frame
@@ -85,9 +115,9 @@ public class UIManager : MonoBehaviour
 		_musicMuted=!_musicMuted;
 		_mixer.SetFloat("MusicVolume", _musicMuted ? -80f : 0f);
 		if(_musicMuted)
-			_musicButton.texture=_musicMutedTex;
+			_musicButton.enabled=true;
 		else
-			_musicButton.texture = _unmutedTex;
+			_musicButton.enabled=false;
 		if(PlayerPrefs.HasKey("Music")){
 			PlayerPrefs.DeleteKey("Music");
 		}
