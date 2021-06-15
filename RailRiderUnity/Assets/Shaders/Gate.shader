@@ -45,11 +45,12 @@
             // Metallic and smoothness come from slider variables
             o.Metallic = _Metallic;
             o.Smoothness = _Glossiness;
-		fixed2 coords = IN.uv_MainTex;
-		fixed yTime = _Time.x*6;
-		fixed maxThresh = 1-step(frac(yTime),coords.x);
-		fixed minThresh = step(frac(yTime)-0.1,coords.x);
-		o.Emission = maxThresh*minThresh*.5;
+			fixed2 coords = IN.uv_MainTex;
+			fixed yTime = _Time.y;
+			//fixed maxThresh = 1-step(frac(yTime),coords.x);
+			//fixed minThresh = step(frac(yTime)-0.1,coords.x);
+			//o.Emission = maxThresh*minThresh*.5;
+			o.Emission=abs(coords.x-abs(sin(yTime)))*.25;
             o.Alpha = c.a;
         }
         ENDCG

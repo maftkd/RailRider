@@ -170,7 +170,6 @@ public class UploadManager : MonoBehaviour
 				break;
 			default:
 				return;
-				break;
 		}
 
 		if(!Directory.Exists(buildPath))

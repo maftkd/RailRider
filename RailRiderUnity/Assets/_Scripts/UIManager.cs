@@ -17,8 +17,10 @@ public class UIManager : MonoBehaviour
 	public RawImage _littleEx;
 	RailGenerator _railGen;
 	public CanvasGroup _pauseMenu;
-	int _coins;
-	int _gears;
+	[HideInInspector]
+	public int _coins;
+	[HideInInspector]
+	public int _gears;
 	public Text _coinText;
 	public Text _gearText;
 	
@@ -61,6 +63,12 @@ public class UIManager : MonoBehaviour
 			_railGen.OnCoinCollected+=CoinCollected;
 			_railGen.OnGearCollected+=GearCollected;
 		}
+	}
+
+	public void CoinSpent(int c){
+		_coins-=c;
+		_coinText.text=_coins.ToString("0");
+		PlayerPrefs.SetInt("Coin",_coins);
 	}
 
 	public void CoinCollected(){
@@ -140,7 +148,7 @@ public class UIManager : MonoBehaviour
 	}
 
 	public void Reload(){
-		SceneManager.LoadScene(1);
+		SceneManager.LoadScene(0);
 	}
 
 	public void Pause(){

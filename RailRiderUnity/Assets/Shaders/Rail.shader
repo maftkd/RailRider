@@ -6,10 +6,10 @@
         _MainTex ("Albedo (RGB)", 2D) = "white" {}
         _Glossiness ("Smoothness", Range(0,1)) = 0.5
         _Metallic ("Metallic", Range(0,1)) = 0.0
-	[HDR] _EdgeColor("Edge Color", Color) = (1,1,1,1)
-	_EdgeThickness("Edge thickness", Range(0,0.5)) = 0.4
-	[HDR] _ColorA("Color A", Color) = (1,1,1,1)
-	[HDR] _ColorB("Color B", Color) = (1,1,1,1)
+		[HDR] _EdgeColor("Edge Color", Color) = (1,1,1,1)
+		_EdgeThickness("Edge thickness", Range(0,0.5)) = 0.4
+		[HDR] _ColorA("Color A", Color) = (1,1,1,1)
+		[HDR] _ColorB("Color B", Color) = (1,1,1,1)
 
     }
     SubShader
@@ -49,13 +49,12 @@
         void surf (Input IN, inout SurfaceOutputStandard o)
         {
             // Albedo comes from a texture tinted by color
-            //fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _EdgeColor;
-		float edge = 1-step(_EdgeThickness,abs(.5-IN.uv_MainTex.y));
-            o.Albedo = lerp(_ColorA,_ColorB,IN.uv_MainTex.y)*edge+(1-edge)*_EdgeColor;
-            // Metallic and smoothness come from slider variables
+            fixed c = tex2D (_MainTex, IN.uv_MainTex).r;
+			c = 1-c*.5;
+			float edge = 1-step(_EdgeThickness,abs(.5-IN.uv_MainTex.y));
+            o.Albedo = lerp(_ColorA,_ColorB,IN.uv_MainTex.y)*edge*c+(1-edge)*_EdgeColor;
             o.Metallic = _Metallic;
-		//o.Emission = (1-edge)*(_EdgeColor*(1+abs(.5-frac(_Time.y*.25))*3));
-		o.Emission = (1-edge)*lerp(_EdgeColor,_Color,abs(.5-frac(_Time.y*.5)));
+			o.Emission = (1-edge)*lerp(_EdgeColor,_Color,abs(.5-frac(_Time.y*.5)));
             o.Smoothness = _Glossiness;
             o.Alpha = 1;
         }
