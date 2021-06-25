@@ -8,7 +8,7 @@ public class Hoverboard : MonoBehaviour
 	public string _name;
 	public float _balance;
 	public float _speed;
-	public float _turning;
+	public float _trick;
 	[HideInInspector]
 	public bool _rotate;
 	float _maxSpinSpeed=900;

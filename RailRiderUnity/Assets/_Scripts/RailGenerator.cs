@@ -13,13 +13,13 @@ public class RailGenerator : MonoBehaviour
 	public Material _lineMat;
 	float _nodeDist = 16f;//approximate segment length
 	int _lineResolution = 10;//Number of points on line per segment
-	float _moveSpeed=0.45f;//rate at which char moves along rail in segments/sec
-	float _targetMoveSpeed=0.45f;
+	float _moveSpeed=0.6f;//rate at which char moves along rail in segments/sec
+	float _targetMoveSpeed;
 	float _maxSpeed=0.8f;//speed obtained through tunnel
 	float _speedChangeLerp=.12f;
 	Transform _railTracker;
 	float _balance;
-	float _t;
+	float _t;//measurement of time progress throughout the run
 	float _balanceSpeed = 100;//degrees per second of rotation at full balanceVelocity
 	int _balanceState = 0;//0=no input, 1=left input, 2=right input
 	float _balanceVelocity = 0;//rate at which Character rotates
@@ -37,12 +37,12 @@ public class RailGenerator : MonoBehaviour
 	int _maxCoinSpacing = 30;
 	int _minCoinCluster=3;
 	int _maxCoinCluster=12;
-	int _tOffset=0;
+	int _tOffset=0;//subtract from _t to get time about current sections of rail
 	int _lookAheadTracks=8;
 	public Transform _jumper;
 	float _lastJump;
-	float _jumpProbability = 0.02f;
-	float _maxJumpProbability = .15f;
+	float _jumpProbability = 0.05f;
+	float _maxJumpProbability = .25f;
 	float _jumpThreshold=1.5f;//spacing between jumps and other jumps
 	float _minJumpThreshold=0.4f;
 	float _jumpSpacing=0.6f;//spacing between coins and jumps
@@ -56,11 +56,10 @@ public class RailGenerator : MonoBehaviour
 	Transform _ethan;
 	bool _jumping=false;
 	bool _crouching=false;
-	float _jumpHeight = 2.1f;//1.85f;
+	float _jumpHeight = 2.5f;//1.85f;
 	float _jumpDur = 0.7f;
 	float _minJumpY = 1f;//min height to clear a coin
 	public AnimationCurve _jumpCurve;
-	float _spinSpeed=540f;
 	float _inputDelayTimer=0;
 	float _inputDelay=.05f;
 	Dictionary<float, Jumper> _jumpers = new Dictionary<float, Jumper>();
@@ -80,8 +79,16 @@ public class RailGenerator : MonoBehaviour
 	float _maxGateSpace=30;
 	public UnityEvent _jumpHit;//essentially game over event
 	Text _scoreText;
+	Text _scoreTextShadow;
 	Text _comboText;
+	Text _trickText;
+	RectTransform _trickTextRect;
+	float _trickTextTimer;
+	float _maxTrickTextTimer=3f;
+	float _spinTrick;
+	public AnimationCurve _popup;
 	CanvasGroup _scoreCanvas;
+	public CanvasGroup _authorCanvas;
 	float _jumpIncreaseRate = 0.3f;//rate of speed increase 
 	float _balanceSpeedMultiplier=280;
 	public Text _tDebug,_ngDebug,_gpDebug;
@@ -94,13 +101,13 @@ public class RailGenerator : MonoBehaviour
 	public AudioSource _music;
 	public GameObject _tutorialObjs;
 	Camera _main;
-	float _crossMultiplier=-250f;
+	float _crossMultiplier=-75f;//-125f;//-250f;
 	//#dothis
 	float _curvature;
 	float _corkAngle;
 	float _corkSpacing;
 	Transform _explosion;
-	float _invincibleSpeed=.5f;
+	float _invincibleSpeed=.65f;
 	float _invincibleWarning=.05f;
 	CanvasGroup _invincDisplay;
 	Image _invincMeter;
@@ -121,9 +128,12 @@ public class RailGenerator : MonoBehaviour
 	float _touchSens=0.5f;
 	Slider _sensSlider;
 	float _balanceMult;
-	float _turnMult;
+	float _trickMult;
 	float _speedMult;
 	Animator _anim;
+	bool _zen;
+	int _clusterCount;
+	int _clusterCounter;
 
 	public Transform _shopParent;
 	UIManager _menu;
@@ -180,10 +190,6 @@ public class RailGenerator : MonoBehaviour
 		}
 
 
-		//set speed
-		_targetMoveSpeed=_moveSpeed;
-		_balanceSpeed = _moveSpeed*_balanceSpeedMultiplier;
-
 		//GenerateJumpers(0,_knots.Count-1);
 
 		//This sets number of coins to 0
@@ -196,6 +202,9 @@ public class RailGenerator : MonoBehaviour
 		_scoreText = GameObject.FindGameObjectWithTag("Score").GetComponent<Text>();
 		_comboText = _scoreText.transform.GetChild(0).GetComponent<Text>();
 		_comboSfx = _comboText.transform.GetComponent<AudioSource>();
+		_trickText = GameObject.Find("TrickText").GetComponent<Text>();
+		_trickTextRect = _trickText.GetComponent<RectTransform>();
+		_trickText.text="";
 		//_invincDisplay = _scoreText.transform.GetChild(1).GetComponent<CanvasGroup>();
 		//_invincMeter = _invincDisplay.transform.GetChild(0).GetComponent<Image>();
 		_scoreCanvas = _scoreText.transform.GetComponent<CanvasGroup>();
@@ -267,9 +276,15 @@ public class RailGenerator : MonoBehaviour
 			_board.localEulerAngles=Vector3.zero;
 			_board.localScale=Vector3.one*1f;
 			PlayerPrefs.SetInt("board",_curBoard);
-			_turnMult=b._turning;
+			_trickMult=b._trick;
 			_balanceMult=b._balance;
+			//set speed
 			_speedMult=b._speed;
+			_moveSpeed=_speedMult;
+			_maxSpeed=_moveSpeed*1.5f;
+			_invincibleSpeed=_moveSpeed+0.05f;
+			_targetMoveSpeed=_moveSpeed;
+			_balanceSpeed = _moveSpeed*_balanceSpeedMultiplier;
 		}
 		else
 		{
@@ -282,10 +297,10 @@ public class RailGenerator : MonoBehaviour
 		stat.text="Balance: "+b._balance.ToString("0.0");
 
 		stat = stats.GetChild(3).GetChild(0).GetComponent<Text>();
-		stat.text="Rotation: "+b._speed.ToString("0.0");
+		stat.text="Speed: "+b._speed.ToString("0.0");
 
 		stat = stats.GetChild(2).GetChild(0).GetComponent<Text>();
-		stat.text="Control: "+b._turning.ToString("0.0");
+		stat.text="Trick: "+b._trick.ToString("0.0");
 	}
 
 	public void BuyBoard(){
@@ -310,6 +325,7 @@ public class RailGenerator : MonoBehaviour
 		_jumping=true;
 		_crouching=false;
 		_anim.SetBool("crouch",false);
+		float startY = _ethan.localEulerAngles.y;
 		//wait for player to un-crouch
 		yield return new WaitForSeconds(0.05f);
 		//determine trick
@@ -323,11 +339,8 @@ public class RailGenerator : MonoBehaviour
 				}
 			}
 		}
-		Debug.Log("trick: "+trick);
 		_takeOff.pitch = Random.Range(.8f,1.4f);
 		_takeOff.Play();
-		//_lTrail.emitting=true;
-		//_rTrail.emitting=true;
 		_balanceVelocity=0;
 		_inputDelayTimer=0;
 		float timer=0;
@@ -350,12 +363,13 @@ public class RailGenerator : MonoBehaviour
 					_board.localEulerAngles=new Vector3(Mathf.Lerp(-45,0,l),0,Mathf.Lerp(0,360f,l));
 					break;
 				case 2://impossible
-					_board.localEulerAngles=new Vector3(Mathf.Lerp(0,360f,l),Mathf.Lerp(45f,0,Mathf.Abs(l-.5f)*2),0);
+					_board.localEulerAngles=new Vector3(Mathf.Lerp(0,-360f,l),Mathf.Lerp(45f,0,Mathf.Abs(l-.5f)*2),0);
 					break;
 			}
 			yield return null;
 		}
 		_ethan.localPosition=startPos;
+		_board.localEulerAngles=Vector3.zero;
 		_jumping=false;
 		_inputDelayTimer=-_inputDelay*2;
 
@@ -365,10 +379,54 @@ public class RailGenerator : MonoBehaviour
 		Vector3 localE = _ethan.localEulerAngles;
 		float yLocal = localE.y;
 		yLocal = Mathf.Round(yLocal/90f)*90;
+		int pos=Mathf.RoundToInt(Mathf.Abs(yLocal))/90;
 		localE.y=yLocal;
 		_ethan.localEulerAngles=localE;
-		//_lTrail.emitting=false;
-		//_rTrail.emitting=false;
+		string tricky="";
+		float dir=Mathf.Sign(_spinTrick);
+		int trickScore=0;
+		//get spins
+		if(Mathf.Abs(_spinTrick)>90){
+			tricky+=dir==1? "FS " : "BS ";
+			tricky+=Mathf.Round(Mathf.Abs(_spinTrick)/90)*90;
+		}
+		//get trick
+		switch(trick){
+			case -1:
+				tricky+=" Ollie";
+				break;
+			case 0:
+				tricky+=" Shuv-it";
+				trickScore+=Mathf.RoundToInt(Mathf.Abs(_spinTrick)/90f)*2;
+				break;
+			case 1:
+				tricky+=" Kickflip";
+				trickScore+=Mathf.RoundToInt(Mathf.Abs(_spinTrick)/90f)*2;
+				break;
+			case 2:
+				tricky+=" Impossible";
+				trickScore+=Mathf.RoundToInt(Mathf.Abs(_spinTrick)/90f)*2;
+				break;
+		}
+		//get grind
+		tricky+=" to\n";
+		switch(pos){
+			case 0:
+			case 2:
+			case 4:
+				tricky+="Fifty Fifty";
+				break;
+			case 1:
+			case 3:
+				tricky+="Boardslide";
+				break;
+				break;
+		}
+		_trickText.text=tricky;
+		_spinTrick=0;
+		_trickTextTimer=_maxTrickTextTimer;
+		if(trickScore>0)
+			AddScore(trickScore);
 	}
 
 	void GenerateStartingSection(){
@@ -390,7 +448,8 @@ public class RailGenerator : MonoBehaviour
 		//AddStraight(3);//was 2 - is 3 to test corkscrews
 
 		//#temp
-		GenerateCoins(3,_knots.Count-1);
+		//GenerateCoins(3,_knots.Count-1);
+		GenerateCoinCluster();
 
 		_nextGate = Random.Range(_minGateSpace,_maxGateSpace);//remember this is not the location of the gate but the tOffset at which the gate spawns
 		_gatePos=1024;//something arbitrarily high at the start - will be reset in AddGate()
@@ -425,6 +484,51 @@ public class RailGenerator : MonoBehaviour
 
 		_nextGate = Random.Range(_minGateSpace,_maxGateSpace);//remember this is not the location of the gate but the tOffset at which the gate spawns
 		_gatePos=1024;//something arbitrarily high at the start - will be reset in AddGate()
+	}
+
+	void GenerateCoinCluster(){
+		//determine a starting point - say current pos+ 2 knots
+		float startT=_t+Random.Range(2f,4f);
+		//determine the number of coins - say 5
+		int numCoins=Random.Range(3,15);
+		_clusterCount=numCoins;
+		_clusterCounter=0;
+		//determine spacing
+		float coinSpacing=.075f;
+		//for loop
+		//	place coins
+		for(int i=0;i<numCoins;i++)
+		{
+			GenerateCoin(startT+i*coinSpacing,i==numCoins-1);
+		}
+	}
+
+	void GenerateCoin(float t,bool final){
+		Vector3 railPos = _path.GetPoint(t-_tOffset);
+		Vector3 curForward = _path.GetTangent(t-_tOffset);
+		Vector3 nextForward = _path.GetTangent(t+1f/(float)_lineResolution);
+		//determine the curvature
+		float cross = Vector3.Cross(curForward,nextForward).y*.1f;
+		//declare coin struct
+		Coin c = new Coin();
+		//instance the coin
+		Transform curCoin = Instantiate(_coin,railPos+Vector3.up*_coinHeight,Quaternion.identity, null);
+		curCoin.name=final?"final":"coin";
+		//not sure what this does
+		curCoin.LookAt(curCoin.position+curForward);
+		//spin coin
+		curCoin.RotateAround(railPos,curForward,cross*_crossMultiplier);
+		c.offset=curCoin.up;
+		//set scale
+		curCoin.localScale=new Vector3(1f,2f,.5f);
+		//set transform
+		c.transform = curCoin;
+		//get the coin mesh data
+		c.mesh = curCoin.GetComponent<MeshRenderer>();
+		//add coin to coin dict
+		if(!_coins.ContainsKey(t)){
+			_coins.Add(t,c);
+		}
 	}
 
 	int clusterCounter=0;
@@ -530,7 +634,6 @@ public class RailGenerator : MonoBehaviour
 								//Determine cluster size
 								clusterCounter=Random.Range(_minCoinCluster,_maxCoinCluster+1);
 								coinSpacing=Random.Range(_minCoinSpacing,_maxCoinSpacing);
-								//clusterCounter=5;
 								cork=false;
 								_corkAngle=0;
 							}
@@ -539,8 +642,6 @@ public class RailGenerator : MonoBehaviour
 							//gen corkscrew
 							clusterCounter=Random.Range(_minCoinCluster,_maxCoinCluster+1);
 							coinSpacing=Random.Range(_minCoinSpacing,_maxCoinSpacing);
-							//clusterCounter=Random.Range(5,25);
-							//clusterCounter=5;
 							cork=true;	
 							corkInc=Random.Range(-.1f,.1f);
 							_corkSpacing=0;
@@ -552,6 +653,35 @@ public class RailGenerator : MonoBehaviour
 				_corkSpacing+=1/(float)_lineResolution;
 			}
 		}
+	}
+
+	void GenerateJumper(float distance){
+		float key = _t+distance;
+		Vector3 railPos = _path.GetPoint(key-_tOffset);
+		Vector3 forward = _path.GetTangent(key-_tOffset);
+		//instance the jumper
+		Transform jump = Instantiate(_jumper,railPos,Quaternion.identity, null);
+		jump.forward=-forward;
+		//create the struct
+		Jumper j;
+		j.type=Random.Range(0,3);
+		j.transform = jump;
+		j.transform.GetComponent<Rotator>()._speed=Random.Range(90f,180f);
+		j.mesh=jump.GetComponent<MeshRenderer>();
+		switch(j.type){
+			case 0:
+			default:
+				j.mesh.material.SetColor("_EmissionColor",Color.yellow);
+				break;
+			case 1:
+				j.mesh.material.SetColor("_EmissionColor",Color.cyan);
+				break;
+			case 2:
+				j.mesh.material.SetColor("_EmissionColor",Color.magenta);
+				break;
+		}
+		j.mesh.enabled=false;
+		_jumpers.Add(key,j);
 	}
 
 	void GenerateJumpers(int startKnot, int endKnot, float probOverride=-1){
@@ -571,27 +701,10 @@ public class RailGenerator : MonoBehaviour
 
 				//if jump is far enough from another jump and rng hits, then spawn a jumper
 				if(key-_lastJump>_jumpThreshold && Random.value<prob && Mathf.Abs(key-_gatePos)>2f){
-					
 					_lastJump=key;
-					int jumpCount=1;
-					if(prob<_doubleJumpThreshold ){
-						jumpCount=1;
-					}
-					else if(prob < _tripleJumpThreshold){
-						float val = Random.value;
-						if(val<_doubleJumpProbability)
-							jumpCount=2;
-					}
-					else if(prob <=_maxJumpProbability){
-						float val = Random.value;
-						if(val<_doubleJumpProbability)
-							jumpCount=2;
-						else if(val<_doubleJumpProbability+_tripleJumpProbability)
-							jumpCount=3;
-					}
 
 					int type=Random.Range(0,3);
-					for(int j=0; j<jumpCount; j++){
+					for(int j=0; j<2; j++){
 
 						float nextT = (i+j*0.5f)/(float)_lineResolution;
 						Vector3 nextPos = _path.GetPoint(nextT);
@@ -601,6 +714,10 @@ public class RailGenerator : MonoBehaviour
 						Jumper j2;
 						j2.type=type;
 						j2.transform = jumper2;
+						if(j==0)
+							j2.transform.GetComponent<Rotator>()._speed=Random.Range(90f,180f);
+						else
+							j2.transform.GetComponent<Rotator>()._speed=Random.Range(-90f,-180f);
 						j2.mesh=jumper2.GetComponent<MeshRenderer>();
 						switch(j2.type){
 							case 0:
@@ -802,19 +919,21 @@ public class RailGenerator : MonoBehaviour
 	public event EventHandler OnGearCollected;
 
 	void AddCoin(int setValue=-1){
+		if(_zen)
+			return;
 		if(setValue==-1)
 		{
 			if(OnCoinCollected!=null)
 				OnCoinCollected.Invoke();
 			_collectedCoins++;
-			_combo++;
+			//_combo++;
 			Transform coinSfx = Instantiate(_coinFx);
 			AudioSource coinAudio = coinSfx.GetComponent<AudioSource>();
 			_comboPitch = Mathf.Lerp(_comboPitch,_maxComboPitch,.1f);
 			coinAudio.pitch=_comboPitch;
 			coinAudio.PlayScheduled(AudioSettings.dspTime+Random.value*.2);
 			Destroy(coinSfx.gameObject,.5f);
-			_comboText.text=_combo.ToString("+#");
+			//_comboText.text=_combo.ToString("+#");
 		}
 		else
 		{
@@ -825,12 +944,23 @@ public class RailGenerator : MonoBehaviour
 			_combo=0;
 			_comboPitch=_minComboPitch;
 		}
+		//_scoreText.text=_collectedCoins.ToString();
+		//_scoreTextShadow.text=_collectedCoins.ToString();
+		//_scoreText.fontSize=_boldScoreFont;
+		//_scoreChangeTimer=.4f;
+	}
+
+	void AddScore(int points){
+		if(_zen)
+			return;
+		_collectedCoins+=points;
 		_scoreText.text=_collectedCoins.ToString();
 		_scoreText.fontSize=_boldScoreFont;
 		_scoreChangeTimer=.4f;
 	}
 
-	public void StartRiding(){
+	public void StartRiding(bool zen){
+		_zen=zen;
 		_gameState=1;
 		_lTrail.emitting=true;
 		_rTrail.emitting=true;
@@ -914,11 +1044,14 @@ public class RailGenerator : MonoBehaviour
 						//climb to 1
 						if(!_jumping)
 						{
-							_balanceVelocity=Mathf.Lerp(_balanceVelocity,_maxVel,_balanceAcceleration*Time.deltaTime*_speedMult);
+							_balanceVelocity=Mathf.Lerp(_balanceVelocity,_maxVel,_balanceAcceleration*Time.deltaTime*_balanceMult);
 						}
 						//temp code for air spins
 						else
-							_ethan.Rotate(0,-_spinSpeed*Time.deltaTime, 0);
+						{
+							_spinTrick-=_trickMult*Time.deltaTime;
+							_ethan.Rotate(0,-_trickMult*Time.deltaTime, 0);
+						}
 						break;
 					case 2:
 						if(_crouching && !_jumping){
@@ -926,11 +1059,14 @@ public class RailGenerator : MonoBehaviour
 						}
 						//climb to -1
 						if(!_jumping)
-							_balanceVelocity = Mathf.Lerp(_balanceVelocity,-_maxVel,_balanceAcceleration*Time.deltaTime*_speedMult);
+							_balanceVelocity = Mathf.Lerp(_balanceVelocity,-_maxVel,_balanceAcceleration*Time.deltaTime*_balanceMult);
 
 						//temp code for air spins
 						else
-							_ethan.Rotate(0,_spinSpeed*Time.deltaTime, 0);
+						{
+							_spinTrick+=_trickMult*Time.deltaTime;
+							_ethan.Rotate(0,_trickMult*Time.deltaTime, 0);
+						}
 						break;
 					case 3:
 						if(!_jumping)
@@ -954,11 +1090,13 @@ public class RailGenerator : MonoBehaviour
 				SetPosition();
 
 				//Check for point acquisitions
+				bool genNext=false;
+				bool gotCluster=false;
 				foreach(float f in _coins.Keys){
 					if(f>_t-1 && f <_t+4){
 						Coin c = _coins[f];
 
-						//disable coins
+						//disable coins that are too far away
 						if(f<_t-.5f)
 							c.mesh.enabled=false;
 
@@ -967,26 +1105,46 @@ public class RailGenerator : MonoBehaviour
 						{
 							c.mesh.enabled=true;
 
-							//coinDetection
+							//if coin is close and not collected
 							if(Mathf.Abs(f-_t)<.05f && c.transform.tag!="Collected"){
 								float dot =Vector3.Dot(c.offset,_railTracker.up); 
+								//and player is in line, collect it
 								if(dot>_coinHitThreshold)
 								{
 									c.mesh.material.SetColor("_Color",_coinHitColor);
 									c.transform.tag="Collected";
 									AddCoin();
+									_clusterCounter++;
+									if(_clusterCounter==_clusterCount)
+										gotCluster=true;
+								}
+								if(c.transform.name=="final")
+								{
+									c.transform.name="foo";
+									genNext=true;
 								}
 							}
+							//on coin miss
 							else if(_t-f>.05f && c.transform.tag!="Collected"){
 								if(_combo>0){
-								_collectedCoins+=_combo;
-								AddCoin(_collectedCoins);
-								c.transform.tag="Collected";
+									_collectedCoins+=_combo;
+									AddCoin(_collectedCoins);
+									c.transform.tag="Collected";
+								}
+								if(c.transform.name=="final")
+								{
+									c.transform.name="foo";
+									genNext=true;
 								}
 							}
 						}
 					}
-				}
+				}//gen coin clusters after the previous has been collected
+				if(genNext)
+					GenerateCoinCluster();
+				if(gotCluster)
+					GenerateJumper(1f);
+
 
 				//check for jumper collisions
 				foreach(float f in _jumpers.Keys){
@@ -997,13 +1155,15 @@ public class RailGenerator : MonoBehaviour
 						{
 							_jumpers[f].mesh.enabled=true;
 							
-							if(Mathf.Abs(f-_t)<.02f && _ethan.localPosition.y < _minJumpY){
+							if(Mathf.Abs(f-_t)<.04f && _ethan.localPosition.y < _minJumpY){
 								if(!_tutorial){
-									if(_moveSpeed>_invincibleSpeed){
+									if(_moveSpeed>_invincibleSpeed || _zen){
 										//destroy the gear
 										//play particle
 										Transform vfx = _jumpers[f].transform.GetChild(0);
-										vfx.GetComponent<ParticleSystem>().Play();
+										ParticleSystem p = vfx.GetComponent<ParticleSystem>();
+										p.GetComponent<ParticleSystemRenderer>().material.SetColor("_EmissionColor",_jumpers[f].mesh.material.GetColor("_EmissionColor"));
+										p.Play();
 										_jumpers[f].transform.tag="Collected";
 										_jumpers[f].mesh.enabled=false;
 										_smash.Play();
@@ -1062,10 +1222,12 @@ public class RailGenerator : MonoBehaviour
 					_tOffset+=removed;
 					
 					//set this to -1 for special cases where coins are generated along with the track
+					/*
 					if(numTracks!=-1)
 						GenerateCoins(_knots.Count-(numTracks+1),_knots.Count-1);
+						*/
 					//#temp
-					GenerateJumpers(_knots.Count-(numTracks+1),_knots.Count-1);
+					//GenerateJumpers(_knots.Count-(numTracks+1),_knots.Count-1);
 				}
 				_moveSpeed = Mathf.Lerp(_moveSpeed,_targetMoveSpeed,_speedChangeLerp*Time.deltaTime);
 				_balanceSpeed = _moveSpeed*_balanceSpeedMultiplier;
@@ -1114,6 +1276,14 @@ public class RailGenerator : MonoBehaviour
 		if(Input.GetKeyDown(KeyCode.T))
 			PlayerPrefs.DeleteKey("tut");
 #endif
+		if(_trickTextTimer>0){
+			Vector2 lPos = _trickTextRect.anchoredPosition;
+			lPos.y = Mathf.Lerp(-250f,0f,_popup.Evaluate(_trickTextTimer/_maxTrickTextTimer));
+			_trickTextRect.anchoredPosition=lPos;
+			_trickTextTimer-=Time.deltaTime;
+			if(_trickTextTimer<=0)
+				_trickText.text="";
+		}
 	}
 
 	void SetPosition(){
@@ -1133,7 +1303,7 @@ public class RailGenerator : MonoBehaviour
 		//balance+=grav;
 		//balance-=momentum;
 		if(!_jumping)
-			_balance-=_curvature*_turnMult;
+			_balance-=_curvature*_balanceMult;
 		localEuler.z = -_balance;
 		_railTracker.localEulerAngles=localEuler;
 	}
@@ -1163,15 +1333,23 @@ public class RailGenerator : MonoBehaviour
 		*/
 	}
 
+
 	IEnumerator FadeInScoreText(float delay=4f){
 		yield return new WaitForSeconds(delay);
 		float timer=0;
+		if(_zen){
+			_scoreText.text="";
+			_comboText.text="";
+		}
 		while(timer<1){
 			timer+=Time.deltaTime;
 			_scoreCanvas.alpha=timer;
+			_authorCanvas.alpha=1-timer;
 			yield return null;
 		}
 		_scoreCanvas.alpha=1f;
+		_authorCanvas.alpha=0f;
+		yield return new WaitForSeconds(3f);
 		//destroy world space text
 		for(int i=_wsText.Length-1; i>=0; i--){
 			Destroy(_wsText[i]);
