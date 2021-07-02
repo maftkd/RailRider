@@ -70,7 +70,10 @@ public class FollowCam : MonoBehaviour
 				break;
 		}
 		_camTransform.localPosition = Vector3.Lerp(_camTransform.localPosition,_camLerpTarget.localPosition,_lerpSpeed*Time.deltaTime);
-		_camTransform.rotation = Quaternion.Slerp(_camTransform.rotation,_camLerpTarget.rotation,_slerpSpeed*Time.deltaTime);
+		//_camTransform.position = _camLerpTarget.position;
+		_camTransform.LookAt(_lookTarget);
+		//_camTransform.rotation = _camLerpTarget.rotation;
+		//_camTransform.rotation = Quaternion.Slerp(_camTransform.rotation,_camLerpTarget.rotation,_slerpSpeed*Time.deltaTime);
 		Vector3 eulers = _camTransform.eulerAngles;
 		eulers.z=0;
 		_camTransform.eulerAngles=eulers;
