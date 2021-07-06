@@ -144,6 +144,8 @@ public class RailGenerator : MonoBehaviour
 	float _minJumpDuckSpace=0.3f;
 	float _maxJumpDuckSpace=1f;
 	public Color _gold, _silver, _copper;
+	float _uncrouchTimer;
+	float _uncrouchTime=0.05f;//time it takes to confirm an uncrouch
 
 	public Transform _shopParent;
 	UIManager _menu;
@@ -340,6 +342,8 @@ public class RailGenerator : MonoBehaviour
 		_jumping=true;
 		_crouching=false;
 		_anim.SetBool("crouch",false);
+		//reset uncrouch timer
+		_uncrouchTimer=0;
 		float startY = _ethan.localEulerAngles.y;
 		//wait for player to un-crouch
 		yield return new WaitForSeconds(0.05f);
@@ -352,6 +356,7 @@ public class RailGenerator : MonoBehaviour
 				if(f-_t<.3f&&f-_t>0){
 					trick=_jumpers[f].type;
 					j = _jumpers[f];
+					j.transform.tag="Collected";
 					break;
 				}
 			}
@@ -443,8 +448,22 @@ public class RailGenerator : MonoBehaviour
 		_trickTextTimer=_maxTrickTextTimer;
 		if(trickScore>0)
 			AddScore(trickScore);
-		if(trick>=0&&j.transform.gameObject!=null)
+		if(trick>=0)
 			GenNextJumper();
+	}
+
+	void Uncrouch(){
+		//inc uncrouchTimer
+		_uncrouchTimer+=Time.deltaTime;
+		//if uncrouchTimer > uncrouchThresh
+		//	do stuff
+		//	reset uncrouch timer
+		if(_uncrouchTimer>=_uncrouchTime)
+		{
+			_crouching=false;
+			_anim.SetBool("crouch",false);
+			_uncrouchTimer=0;
+		}
 	}
 
 	void GenerateStartingSection(){
@@ -505,6 +524,7 @@ public class RailGenerator : MonoBehaviour
 	}
 
 	void GenerateCoinCluster(){
+		_comboPitch=_minComboPitch;
 		//determine a starting point - say current pos+ 2 knots
 		float startT=_t+Random.Range(2f,4f);
 		//determine the number of coins - say 5
@@ -516,11 +536,12 @@ public class RailGenerator : MonoBehaviour
 		float coinSpacing=.075f;
 		//for loop
 		float maxR = Mathf.Lerp(45f,180f,_playTimer/_maxTime);
+		float cork = Mathf.Lerp(0f,30f,_playTimer/_maxTime)*Random.Range(-1f,1f);
 		float rotation = Random.Range(-maxR,maxR);
 		//	place coins
 		for(int i=0;i<numCoins;i++)
 		{
-			GenerateCoin(startT+i*coinSpacing,rotation,i==numCoins-1);
+			GenerateCoin(startT+i*coinSpacing,rotation+cork*i,i==numCoins-1);
 		}
 	}
 
@@ -557,7 +578,7 @@ public class RailGenerator : MonoBehaviour
 			if(ab<0.25f)
 			{
 				c.transform.position+=curCoin.up*
-					_coinHeightCurve.Evaluate(Mathf.InverseLerp(0.25f,0,ab));
+					_coinHeightCurve.Evaluate(Mathf.InverseLerp(0.25f,0,ab))*2f;
 				break;
 			}
 		}
@@ -734,25 +755,25 @@ public class RailGenerator : MonoBehaviour
 		switch(j.type){
 			case 0:
 			default:
-				j.mesh.material.SetColor("_Color",_gold);
+				j.mesh.materials[1].SetColor("_Color",_gold);
 				break;
 			case 1:
-				j.mesh.material.SetColor("_Color",_silver);
+				j.mesh.materials[1].SetColor("_Color",_silver);
 				break;
 			case 2:
-				j.mesh.material.SetColor("_Color",_copper);
+				j.mesh.materials[1].SetColor("_Color",_copper);
 				break;
 		}
 		j.mesh.enabled=false;
 		_jumpers.Add(key,j);
-		Debug.Log("Added jumper @ "+key+" - current t: "+_t);
+		Debug.Log("<color=white>Added jumper @ "+key+" - current t: "+_t+"</color>");
 		foreach(float k in _coins.Keys){
 			float ab = Mathf.Abs(k-key);
 			if(ab<0.25f)
 			{
 				Coin c = _coins[k];
 				c.transform.position+=c.transform.up*
-					_coinHeightCurve.Evaluate(Mathf.InverseLerp(0.25f,0,ab));
+					_coinHeightCurve.Evaluate(Mathf.InverseLerp(0.25f,0,ab))*2f;
 			}
 		}
 	}
@@ -780,6 +801,7 @@ public class RailGenerator : MonoBehaviour
 		d.mesh=duck.GetComponent<MeshRenderer>();
 		d.mesh.enabled=false;
 		_duckers.Add(key,d);
+		Debug.Log("<color=green>Added ducker @ "+key+" - current t: "+_t+"</color>");
 	}
 
 	void GenerateJumpers(int startKnot, int endKnot, float probOverride=-1){
@@ -820,13 +842,13 @@ public class RailGenerator : MonoBehaviour
 						switch(j2.type){
 							case 0:
 							default:
-								j2.mesh.material.SetColor("_Color",_gold);
+								j2.mesh.materials[1].SetColor("_Color",_gold);
 								break;
 							case 1:
-								j2.mesh.material.SetColor("_Color",_silver);
+								j2.mesh.materials[1].SetColor("_Color",_silver);
 								break;
 							case 2:
-								j2.mesh.material.SetColor("_Color",_copper);
+								j2.mesh.materials[1].SetColor("_Color",_copper);
 								break;
 						}
 						j2.mesh.enabled=false;
@@ -925,6 +947,8 @@ public class RailGenerator : MonoBehaviour
 		}
 		foreach(float f in deleteKeys){
 			Transform t = _jumpers[f].transform;
+			if(t.tag!="Collected")
+				GenNextJumper();
 			Destroy(t.gameObject, Random.value);
 			_jumpers.Remove(f);
 		}
@@ -1042,7 +1066,7 @@ public class RailGenerator : MonoBehaviour
 			//_combo++;
 			Transform coinSfx = Instantiate(_coinFx);
 			AudioSource coinAudio = coinSfx.GetComponent<AudioSource>();
-			_comboPitch = Mathf.Lerp(_comboPitch,_maxComboPitch,.1f);
+			_comboPitch = Mathf.Lerp(_comboPitch,_maxComboPitch,.3f);
 			coinAudio.pitch=_comboPitch;
 			coinAudio.PlayScheduled(AudioSettings.dspTime+Random.value*.2);
 			Destroy(coinSfx.gameObject,.5f);
@@ -1152,7 +1176,8 @@ public class RailGenerator : MonoBehaviour
 						break;
 					case 1:
 						if(_crouching && !_jumping){
-							StartCoroutine(JumpRoutine());
+							//StartCoroutine(JumpRoutine());
+							Uncrouch();
 						}
 						//climb to 1
 						if(!_jumping)
@@ -1168,7 +1193,8 @@ public class RailGenerator : MonoBehaviour
 						break;
 					case 2:
 						if(_crouching && !_jumping){
-							StartCoroutine(JumpRoutine());
+							//StartCoroutine(JumpRoutine());
+							Uncrouch();
 						}
 						//climb to -1
 						if(!_jumping)
@@ -1269,10 +1295,10 @@ public class RailGenerator : MonoBehaviour
 									//destroy the gear
 									//play particle
 									//gearExplode=true;
-									//Transform vfx = _jumpers[f].transform.GetChild(0);
-									//ParticleSystem p = vfx.GetComponent<ParticleSystem>();
+									Transform vfx = _duckers[f].transform.GetChild(0);
+									ParticleSystem p = vfx.GetComponent<ParticleSystem>();
 									//p.GetComponent<ParticleSystemRenderer>().material.SetColor("_EmissionColor",_jumpers[f].mesh.material.GetColor("_EmissionColor"));
-									//p.Play();
+									p.Play();
 									_duckers[f].transform.tag="Collected";
 									_duckers[f].mesh.enabled=false;
 									_smash.Play();
@@ -1306,7 +1332,9 @@ public class RailGenerator : MonoBehaviour
 					}
 				}
 				if(genDuck)
+				{
 					GenNextDucker();
+				}
 				bool gearExplode=false;
 				//check for jumper collisions
 				foreach(float f in _jumpers.Keys){
@@ -1325,7 +1353,7 @@ public class RailGenerator : MonoBehaviour
 										gearExplode=true;
 										Transform vfx = _jumpers[f].transform.GetChild(0);
 										ParticleSystem p = vfx.GetComponent<ParticleSystem>();
-										//p.GetComponent<ParticleSystemRenderer>().material.SetColor("_EmissionColor",_jumpers[f].mesh.material.GetColor("_EmissionColor"));
+										//p.GetComponent<ParticleSystemRenderer>().material.SetColor("_Color",_jumpers[f].mesh.material.GetColor("_Color"));
 										p.Play();
 										_jumpers[f].transform.tag="Collected";
 										_jumpers[f].mesh.enabled=false;

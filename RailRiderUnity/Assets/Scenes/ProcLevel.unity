@@ -10749,9 +10749,9 @@ MonoBehaviour:
   _coinFx: {fileID: 3940569000854000093, guid: 92983451ab5364bd8a1c71db108a9f86, type: 3}
   _buildingPrefab: {fileID: 3032120424316595605, guid: 1c6ce923ca7714fb6ac8a249a29aab84,
     type: 3}
-  _gold: {r: 0.56, g: 0.49474198, b: 0, a: 0}
-  _silver: {r: 0.4528302, g: 0.4528302, b: 0.4528302, a: 0}
-  _copper: {r: 0.582, g: 0.15947178, b: 0, a: 0}
+  _gold: {r: 1, g: 0.11461401, b: 0, a: 0}
+  _silver: {r: 0.032451272, g: 1, b: 0, a: 0}
+  _copper: {r: 0, g: 0.28014588, b: 1, a: 0}
   _shopParent: {fileID: 1577746500}
 --- !u!4 &1009601617
 Transform:

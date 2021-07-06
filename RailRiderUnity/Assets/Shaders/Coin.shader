@@ -54,7 +54,9 @@
             o.Smoothness = _Glossiness;
 			half a =1-dot(IN.viewDir,IN.worldNormal)*_Rim;
 			a*=0.5;
-            o.Alpha = a*(IN.screenPos.w-_VanishDepth);
+            //o.Alpha = a*(IN.screenPos.w-_VanishDepth);
+			o.Alpha = IN.screenPos.w/10;
+            //o.Alpha = (IN.screenPos.w-_VanishDepth);
         }
         ENDCG
     }

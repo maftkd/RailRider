@@ -24,7 +24,7 @@
         struct Input
         {
             float2 uv_MainTex;
-		float3 worldPos;
+			float3 worldPos;
         };
 
         half _Glossiness;
@@ -41,12 +41,15 @@
 
         void surf (Input IN, inout SurfaceOutputStandard o)
         {
+			fixed3 dist = _WorldSpaceCameraPos-IN.worldPos;
+			float dstSqr=dot(dist,dist);
+			clip(dstSqr-40);
             // Albedo comes from a texture tinted by color
             //fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
 			float green = step(_GridScale.w,frac(IN.worldPos.x*_GridScale.x));
 			green += step(_GridScale.w,frac(IN.worldPos.z*_GridScale.z))*(1-green);
 			o.Emission = (1-green)*_Color;
-            //o.Albedo = c.rgb;
+            //o.Albedo = dstSqr;
             // Metallic and smoothness come from slider variables
             o.Metallic = _Metallic;
             o.Smoothness = _Glossiness;
