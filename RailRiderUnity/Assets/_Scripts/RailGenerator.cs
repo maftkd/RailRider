@@ -141,7 +141,7 @@ public class RailGenerator : MonoBehaviour
 	float _playTimer;
 	float _maxTime=180f;//360f;
 	float _jumpDuckSpace;
-	float _minJumpDuckSpace=0.3f;
+	float _minJumpDuckSpace=0.5f;
 	float _maxJumpDuckSpace=1f;
 	public Color _gold, _silver, _copper;
 	float _uncrouchTimer;
@@ -533,10 +533,10 @@ public class RailGenerator : MonoBehaviour
 		_clusterCount=numCoins;
 		_clusterCounter=0;
 		//determine spacing
-		float coinSpacing=.075f;
+		float coinSpacing=0.1f;//.075f;
 		//for loop
 		float maxR = Mathf.Lerp(45f,180f,_playTimer/_maxTime);
-		float cork = Mathf.Lerp(0f,30f,_playTimer/_maxTime)*Random.Range(-1f,1f);
+		float cork = Mathf.Lerp(0f,10f,_playTimer/_maxTime)*Random.Range(-1f,1f);
 		float rotation = Random.Range(-maxR,maxR);
 		//	place coins
 		for(int i=0;i<numCoins;i++)
@@ -1483,7 +1483,7 @@ public class RailGenerator : MonoBehaviour
 		Vector3 nextForward = _path.GetTangent(railT+1f/(float)_lineResolution);
 		_curvature = Vector3.Cross(_railTracker.forward,nextForward).y;
 		if(!_jumping)
-			_balance-=_curvature*_balanceMult;
+			_balance-=_curvature*_balanceMult*2;
 		localEuler.z = -_balance;
 		_railTracker.localEulerAngles=localEuler;
 	}

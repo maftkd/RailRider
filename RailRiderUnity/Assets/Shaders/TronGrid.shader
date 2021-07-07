@@ -48,7 +48,8 @@
             //fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
 			float green = step(_GridScale.w,frac(IN.worldPos.x*_GridScale.x));
 			green += step(_GridScale.w,frac(IN.worldPos.z*_GridScale.z))*(1-green);
-			o.Emission = (1-green)*_Color;
+			//green = lerp(0,green,sin(_Time.y));
+			o.Emission = (1-green)*lerp(fixed4(0,0,0,0),_Color,abs(sin(_Time.y)));
             //o.Albedo = dstSqr;
             // Metallic and smoothness come from slider variables
             o.Metallic = _Metallic;
