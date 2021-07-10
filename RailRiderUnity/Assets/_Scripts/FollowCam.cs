@@ -24,7 +24,6 @@ public class FollowCam : MonoBehaviour
 	Vector3 _targetPos, _startPos;
 	float _introTimer;
 	float _lerpSpeed=1.75f;
-	float _slerpSpeed=1.75f;
 	float _transitionDur=2f;
 	Vector3 _menuPos;
 	Quaternion _menuRot;

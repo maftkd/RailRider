@@ -1,4 +1,4 @@
-﻿Shader "Custom/TronGrid"
+﻿Shader "Custom/Outline"
 {
     Properties
     {
@@ -6,12 +6,13 @@
         _MainTex ("Albedo (RGB)", 2D) = "white" {}
         _Glossiness ("Smoothness", Range(0,1)) = 0.5
         _Metallic ("Metallic", Range(0,1)) = 0.0
-	_GridScale ("Grid Scale", Vector) = (0,0,0,0)
+		_OutlineStep ("Outline Step", Range(-1,1)) = 0.0
     }
     SubShader
     {
-        Tags { "RenderType"="Opaque" "RenderQueue"="Geometry"}
+        Tags { "RenderType"="Opaque" }
         LOD 200
+
         CGPROGRAM
         // Physically based Standard lighting model, and enable shadows on all light types
         #pragma surface surf Standard fullforwardshadows
@@ -24,13 +25,14 @@
         struct Input
         {
             float2 uv_MainTex;
-			float3 worldPos;
+			fixed3 viewDir;
+			fixed3 worldNormal;
         };
 
         half _Glossiness;
         half _Metallic;
         fixed4 _Color;
-	half4 _GridScale;
+		fixed _OutlineStep;
 
         // Add instancing support for this shader. You need to check 'Enable Instancing' on materials that use the shader.
         // See https://docs.unity3d.com/Manual/GPUInstancing.html for more information about instancing.
@@ -41,20 +43,15 @@
 
         void surf (Input IN, inout SurfaceOutputStandard o)
         {
-			fixed3 dist = _WorldSpaceCameraPos-IN.worldPos;
-			float dstSqr=dot(dist,dist);
-			clip(dstSqr-100);
             // Albedo comes from a texture tinted by color
-            //fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
-			float green = step(_GridScale.w,frac(IN.worldPos.x*_GridScale.x));
-			green += step(_GridScale.w,frac(IN.worldPos.z*_GridScale.z))*(1-green);
-			//green = lerp(0,green,sin(_Time.y));
-			o.Emission = (1-green)*lerp(fixed4(0,0,0,0),_Color,abs(sin(_Time.y)));
-            //o.Albedo = dstSqr;
+            fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
+			fixed dt = step(dot(IN.viewDir,IN.worldNormal),_OutlineStep);
+            o.Albedo = lerp(c.rgb,c.rgb*0.5,dt);
+			//o.Albedo=step(d,_OutlineStep);
             // Metallic and smoothness come from slider variables
             o.Metallic = _Metallic;
             o.Smoothness = _Glossiness;
-            o.Alpha = 1;//c.a;
+            o.Alpha = c.a;
         }
         ENDCG
     }
