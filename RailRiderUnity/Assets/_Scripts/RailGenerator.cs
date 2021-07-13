@@ -11,6 +11,7 @@ public class RailGenerator : MonoBehaviour
 	List<Vector3> _knots = new List<Vector3>();
 	LineRenderer _line;
 	public Material _lineMat;
+	public Material _buildingMat;
 	float _nodeDist = 16f;//approximate segment length
 	int _lineResolution = 10;//Number of points on line per segment
 	float _moveSpeed=0.6f;//rate at which char moves along rail in segments/sec
@@ -38,6 +39,7 @@ public class RailGenerator : MonoBehaviour
 	public Transform _jumper;
 	public Transform _ducker;
 	public Transform _rack;
+	public Transform _planet;
 	public Transform _supportRail;
 	float _lineResFrac;
 	Transform _ethan;
@@ -52,9 +54,10 @@ public class RailGenerator : MonoBehaviour
 	Dictionary<float, Item> _jumpers = new Dictionary<float, Item>();
 	Dictionary<float, Item> _duckers = new Dictionary<float, Item>();
 	Dictionary<float, Item> _racks = new Dictionary<float, Item>();
+	Dictionary<float, Item> _planets = new Dictionary<float, Item>();
 	Dictionary<float, Item> _supports = new Dictionary<float, Item>();
 
-	[ColorUsageAttribute(false,true)]
+	//[ColorUsageAttribute(false,true)]
 	public Color _coinHitColor;
 	int _collectedCoins;
 	float _coinHitThreshold = .95f;
@@ -86,19 +89,21 @@ public class RailGenerator : MonoBehaviour
 	float _scoreChangeTimer;
 	int _defaultScoreFont;
 	int _boldScoreFont;
-	public Text _hsText;
+	public Text [] _hsText;
 	bool _tutorial;
 	public AudioSource _music;
 	public GameObject _tutorialObjs;
 	Camera _main;
 	float _curvature;
-	float _corkAngle;
-	float _corkSpacing;
 	Transform _explosion;
+	/*
 	float _invincibleSpeed=.65f;
 	float _invincibleWarning=.05f;
 	CanvasGroup _invincDisplay;
 	Image _invincMeter;
+	*/
+
+	//effects
 	public Material _ethanMat;
 	public Gradient _invincibilityGrad;
 	public AudioSource _takeOff;
@@ -113,43 +118,59 @@ public class RailGenerator : MonoBehaviour
 	float _minComboPitch=1f;
 	float _maxComboPitch=1.5f;
 	AudioSource _comboSfx;
-	float _touchSens=0.5f;
-	Slider _sensSlider;
+
+	//scoring vars
 	float _balanceMult;
 	float _trickMult;
 	float _speedMult;
 	Animator _anim;
-	bool _zen;
-	int _clusterCount;
-	int _clusterCounter;
+	public bool _zen;
+	
+	//building spawn vars
 	public Transform _buildingPrefab;
 	int _numBuildings=400;
 	Transform[] _buildings;
 	float _seed;
-	float _playTimer;
 	float _maxTime=180f;//360f;
+
+	//jump / duck vars
 	float _jumpDuckSpace;
 	float _minJumpDuckSpace=0.5f;
 	float _maxJumpDuckSpace=1f;
-	public Color _gold, _silver, _copper;
 	float _uncrouchTimer;
-	float _uncrouchTime=0.05f;//time it takes to confirm an uncrouch
+	float _uncrouchTime=0.1f;//time it takes to confirm an uncrouch
 	public ParticleSystem _sparks;
+
+	//spawn object spacing vars
+	int _clusterCount;
+	int _clusterCounter;
 	float _lastJumper;
 	float _lastCluster;
 	float _lastDucker;
 	float _lastRack;
-	public Phase [] _course;
-	int _curPhase;
+	float _lastPlanet;
+	float _lastObstacle;
+
+	//coins vars
 	int _leftOverCoins;
 	float _leftOverCork;
 	float _leftOverRotation;
+
+	//phase vars
+	public Phase [] _course;
+	int _curPhase;
+	float _phaseTimer;
+	bool _phaseChange;
+	int _phaseChangeIn;
+	float _phaseChangeT;
+	float _phaseChangeDur=5f;
 
 	public Transform _shopParent;
 	UIManager _menu;
 
 	[System.Serializable]
 	public class Phase {
+		public string _label;
 		[Header("Jumpers")]
 		public float _minJumpSpace;
 		public float _jumpProbability;
@@ -165,7 +186,18 @@ public class RailGenerator : MonoBehaviour
 		[Header("Racks")]
 		public float _minRackSpace;
 		public float _rackProbability;
+		public float _minRackSpeed;
 		public float _maxRackSpeed;
+		[Header("Planets")]
+		public float _minPlanetSpace;
+		public float _planetProbability;
+		public float _minPlanetSpeed;
+		public float _maxPlanetSpeed;
+		[Header("General")]
+		public float _minObstacleSpace;
+		public float _duration;
+		public Color _accent;
+		public Color _bg;
 	}
 
 	public class Item {
@@ -190,6 +222,11 @@ public class RailGenerator : MonoBehaviour
 		public RackWheel rack;
 	}
 
+	class Planet : Item{
+		public GameObject go;
+		public PlanetWheel planet;
+	}
+
 	class Support : Item{
 		public LineRenderer line;
 	}
@@ -204,7 +241,7 @@ public class RailGenerator : MonoBehaviour
 	void Start()
 	{
 		//#temp
-		_curPhase=1;
+		//_curPhase=8;
 		//get random seed
 		_seed = 1f/System.DateTime.Now.Millisecond;
 		_seed*=1000f;
@@ -219,6 +256,11 @@ public class RailGenerator : MonoBehaviour
 		_line.receiveShadows=true;
 		_line.shadowCastingMode=ShadowCastingMode.Off;
 		_lineResFrac=1/(float)_lineResolution;
+
+		//set colors
+		Phase cur = _course[_curPhase];
+		_lineMat.SetColor("_EdgeColor",cur._accent);
+		_buildingMat.SetColor("_Color",cur._accent);
 		
 		//configure railTracker
 		_railTracker=transform.GetChild(0);
@@ -257,7 +299,8 @@ public class RailGenerator : MonoBehaviour
 		_defaultScoreFont=_scoreText.fontSize;
 		_boldScoreFont=Mathf.FloorToInt(_defaultScoreFont*1.4f);
 		if(PlayerPrefs.HasKey("hs")){
-			_hsText.text=PlayerPrefs.GetInt("hs").ToString("HIGH SCORE: #");
+			foreach(Text t in _hsText)
+				t.text=PlayerPrefs.GetInt("hs").ToString("HIGH SCORE: #");
 		}
 		_main = Camera.main;
 		_explosion = GameObject.FindGameObjectWithTag("Explosion").transform;
@@ -328,7 +371,7 @@ public class RailGenerator : MonoBehaviour
 			_speedMult=b._speed;
 			_moveSpeed=_speedMult;
 			_maxSpeed=_moveSpeed*1.5f;
-			_invincibleSpeed=_moveSpeed+0.05f;
+			//_invincibleSpeed=_moveSpeed+0.05f;
 			_targetMoveSpeed=_moveSpeed;
 			_balanceSpeed = _moveSpeed*_balanceSpeedMultiplier;
 		}
@@ -551,8 +594,10 @@ public class RailGenerator : MonoBehaviour
 		//determine a starting point - say current pos+ 2 knots
 		Phase phase = _course[_curPhase];
 		int numCoins=_leftOverCoins>0? _leftOverCoins : phase._coinClusterSize;
-		_clusterCount=numCoins;
-		_clusterCounter=0;
+		//reset cluster count unless left over coins from prev segment
+		if(_leftOverCoins<=0){
+			_clusterCount=numCoins;
+		}
 		//determine spacing
 		float coinSpacing=0.1f;//.075f;
 		//for loop
@@ -588,7 +633,7 @@ public class RailGenerator : MonoBehaviour
 		Coin c = new Coin();
 		//instance the coin
 		Transform curCoin = Instantiate(_coin,railPos+Vector3.up*_coinHeight,Quaternion.identity, null);
-		curCoin.name=final?"final":"coin";
+		curCoin.name=final?"final-"+_clusterCount:"coin";
 		//not sure what this does
 		curCoin.LookAt(curCoin.position+curForward);
 		//spin coin
@@ -606,15 +651,24 @@ public class RailGenerator : MonoBehaviour
 			_coins.Add(t,c);
 		}
 		//check jumpers #temp
+		/*
 		foreach(float k in _jumpers.Keys){
 			float ab = Mathf.Abs(k-t);
 			if(ab<0.25f)
 			{
 				c.transform.position+=curCoin.up*
 					_coinHeightCurve.Evaluate(Mathf.InverseLerp(0.25f,0,ab))*2f;
-				break;
 			}
 		}
+		foreach(float k in _planets.Keys){
+			float ab = Mathf.Abs(k-t);
+			if(ab<0.25f)
+			{
+				c.transform.position+=curCoin.up*
+					_coinHeightCurve.Evaluate(Mathf.InverseLerp(0.25f,0,ab))*2f;
+			}
+		}
+		*/
 		return true;
 	}
 
@@ -631,6 +685,15 @@ public class RailGenerator : MonoBehaviour
 				break;
 			}
 		}
+		foreach(float k in _planets.Keys){
+			float ab = Mathf.Abs(k-t);
+			if(ab<0.25f)
+			{
+				c.transform.position+=c.transform.up*
+					_coinHeightCurve.Evaluate(Mathf.InverseLerp(0.25f,0,ab))*2f;
+				break;
+			}
+		}
 	}
 
 	void ResetJumper(float t, Jumper j){
@@ -638,26 +701,8 @@ public class RailGenerator : MonoBehaviour
 		j.transform.position=railPos;
 	}
 
-	/*
-	void GenNextDucker(){
-		int off = Mathf.CeilToInt(_t-_tOffset);
-		//As _t goes up, the next jumper range should go down
-		float minRange = Mathf.Lerp(2f,1f,_playTimer/_maxTime);
-		float maxRange = _knots.Count-1-off;
-		//float maxRange = Mathf.Lerp(_knots.Count-1-off,2f,_playTimer/_maxTime);
-		//GenerateJumper(Random.Range(2f,_knots.Count-1-off));
-		GenerateDucker(Random.Range(minRange,maxRange));
-	}
-
-	void GenNextRack(){
-		int off = Mathf.CeilToInt(_t-_tOffset);
-		float minRange = Mathf.Lerp(2f,1f,_playTimer/_maxTime);
-		float maxRange = _knots.Count-1-off;
-		GenerateRack(Random.Range(minRange,maxRange));
-	}
-	*/
-
 	void GenerateJumper(float key){
+		/*
 		_jumpDuckSpace=Mathf.Lerp(_maxJumpDuckSpace,_minJumpDuckSpace,_playTimer/_maxTime);
 		//float key = _t+distance;
 		foreach(float k in _duckers.Keys){
@@ -668,6 +713,7 @@ public class RailGenerator : MonoBehaviour
 				break;
 			}
 		}
+		*/
 		Vector3 railPos = _path.GetPoint(key-_tOffset);
 		Vector3 forward = _path.GetTangent(key-_tOffset);
 		//instance the jumper
@@ -679,29 +725,7 @@ public class RailGenerator : MonoBehaviour
 		j.transform = jump;
 		j.transform.GetComponent<Rotator>()._speed=Random.Range(90f,180f);
 		j.mesh=jump.GetComponent<MeshRenderer>();
-		switch(j.type){
-			case 0:
-			default:
-				j.mesh.materials[1].SetColor("_Color",_gold);
-				break;
-			case 1:
-				j.mesh.materials[1].SetColor("_Color",_silver);
-				break;
-			case 2:
-				j.mesh.materials[1].SetColor("_Color",_copper);
-				break;
-		}
-		//j.mesh.enabled=false;
 		_jumpers.Add(key,j);
-		foreach(float k in _coins.Keys){
-			float ab = Mathf.Abs(k-key);
-			if(ab<0.25f)
-			{
-				Coin c = (Coin)_coins[k];
-				c.transform.position+=c.transform.up*
-					_coinHeightCurve.Evaluate(Mathf.InverseLerp(0.25f,0,ab))*2f;
-			}
-		}
 	}
 
 	void GenerateDucker(float distance){
@@ -732,19 +756,13 @@ public class RailGenerator : MonoBehaviour
 		//Debug.Log("<color=green>Added ducker @ "+key+" - current t: "+_t+"</color>");
 	}
 
+	void ResetDucker(float t, Ducker j){
+		Vector3 railPos = _path.GetPoint(t-_tOffset);
+		j.transform.position=railPos;
+	}
+
 	void GenerateRack(float distance){
-		_jumpDuckSpace=Mathf.Lerp(_maxJumpDuckSpace,_minJumpDuckSpace,_playTimer/_maxTime);
 		float key = distance;
-		/*
-		foreach(float k in _jumpers.Keys){
-			float ab = Mathf.Abs(k-key);
-			if(ab<_jumpDuckSpace)
-			{
-				key=k+_jumpDuckSpace;
-				break;
-			}
-		}
-		*/
 		Vector3 railPos = _path.GetPoint(key-_tOffset);
 		Vector3 forward = _path.GetTangent(key-_tOffset);
 		//instance the jumper
@@ -755,14 +773,45 @@ public class RailGenerator : MonoBehaviour
 		r.transform = rack;
 		r.rack = rack.GetComponent<RackWheel>();
 		Phase p = _course[_curPhase];
-		r.rack.Init(Random.Range(-1f,1f)*p._maxRackSpeed);
-		//r.transform.GetComponent<Rotator>()._speed=Random.Range(90f,180f);
+		float rand = Random.Range(p._minRackSpeed,p._maxRackSpeed)*(Random.Range(0,2)*2f-1f);
+		r.rack.Init(rand);
 		r.go = rack.gameObject;
-		//r.go.SetActive(false);
-		//r.mesh=rack.GetComponent<MeshRenderer>();
-		//r.mesh.enabled=false;
 		_racks.Add(key,r);
-		//Debug.Log("<color=magenta>Added rack @ "+key+" - current t: "+_t+"</color>");
+
+	}
+
+	void ResetPlanet(float t, Planet j){
+		Vector3 railPos = _path.GetPoint(t-_tOffset);
+		j.transform.position=railPos;
+	}
+
+	void GeneratePlanet(float distance){
+		float key = distance;
+		Vector3 railPos = _path.GetPoint(key-_tOffset);
+		Vector3 forward = _path.GetTangent(key-_tOffset);
+		//instance the jumper
+		Transform planet = Instantiate(_planet,railPos,Quaternion.identity, null);
+		planet.forward=-forward;
+		//create the struct
+		Planet r = new Planet();
+		r.transform = planet;
+		r.planet = planet.GetComponent<PlanetWheel>();
+		Phase p = _course[_curPhase];
+		float rand = Random.Range(p._minPlanetSpeed,p._maxPlanetSpeed)*(Random.Range(0,2)*2f-1f);
+		r.planet.Init(rand);
+		r.go = planet.gameObject;
+		_planets.Add(key,r);
+		/*
+		foreach(float k in _coins.Keys){
+			float ab = Mathf.Abs(k-key);
+			if(ab<0.25f)
+			{
+				Coin c = (Coin)_coins[k];
+				c.transform.position+=c.transform.up*
+					_coinHeightCurve.Evaluate(Mathf.InverseLerp(0.25f,0,ab))*2f;
+			}
+		}
+		*/
 	}
 
 	int GenerateNewTrack(){
@@ -945,40 +994,84 @@ public class RailGenerator : MonoBehaviour
 		foreach(float key in _jumpers.Keys){
 			ResetJumper(key,(Jumper)_jumpers[key]);
 		}
+		
+		//reset previous duckers
+		foreach(float key in _duckers.Keys){
+			ResetDucker(key,(Ducker)_duckers[key]);
+		}
+		
+		//reset previous planets
+		/*
+		foreach(float key in _planets.Keys){
+			ResetPlanet(key,(Planet)_planets[key]);
+		}
+		*/
 
-		//spawn test
+		//leftover coins
+		if(_leftOverCoins>0)
+			GenerateCoinCluster(knotT-1);
+
+		if(_phaseChangeIn>0)
+		{
+			_phaseChangeIn--;
+			Debug.Log("Phase change in: "+_phaseChangeIn);
+			if(_phaseChangeIn<=0){
+				_curPhase++;
+				_phaseTimer=0;
+			}
+			return;
+		}
+		//spawn stuff
 		Phase p = _course[_curPhase];
 		//don't spawn nothing till the first few sections
 		if(knotT>3f){
-			//spawn leftover coins
-			if(_leftOverCoins>0)
-				GenerateCoinCluster(knotT-1);
 
 			//spawn every .1 length
 			for(float i=1; i>=0; i-=0.1f){
 				//jumpers
 				if(knotT-i>_lastJumper+p._minJumpSpace && Random.value<p._jumpProbability)
 				{
-					GenerateJumper(knotT-i);
-					_lastJumper=knotT-i;
+					if(knotT-i>_lastObstacle+p._minObstacleSpace){
+						GenerateJumper(knotT-i);
+						_lastJumper=knotT-i;
+						_lastObstacle=knotT-i;
+					}
 				}
 				//coins
 				if(knotT-i>_lastCluster+p._minCoinSpace && Random.value<p._coinProbability)
 				{
-					GenerateCoinCluster(knotT-i);
-					_lastCluster=knotT-i;
+					if(knotT-i>_lastObstacle+p._minObstacleSpace){
+						GenerateCoinCluster(knotT-i);
+						_lastCluster=knotT-i;
+						_lastObstacle=knotT-i;
+					}
 				}
 				//duckers
 				if(knotT-i>_lastDucker+p._minDuckerSpace && Random.value<p._duckerProbability)
 				{
-					GenerateDucker(knotT-i);
-					_lastDucker=knotT-i;
+					if(knotT-i>_lastObstacle+p._minObstacleSpace){
+						GenerateDucker(knotT-i);
+						_lastDucker=knotT-i;
+						_lastObstacle=knotT-i;
+					}
 				}
 				//racks
 				if(knotT-i>_lastRack+p._minRackSpace && Random.value<p._rackProbability)
 				{
-					GenerateRack(knotT-i);
-					_lastRack=knotT-i;
+					if(knotT-i>_lastObstacle+p._minObstacleSpace){
+						GenerateRack(knotT-i);
+						_lastRack=knotT-i;
+						_lastObstacle=knotT-i;
+					}
+				}
+				//planets
+				if(knotT-i>_lastPlanet+p._minPlanetSpace && Random.value<p._planetProbability)
+				{
+					if(knotT-i>_lastObstacle+p._minObstacleSpace){
+						GeneratePlanet(knotT-i);
+						_lastPlanet=knotT-i;
+						_lastObstacle=knotT-i;
+					}
 				}
 			}
 		}
@@ -1054,11 +1147,6 @@ public class RailGenerator : MonoBehaviour
 		GenerateTutorialSection();
 	}
 
-	public void UpdateSens(){
-		_touchSens=_sensSlider.value;
-		PlayerPrefs.SetFloat("sens",_touchSens);
-	}
-
 	public void CheckCoinCollisions(){
 		bool genNext=false;
 		bool gotCluster=false;
@@ -1083,13 +1171,14 @@ public class RailGenerator : MonoBehaviour
 							c.transform.tag="Collected";
 							AddCoin();
 							_clusterCounter++;
-							if(_clusterCounter==_clusterCount)
-								gotCluster=true;
 						}
-						if(c.transform.name=="final")
+						if(c.transform.name.Split('-')[0]=="final")
 						{
+							if(_clusterCounter==int.Parse(c.transform.name.Split('-')[1]))
+								AddScore(5);
 							c.transform.name="foo";
 							genNext=true;
+							_clusterCounter=0;
 						}
 					}
 					//on coin miss
@@ -1101,17 +1190,12 @@ public class RailGenerator : MonoBehaviour
 						{
 							c.transform.name="foo";
 							genNext=true;
+							_clusterCounter=0;
 						}
 					}
 				}
 			}
 		}
-		//gen coin clusters after the previous has been collected
-		//if(genNext)
-		//	GenerateCoinCluster();
-		//assign points for full cluster gather
-		if(gotCluster)
-			AddScore(5);
 	}
 
 	public void CheckJumperCollisions(){
@@ -1127,7 +1211,7 @@ public class RailGenerator : MonoBehaviour
 					
 					if(Mathf.Abs(f-_t)<.04f && _ethan.localPosition.y < _minJumpY){
 						if(!_tutorial){
-							if(_moveSpeed>_invincibleSpeed || _zen){
+							if(_zen){
 								gearExplode=true;
 								Transform vfx = j.transform.GetChild(0);
 								ParticleSystem p = vfx.GetComponent<ParticleSystem>();
@@ -1170,7 +1254,7 @@ public class RailGenerator : MonoBehaviour
 				{
 					tmp.mesh.enabled=true;
 					if(Mathf.Abs(f-_t)<.04f && !_crouching){
-						if(_moveSpeed>_invincibleSpeed || _zen){
+						if(_zen){
 							//destroy the gear
 							Transform vfx = tmp.transform.GetChild(0);
 							ParticleSystem p = vfx.GetComponent<ParticleSystem>();
@@ -1206,7 +1290,7 @@ public class RailGenerator : MonoBehaviour
 				if(notCol)
 				{
 					if(Mathf.Abs(f-_t)<.04f && !tmp.rack.IsSafe(_railTracker)){
-						if(_moveSpeed>_invincibleSpeed || _zen){
+						if(_zen){
 							//destroy the gear
 							ParticleSystem p = tmp.transform.GetComponentInChildren<ParticleSystem>();
 							p.Play();
@@ -1234,13 +1318,56 @@ public class RailGenerator : MonoBehaviour
 		}
 	}
 
+	public void CheckPlanetCollisions(){
+		bool genRack=false;
+		Planet tmp;
+		foreach(float f in _planets.Keys){
+			tmp=(Planet)_planets[f];
+			if(f>_t-1 && f<_t+4){
+				bool notCol = tmp.transform.tag!="Collected";
+				if(notCol)
+				{
+					if(Mathf.Abs(f-_t)<.04f && (!tmp.planet.IsSafe(_railTracker) || _ethan.localPosition.y < _minJumpY)){
+						if(_ethan.localPosition.y<_minJumpY)
+							Debug.Log("Jump fail");
+						else
+							Debug.Log("Planet fail");
+						if(_zen){
+							//destroy the gear
+							ParticleSystem [] p = tmp.transform.GetComponentsInChildren<ParticleSystem>();
+							foreach(ParticleSystem ps in p)
+								ps.Play();
+							tmp.transform.tag="Collected";
+							tmp.transform.GetChild(0).GetChild(0).GetComponent<MeshRenderer>().enabled=false;
+							_smash.Play();
+							genRack=true;
+						}
+						else{
+							tmp.planet.StopSpinning();
+							GameOver();
+						}
+					}
+					else if(_t-f>.04f){
+						genRack=true;
+						tmp.transform.tag="Collected";
+					}
+				}
+			}
+		}
+		if(genRack)
+		{
+			//GenNextRack();
+			AddScore(1);
+		}
+	}
+
 	public void CheckSupportCollisions(){
 		Support j;
 		foreach(float f in _supports.Keys){
 			j = (Support)_supports[f];
 			if(Mathf.Abs(f-_t)<.04f && Vector3.Dot(_railTracker.up,Vector3.down)>0.98f){
 				if(!_tutorial){
-					if(_moveSpeed>_invincibleSpeed || _zen){
+					if(_zen){
 						//don't worry about collisions when invinc or zen
 					}
 					else{
@@ -1362,6 +1489,7 @@ public class RailGenerator : MonoBehaviour
 				CheckDuckerCollisions();
 				CheckRackCollisions();
 				CheckJumperCollisions();
+				CheckPlanetCollisions();
 				CheckSupportCollisions();
 				//CheckBatteryCollisions
 
@@ -1377,6 +1505,7 @@ public class RailGenerator : MonoBehaviour
 					ClearOldStuff(_jumpers,_tOffset+removed);
 					ClearOldStuff(_duckers,_tOffset+removed);
 					ClearOldStuff(_racks,_tOffset+removed);
+					ClearOldStuff(_planets,_tOffset+removed);
 					ClearOldStuff(_supports,_tOffset+removed);
 
 					//update line renderer
@@ -1421,7 +1550,35 @@ public class RailGenerator : MonoBehaviour
 					//_invincDisplay.alpha=0;
 				}
 				*/
-				_playTimer+=Time.deltaTime;
+
+				//phase change logic
+				if(!_phaseChange){
+					_phaseTimer+=Time.deltaTime;
+					if(_phaseTimer>=_course[_curPhase]._duration){
+						Debug.Log("Time for another phase");
+						if(_curPhase>=_course.Length-1)
+						{
+							//#temp
+							Debug.Log("Winner!");
+							_phaseChangeIn=999;
+							_phaseChangeT=9999;
+							_phaseChange=true;
+						}
+						else
+						{
+							_phaseChange=true;
+							float curT = _t-_tOffset;
+							int curTi = Mathf.FloorToInt(curT);
+							//_phaseChangeIn=_knots.Count-curTi;
+							_phaseChangeIn = 3;
+							_phaseChangeT=_t+_knots.Count-curTi-1;
+						}
+					}
+				}
+				else{
+					if(_t>=_phaseChangeT)
+						StartCoroutine(PhaseChangeR());
+				}
 				break;
 			case 2://collide with jumper
 				break;
@@ -1625,6 +1782,34 @@ public class RailGenerator : MonoBehaviour
 				t.localScale=new Vector3(width,height,width);
 			}
 		}
+	}
+
+	IEnumerator PhaseChangeR(){
+		_phaseChange=false;
+		Debug.Log("Starting next phase!");
+		Phase prev = _course[_curPhase-1];
+		Phase cur = _course[_curPhase];
+		Color accentPrev = prev._accent;
+		Color accentCur = cur._accent;
+		Color bgPrev = prev._bg;
+		Color bgCur = cur._bg;
+
+		Color tmp;
+		Color tmp2;
+		float timer=0;
+		while(timer<_phaseChangeDur){
+			timer+=Time.deltaTime;
+			//set accent colors
+			tmp = Color.Lerp(accentPrev,accentCur,timer/_phaseChangeDur);
+			tmp2 = Color.Lerp(bgPrev,bgCur,timer/_phaseChangeDur);
+			_lineMat.SetColor("_EdgeColor",tmp);
+			_buildingMat.SetColor("_Color",tmp);
+			_main.backgroundColor=tmp2;
+			RenderSettings.fogColor=tmp2;
+
+			yield return null;
+		}
+		Debug.Log("Done animating transition to next phase");
 	}
 
 	public void GameOver(){

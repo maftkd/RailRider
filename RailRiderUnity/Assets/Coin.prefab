@@ -48,7 +48,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5454965678494411067}
-  m_Enabled: 0
+  m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1
@@ -60,6 +60,7 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: d8bc28aa3f2a94466b910b576dd5fcfa, type: 2}
+  - {fileID: 2100000, guid: 9335ba0bfa40546a6bffc9ca630e3532, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -92,8 +93,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 21eb6a31c58e84c3d8a5b7926fe0db39, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  minScale: 0
-  maxScale: 1
   _curve:
     serializedVersion: 2
     m_Curve:

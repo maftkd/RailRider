@@ -26,7 +26,8 @@ public class RackWheel : MonoBehaviour
 		_gear = _pinion.GetChild(0);
 		_ratio=16f/7f;
 		//random offset
-		_pinion.localEulerAngles=Vector3.forward*Random.value*360f;
+		float rand = Random.Range(0,16)*22.5f;
+		_pinion.localEulerAngles=Vector3.forward*rand;
 		//assign rate
 		_rate=r;
 	}
@@ -34,7 +35,7 @@ public class RackWheel : MonoBehaviour
 	public bool IsSafe(Transform t){
 		float dot =Vector3.Dot(_pinion.up,t.up); 
 		//and player is in line, collect it
-		Debug.Log("safety check: "+dot);
+		//Debug.Log("safety check: "+dot);
 		return dot<_hitThresh;
 	}
 

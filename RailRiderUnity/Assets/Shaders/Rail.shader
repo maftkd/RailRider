@@ -6,7 +6,7 @@
         _MainTex ("Albedo (RGB)", 2D) = "white" {}
         _Glossiness ("Smoothness", Range(0,1)) = 0.5
         _Metallic ("Metallic", Range(0,1)) = 0.0
-		[HDR] _EdgeColor("Edge Color", Color) = (1,1,1,1)
+		_EdgeColor("Edge Color", Color) = (1,1,1,1)
 		_EdgeThickness("Edge thickness", Range(0,0.5)) = 0.4
 		[HDR] _ColorA("Color A", Color) = (1,1,1,1)
 		[HDR] _ColorB("Color B", Color) = (1,1,1,1)
@@ -34,10 +34,10 @@
         half _Glossiness;
         half _Metallic;
         fixed4 _Color;
-	half3 _ColorA;
-	half3 _ColorB;
-	half3 _EdgeColor;
-	half _EdgeThickness;
+		half3 _ColorA;
+		half3 _ColorB;
+		half3 _EdgeColor;
+		half _EdgeThickness;
 
         // Add instancing support for this shader. You need to check 'Enable Instancing' on materials that use the shader.
         // See https://docs.unity3d.com/Manual/GPUInstancing.html for more information about instancing.
@@ -52,9 +52,13 @@
             fixed c = tex2D (_MainTex, IN.uv_MainTex).r;
 			c = 1-c*.5;
 			float edge = 1-step(_EdgeThickness,abs(.5-IN.uv_MainTex.y));
-            o.Albedo = lerp(_ColorA,_ColorB,IN.uv_MainTex.y)*edge*c+(1-edge)*_EdgeColor;
+            //o.Albedo = lerp(_ColorA,_ColorB,IN.uv_MainTex.y)*edge*c+(1-edge)*_EdgeColor;
+            o.Albedo = c*lerp(-0.25,0.25,IN.uv_MainTex.y);
+			//o.Albedo=lerp(-1*edge;
             o.Metallic = _Metallic;
-			o.Emission = (1-edge)*lerp(_EdgeColor,_Color,abs(.5-frac(_Time.y*.5)));
+			//o.Emission
+			o.Emission = (1-edge)*lerp(fixed4(0,0,0,0),_EdgeColor,abs(sin(_Time.y)));
+			//o.Emission = (1-edge)*lerp(_EdgeColor,fixed3(0,0,0),abs(.5-frac(_Time.y*.5)));
             o.Smoothness = _Glossiness;
             o.Alpha = 1;
         }

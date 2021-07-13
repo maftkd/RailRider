@@ -7,13 +7,13 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: JumperBaseFade
-  m_Shader: {fileID: 4800000, guid: ecf0e843e955047b9a9d3dd5219135b5, type: 3}
+  m_Name: JumperBaseOutline
+  m_Shader: {fileID: 4800000, guid: 8dec547d873794af3b77a69ea7b0866b, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 3000
+  m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
   m_SavedProperties:
@@ -60,13 +60,14 @@ Material:
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
-    - _FadeMult: 0.01
     - _GlossMapScale: 1
     - _Glossiness: 1
     - _GlossyReflections: 1
     - _Metallic: 1
     - _Mode: 0
     - _OcclusionStrength: 1
+    - _OutlineMult: -0.86
+    - _OutlineStep: 1
     - _Parallax: 0.02
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
@@ -74,5 +75,5 @@ Material:
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
-    - _Color: {r: 0, g: 0, b: 0, a: 1}
+    - _Color: {r: 0.3679245, g: 0.3679245, b: 0.3679245, a: 1}
     - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}

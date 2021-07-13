@@ -7,6 +7,8 @@
         _Glossiness ("Smoothness", Range(0,1)) = 0.5
         _Metallic ("Metallic", Range(0,1)) = 0.0
 		_OutlineStep ("Outline Step", Range(-1,1)) = 0.0
+		_OutlineMult ("Outline mult", Float) = 0.5
+		_OutlineColor ("Outline color", Color) = (1,1,1,1)
     }
     SubShader
     {
@@ -33,6 +35,8 @@
         half _Metallic;
         fixed4 _Color;
 		fixed _OutlineStep;
+		fixed _OutlineMult;
+		fixed4 _OutlineColor;
 
         // Add instancing support for this shader. You need to check 'Enable Instancing' on materials that use the shader.
         // See https://docs.unity3d.com/Manual/GPUInstancing.html for more information about instancing.
@@ -46,7 +50,9 @@
             // Albedo comes from a texture tinted by color
             fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
 			fixed dt = step(dot(IN.viewDir,IN.worldNormal),_OutlineStep);
-            o.Albedo = lerp(c.rgb,c.rgb*0.5,dt);
+            //o.Albedo = lerp(c.rgb,c.rgb*_OutlineMult,dt);
+            o.Albedo = lerp(c.rgb*2,c.rgb*_OutlineColor*_OutlineMult,dt);
+			//o.Albedo=fixed3(1,0,0);
 			//o.Albedo=step(d,_OutlineStep);
             // Metallic and smoothness come from slider variables
             o.Metallic = _Metallic;

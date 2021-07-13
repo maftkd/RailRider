@@ -43,13 +43,15 @@
         {
 			fixed3 dist = _WorldSpaceCameraPos-IN.worldPos;
 			float dstSqr=dot(dist,dist);
-			clip(dstSqr-100);
+			//#temp
+			clip(dstSqr-200);
             // Albedo comes from a texture tinted by color
             //fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
 			float green = step(_GridScale.w,frac(IN.worldPos.x*_GridScale.x));
 			green += step(_GridScale.w,frac(IN.worldPos.z*_GridScale.z))*(1-green);
 			//green = lerp(0,green,sin(_Time.y));
 			o.Emission = (1-green)*lerp(fixed4(0,0,0,0),_Color,abs(sin(_Time.y)));
+			o.Albedo = 0;
             //o.Albedo = dstSqr;
             // Metallic and smoothness come from slider variables
             o.Metallic = _Metallic;

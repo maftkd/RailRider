@@ -20,13 +20,13 @@ RenderSettings:
   m_FogDensity: 0.04
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
-  m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+  m_AmbientSkyColor: {r: 0.4717871, g: 0.5094933, b: 0.5849056, a: 1}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
   m_AmbientIntensity: 1
-  m_AmbientMode: 0
+  m_AmbientMode: 3
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 2100000, guid: 9f639d20ee6064b5f96c5ec6b2cafa01, type: 2}
+  m_SkyboxMaterial: {fileID: 0}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 1.5503906, g: 1.6722469, b: 1.6713444, a: 1}
+  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -50,9 +50,9 @@ LightmapSettings:
     m_BounceScale: 1
     m_IndirectOutputScale: 1
     m_AlbedoBoost: 1
-    m_EnvironmentLightingMode: 0
+    m_EnvironmentLightingMode: 1
     m_EnableBakedLightmaps: 1
-    m_EnableRealtimeLightmaps: 1
+    m_EnableRealtimeLightmaps: 0
   m_LightmapEditorSettings:
     serializedVersion: 12
     m_Resolution: 2
@@ -771,6 +771,84 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
+--- !u!1 &146937229
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 146937230}
+  - component: {fileID: 146937232}
+  - component: {fileID: 146937231}
+  m_Layer: 5
+  m_Name: hsText (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &146937230
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 146937229}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0.01, y: 0.01, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1387728053}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 160, y: 30}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &146937231
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 146937229}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 2100000, guid: 75deba7679e789148839bf80e3889d99, type: 2}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_FontData:
+    m_Font: {fileID: 12800000, guid: bdaf36c42f6187a4f925190cc780e199, type: 3}
+    m_FontSize: 38
+    m_FontStyle: 0
+    m_BestFit: 0
+    m_MinSize: 3
+    m_MaxSize: 290
+    m_Alignment: 4
+    m_AlignByGeometry: 0
+    m_RichText: 1
+    m_HorizontalOverflow: 1
+    m_VerticalOverflow: 1
+    m_LineSpacing: 1
+  m_Text: 'HIGH SCORE: 0'
+--- !u!222 &146937232
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 146937229}
+  m_CullTransparentMesh: 0
 --- !u!1 &164043039
 GameObject:
   m_ObjectHideFlags: 0
@@ -1490,7 +1568,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 299577802}
   m_LocalRotation: {x: 0.05547897, y: -0.70492697, z: 0.05547897, w: 0.70492697}
-  m_LocalPosition: {x: 0, y: 0, z: 0.5}
+  m_LocalPosition: {x: 0, y: 0, z: 1.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1244627079}
@@ -1500,7 +1578,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 9, y: -90, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -2.49, y: 4.28}
+  m_AnchoredPosition: {x: -2.5, y: 4.16}
   m_SizeDelta: {x: 1, y: 1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &300355916
@@ -3140,8 +3218,8 @@ Camera:
   m_GameObject: {fileID: 534243062}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.03773582, g: 0.03773582, b: 0.03773582, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 1, g: 1, b: 1, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -3739,7 +3817,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: -0.03, y: -0.03}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &597440774
@@ -3754,8 +3832,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 2100000, guid: 75deba7679e789148839bf80e3889d99, type: 2}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Material: {fileID: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -10565,6 +10643,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _lineMat: {fileID: 2100000, guid: aac01ebdcdcedee4e8eebb5f64d3b6df, type: 2}
+  _buildingMat: {fileID: 2100000, guid: a1ad2067ca43c4a71b336202297268ff, type: 2}
   _coin: {fileID: 5454965678494411071, guid: 1ab0a128b9479420f8a9cb780fc3b5ef, type: 3}
   _coinHeightCurve:
     serializedVersion: 2
@@ -10593,6 +10672,7 @@ MonoBehaviour:
   _jumper: {fileID: 6287953402659396341, guid: 73aac87256ddf40c7b8273f11978659d, type: 3}
   _ducker: {fileID: 9056772270837700915, guid: 12d8c3a430e2149da8df7a5e30e5efc9, type: 3}
   _rack: {fileID: 1229379786993531478, guid: 934676e1310c94c668a50fadbd66ef9a, type: 3}
+  _planet: {fileID: 1229379786993531478, guid: 9b2e2d8342898493c9a150c5efab6069, type: 3}
   _supportRail: {fileID: 2430372320708397436, guid: 8907439a044ab476a9efb97ec5181a78,
     type: 3}
   _jumpCurve:
@@ -10707,7 +10787,9 @@ MonoBehaviour:
   - {fileID: 299577802}
   - {fileID: 1181673112}
   - {fileID: 1387728051}
-  _hsText: {fileID: 597440774}
+  _hsText:
+  - {fileID: 597440774}
+  - {fileID: 146937231}
   _music: {fileID: 2012078503}
   _tutorialObjs: {fileID: 1584361514}
   _ethanMat: {fileID: 2100000, guid: 75db23e76bd94d844aeb168a3f602f32, type: 2}
@@ -10748,37 +10830,275 @@ MonoBehaviour:
   _lTrail: {fileID: 1617201913}
   _rTrail: {fileID: 729506164}
   _coinFx: {fileID: 3940569000854000093, guid: 92983451ab5364bd8a1c71db108a9f86, type: 3}
+  _zen: 0
   _buildingPrefab: {fileID: 3032120424316595605, guid: 1c6ce923ca7714fb6ac8a249a29aab84,
     type: 3}
-  _gold: {r: 0.35686278, g: 1, b: 0.44718206, a: 1}
-  _silver: {r: 0, g: 1, b: 0.140244, a: 1}
-  _copper: {r: 0.68889886, g: 1, b: 0.35686278, a: 1}
   _sparks: {fileID: 1872096810}
   _course:
-  - _minJumpSpace: 1.5
+  - _label: Gears
+    _minJumpSpace: 1.5
     _jumpProbability: 0.1
     _minCoinSpace: 2.5
     _coinProbability: 0.1
-    _coinClusterSize: 4
+    _coinClusterSize: 5
     _maxCoinRotation: 45
     _maxCoinCork: 2
     _minDuckerSpace: 0
     _duckerProbability: 0
     _minRackSpace: 0
     _rackProbability: 0
+    _minRackSpeed: 0
     _maxRackSpeed: 0
-  - _minJumpSpace: 1.5
+    _minPlanetSpace: 0
+    _planetProbability: 0
+    _minPlanetSpeed: 0
+    _maxPlanetSpeed: 0
+    _minObstacleSpace: 0
+    _duration: 15
+    _accent: {r: 0.3176471, g: 0.8826413, b: 0.9529412, a: 1}
+    _bg: {r: 1, g: 1, b: 1, a: 1}
+  - _label: Ducks
+    _minJumpSpace: 0
+    _jumpProbability: 0
+    _minCoinSpace: 2.5
+    _coinProbability: 0.1
+    _coinClusterSize: 5
+    _maxCoinRotation: 45
+    _maxCoinCork: 2
+    _minDuckerSpace: 1.5
+    _duckerProbability: 0.26
+    _minRackSpace: 0
+    _rackProbability: 0
+    _minRackSpeed: 0
+    _maxRackSpeed: 0
+    _minPlanetSpace: 0
+    _planetProbability: 0
+    _minPlanetSpeed: 0
+    _maxPlanetSpeed: 0
+    _minObstacleSpace: 0
+    _duration: 15
+    _accent: {r: 1, g: 0, b: 0.84751415, a: 1}
+    _bg: {r: 0.6462264, g: 0.76927805, b: 1, a: 1}
+  - _label: JumpDucks
+    _minJumpSpace: 1.5
+    _jumpProbability: 0.1
+    _minCoinSpace: 2.5
+    _coinProbability: 0.1
+    _coinClusterSize: 5
+    _maxCoinRotation: 45
+    _maxCoinCork: 2
+    _minDuckerSpace: 1.5
+    _duckerProbability: 0.1
+    _minRackSpace: 0
+    _rackProbability: 0
+    _minRackSpeed: 0
+    _maxRackSpeed: 0
+    _minPlanetSpace: 0
+    _planetProbability: 0
+    _minPlanetSpeed: 0
+    _maxPlanetSpeed: 0
+    _minObstacleSpace: 0.5
+    _duration: 25
+    _accent: {r: 1, g: 0.7392709, b: 0, a: 1}
+    _bg: {r: 0.3999644, g: 0.49945945, b: 0.7924528, a: 1}
+  - _label: Coins
+    _minJumpSpace: 0
+    _jumpProbability: 0
+    _minCoinSpace: 1
+    _coinProbability: 0.1
+    _coinClusterSize: 8
+    _maxCoinRotation: 150
+    _maxCoinCork: 10
+    _minDuckerSpace: 0
+    _duckerProbability: 0
+    _minRackSpace: 0
+    _rackProbability: 0
+    _minRackSpeed: 0
+    _maxRackSpeed: 0
+    _minPlanetSpace: 0
+    _planetProbability: 0
+    _minPlanetSpeed: 0
+    _maxPlanetSpeed: 0
+    _minObstacleSpace: 0
+    _duration: 10
+    _accent: {r: 1, g: 0, b: 0.39479208, a: 1}
+    _bg: {r: 0.021537915, g: 0.08044118, b: 0.41509432, a: 1}
+  - _label: Racks
+    _minJumpSpace: 0
+    _jumpProbability: 0
+    _minCoinSpace: 2.5
+    _coinProbability: 0.1
+    _coinClusterSize: 5
+    _maxCoinRotation: 180
+    _maxCoinCork: 5
+    _minDuckerSpace: 0
+    _duckerProbability: 0
+    _minRackSpace: 1
+    _rackProbability: 0.25
+    _minRackSpeed: 45
+    _maxRackSpeed: 90
+    _minPlanetSpace: 0
+    _planetProbability: 0
+    _minPlanetSpeed: 0
+    _maxPlanetSpeed: 0
+    _minObstacleSpace: 0
+    _duration: 15
+    _accent: {r: 1, g: 0.85797274, b: 0, a: 1}
+    _bg: {r: 0.013572444, g: 0.078994, b: 0.5754717, a: 1}
+  - _label: JumpRacks
+    _minJumpSpace: 1.5
+    _jumpProbability: 0.1
+    _minCoinSpace: 2.5
+    _coinProbability: 0.1
+    _coinClusterSize: 5
+    _maxCoinRotation: 90
+    _maxCoinCork: 5
+    _minDuckerSpace: 0
+    _duckerProbability: 0
+    _minRackSpace: 2
+    _rackProbability: 0.5
+    _minRackSpeed: 60
+    _maxRackSpeed: 90
+    _minPlanetSpace: 0
+    _planetProbability: 0
+    _minPlanetSpeed: 0
+    _maxPlanetSpeed: 0
+    _minObstacleSpace: 0.5
+    _duration: 25
+    _accent: {r: 0, g: 0.7231324, b: 1, a: 1}
+    _bg: {r: 1, g: 0.7494587, b: 0.36320752, a: 1}
+  - _label: JumpDuckRacks
+    _minJumpSpace: 1.5
+    _jumpProbability: 0.1
+    _minCoinSpace: 2.5
+    _coinProbability: 0.1
+    _coinClusterSize: 5
+    _maxCoinRotation: 90
+    _maxCoinCork: 5
+    _minDuckerSpace: 1.5
+    _duckerProbability: 0.1
+    _minRackSpace: 2
+    _rackProbability: 0.5
+    _minRackSpeed: 60
+    _maxRackSpeed: 90
+    _minPlanetSpace: 0
+    _planetProbability: 0
+    _minPlanetSpeed: 0
+    _maxPlanetSpeed: 0
+    _minObstacleSpace: 0.5
+    _duration: 15
+    _accent: {r: 1, g: 0, b: 0.39479208, a: 1}
+    _bg: {r: 0.33459416, g: 0.7345534, b: 0.9716981, a: 1}
+  - _label: MoreCoins
+    _minJumpSpace: 0
+    _jumpProbability: 0
+    _minCoinSpace: 1
+    _coinProbability: 0.1
+    _coinClusterSize: 10
+    _maxCoinRotation: 150
+    _maxCoinCork: 15
+    _minDuckerSpace: 0
+    _duckerProbability: 0
+    _minRackSpace: 0
+    _rackProbability: 0
+    _minRackSpeed: 0
+    _maxRackSpeed: 0
+    _minPlanetSpace: 0
+    _planetProbability: 0
+    _minPlanetSpeed: 0
+    _maxPlanetSpeed: 0
+    _minObstacleSpace: 0.5
+    _duration: 15
+    _accent: {r: 0.401738, g: 0.8773585, b: 0.30210927, a: 1}
+    _bg: {r: 0.9716981, g: 0.53626734, b: 0.8730512, a: 1}
+  - _label: Planets
+    _minJumpSpace: 0
+    _jumpProbability: 0
+    _minCoinSpace: 2.5
+    _coinProbability: 0.1
+    _coinClusterSize: 5
+    _maxCoinRotation: 150
+    _maxCoinCork: 5
+    _minDuckerSpace: 0
+    _duckerProbability: 0
+    _minRackSpace: 0
+    _rackProbability: 0
+    _minRackSpeed: 0
+    _maxRackSpeed: 0
+    _minPlanetSpace: 1
+    _planetProbability: 0.1
+    _minPlanetSpeed: 45
+    _maxPlanetSpeed: 90
+    _minObstacleSpace: 0.5
+    _duration: 25
+    _accent: {r: 0.13207841, g: 1, b: 0, a: 1}
+    _bg: {r: 0.6285159, g: 0.38959593, b: 0.9716981, a: 1}
+  - _label: DuckPlanets
+    _minJumpSpace: 0
+    _jumpProbability: 0
+    _minCoinSpace: 2.5
+    _coinProbability: 0.1
+    _coinClusterSize: 5
+    _maxCoinRotation: 150
+    _maxCoinCork: 5
+    _minDuckerSpace: 1
+    _duckerProbability: 0.1
+    _minRackSpace: 0
+    _rackProbability: 0
+    _minRackSpeed: 0
+    _maxRackSpeed: 0
+    _minPlanetSpace: 1
+    _planetProbability: 0.1
+    _minPlanetSpeed: 45
+    _maxPlanetSpeed: 90
+    _minObstacleSpace: 0.5
+    _duration: 25
+    _accent: {r: 1, g: 0.38020274, b: 0.2971698, a: 1}
+    _bg: {r: 0.3224012, g: 0.3569263, b: 0.990566, a: 1}
+  - _label: DuckPlanetRacks
+    _minJumpSpace: 0
     _jumpProbability: 0
     _minCoinSpace: 2.5
     _coinProbability: 0.1
     _coinClusterSize: 4
-    _maxCoinRotation: 45
-    _maxCoinCork: 2
-    _minDuckerSpace: 1.5
-    _duckerProbability: 0
-    _minRackSpace: 1
-    _rackProbability: 1
-    _maxRackSpeed: 120
+    _maxCoinRotation: 150
+    _maxCoinCork: 5
+    _minDuckerSpace: 2
+    _duckerProbability: 0.1
+    _minRackSpace: 2
+    _rackProbability: 0.2
+    _minRackSpeed: 45
+    _maxRackSpeed: 60
+    _minPlanetSpace: 2
+    _planetProbability: 0.1
+    _minPlanetSpeed: 45
+    _maxPlanetSpeed: 90
+    _minObstacleSpace: 0.5
+    _duration: 25
+    _accent: {r: 0.4962862, g: 1, b: 0.4198113, a: 1}
+    _bg: {r: 0.9339623, g: 0.3568441, b: 0.3568441, a: 1}
+  - _label: TheWorks
+    _minJumpSpace: 2
+    _jumpProbability: 0.1
+    _minCoinSpace: 2.5
+    _coinProbability: 0.1
+    _coinClusterSize: 4
+    _maxCoinRotation: 150
+    _maxCoinCork: 5
+    _minDuckerSpace: 2
+    _duckerProbability: 0.1
+    _minRackSpace: 2
+    _rackProbability: 0.2
+    _minRackSpeed: 45
+    _maxRackSpeed: 60
+    _minPlanetSpace: 2
+    _planetProbability: 0.1
+    _minPlanetSpeed: 45
+    _maxPlanetSpeed: 90
+    _minObstacleSpace: 0.5
+    _duration: 30
+    _accent: {r: 1, g: 1, b: 1, a: 1}
+    _bg: {r: 0, g: 0, b: 0, a: 1}
   _shopParent: {fileID: 1577746500}
 --- !u!4 &1009601617
 Transform:
@@ -12385,7 +12705,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.06, y: -0.05}
+  m_AnchoredPosition: {x: -0.1, y: -0.11}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1244627080
@@ -12401,7 +12721,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.234, g: 0.234, b: 0.234, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -12987,16 +13307,17 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1387728051}
   m_LocalRotation: {x: 0.05547897, y: -0.70492697, z: 0.05547897, w: 0.70492697}
-  m_LocalPosition: {x: 0, y: 0, z: -1}
+  m_LocalPosition: {x: 0, y: 0, z: -0.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 597440773}
+  - {fileID: 146937230}
   m_Father: {fileID: 0}
   m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 9, y: -90, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 1.57, y: 2.84}
+  m_AnchoredPosition: {x: 1.6, y: 2.77}
   m_SizeDelta: {x: 1, y: 1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1388808091
@@ -14539,6 +14860,16 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7511558181221131132, guid: 339dd56ccf974c74390a22cd035aa31b,
         type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 339dd56ccf974c74390a22cd035aa31b,
+        type: 3}
+      propertyPath: m_ReceiveShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 339dd56ccf974c74390a22cd035aa31b,
+        type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 47cf5f6a3ae685447b0bb48f446bf4d6, type: 2}
@@ -14551,7 +14882,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Materials.Array.data[2]
       value: 
-      objectReference: {fileID: 2100000, guid: 89ac6aeb6f9b9694b82824b94928248a, type: 2}
+      objectReference: {fileID: 2100000, guid: 295ba5ce71a8649699d781a8e8bfc424, type: 2}
     - target: {fileID: -7511558181221131132, guid: 339dd56ccf974c74390a22cd035aa31b,
         type: 3}
       propertyPath: m_Materials.Array.data[3]
