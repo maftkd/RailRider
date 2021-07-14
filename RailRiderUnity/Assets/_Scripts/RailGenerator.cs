@@ -32,6 +32,7 @@ public class RailGenerator : MonoBehaviour
 	Dictionary<float, Item> _coins = new Dictionary<float, Item>();
 	public Transform _coin;
 	float _coinHeight = 1.5f;
+	float _batteryHeight = 1.75f;
 	public AnimationCurve _coinHeightCurve;
 	int _tOffset=0;//subtract from _t to get time about current sections of rail
 	int _lookAheadTracks=8;
@@ -40,9 +41,11 @@ public class RailGenerator : MonoBehaviour
 	public Transform _ducker;
 	public Transform _rack;
 	public Transform _planet;
+	public Transform _battery;
 	public Transform _supportRail;
 	float _lineResFrac;
 	Transform _ethan;
+	Transform _ethanHandSlot;
 	bool _jumping=false;
 	bool _crouching=false;
 	float _jumpHeight = 2.5f;//1.85f;
@@ -55,6 +58,7 @@ public class RailGenerator : MonoBehaviour
 	Dictionary<float, Item> _duckers = new Dictionary<float, Item>();
 	Dictionary<float, Item> _racks = new Dictionary<float, Item>();
 	Dictionary<float, Item> _planets = new Dictionary<float, Item>();
+	Dictionary<float, Item> _batteries = new Dictionary<float, Item>();
 	Dictionary<float, Item> _supports = new Dictionary<float, Item>();
 
 	//[ColorUsageAttribute(false,true)]
@@ -96,12 +100,7 @@ public class RailGenerator : MonoBehaviour
 	Camera _main;
 	float _curvature;
 	Transform _explosion;
-	/*
-	float _invincibleSpeed=.65f;
-	float _invincibleWarning=.05f;
-	CanvasGroup _invincDisplay;
-	Image _invincMeter;
-	*/
+
 
 	//effects
 	public Material _ethanMat;
@@ -149,6 +148,7 @@ public class RailGenerator : MonoBehaviour
 	float _lastDucker;
 	float _lastRack;
 	float _lastPlanet;
+	float _lastBattery;
 	float _lastObstacle;
 
 	//coins vars
@@ -164,6 +164,16 @@ public class RailGenerator : MonoBehaviour
 	int _phaseChangeIn;
 	float _phaseChangeT;
 	float _phaseChangeDur=5f;
+
+	//powerups
+	float _batteryDur=-1;
+	float _batteryCapacity;
+	Transform _batteryTemp;
+	Material _batteryTempMat;
+	public float _minBatterySpace;
+	public float _batteryProbability;
+	public float _batteryDuration;
+	public float _maxBatteryRotation;
 
 	public Transform _shopParent;
 	UIManager _menu;
@@ -231,6 +241,11 @@ public class RailGenerator : MonoBehaviour
 		public LineRenderer line;
 	}
 
+	class Battery : Item{
+		public float dur;
+		public Vector3 up;
+	}
+
 	int _numBoards;
 	int _curBoard;
 	Transform _boardParent;
@@ -286,6 +301,8 @@ public class RailGenerator : MonoBehaviour
 		//Get some references
 		_helmet = GameObject.FindGameObjectWithTag("Helmet").transform;
 		_ethan = _railTracker.GetChild(0); 
+		_ethanHandSlot = GameObject.Find("HandSlot").transform;
+		_ethanMat.SetColor("_OutlineColor",Color.black);
 		_gate = GameObject.FindGameObjectWithTag("Gate").transform;
 		_scoreText = GameObject.FindGameObjectWithTag("Score").GetComponent<Text>();
 		_comboText = _scoreText.transform.GetChild(0).GetComponent<Text>();
@@ -295,7 +312,7 @@ public class RailGenerator : MonoBehaviour
 		_trickText.text="";
 		//_invincDisplay = _scoreText.transform.GetChild(1).GetComponent<CanvasGroup>();
 		//_invincMeter = _invincDisplay.transform.GetChild(0).GetComponent<Image>();
-		_scoreCanvas = _scoreText.transform.GetComponent<CanvasGroup>();
+		_scoreCanvas = _scoreText.transform.parent.GetComponent<CanvasGroup>();
 		_defaultScoreFont=_scoreText.fontSize;
 		_boldScoreFont=Mathf.FloorToInt(_defaultScoreFont*1.4f);
 		if(PlayerPrefs.HasKey("hs")){
@@ -650,25 +667,6 @@ public class RailGenerator : MonoBehaviour
 		if(!_coins.ContainsKey(t)){
 			_coins.Add(t,c);
 		}
-		//check jumpers #temp
-		/*
-		foreach(float k in _jumpers.Keys){
-			float ab = Mathf.Abs(k-t);
-			if(ab<0.25f)
-			{
-				c.transform.position+=curCoin.up*
-					_coinHeightCurve.Evaluate(Mathf.InverseLerp(0.25f,0,ab))*2f;
-			}
-		}
-		foreach(float k in _planets.Keys){
-			float ab = Mathf.Abs(k-t);
-			if(ab<0.25f)
-			{
-				c.transform.position+=curCoin.up*
-					_coinHeightCurve.Evaluate(Mathf.InverseLerp(0.25f,0,ab))*2f;
-			}
-		}
-		*/
 		return true;
 	}
 
@@ -702,18 +700,6 @@ public class RailGenerator : MonoBehaviour
 	}
 
 	void GenerateJumper(float key){
-		/*
-		_jumpDuckSpace=Mathf.Lerp(_maxJumpDuckSpace,_minJumpDuckSpace,_playTimer/_maxTime);
-		//float key = _t+distance;
-		foreach(float k in _duckers.Keys){
-			float ab = Mathf.Abs(k-key);
-			if(ab<_jumpDuckSpace)
-			{
-				key=k+_jumpDuckSpace;
-				break;
-			}
-		}
-		*/
 		Vector3 railPos = _path.GetPoint(key-_tOffset);
 		Vector3 forward = _path.GetTangent(key-_tOffset);
 		//instance the jumper
@@ -731,16 +717,6 @@ public class RailGenerator : MonoBehaviour
 	void GenerateDucker(float distance){
 		//_jumpDuckSpace=Mathf.Lerp(_maxJumpDuckSpace,_minJumpDuckSpace,_playTimer/_maxTime);
 		float key = distance;
-		/*
-		foreach(float k in _jumpers.Keys){
-			float ab = Mathf.Abs(k-key);
-			if(ab<_jumpDuckSpace)
-			{
-				key=k+_jumpDuckSpace;
-				break;
-			}
-		}
-		*/
 		Vector3 railPos = _path.GetPoint(key-_tOffset);
 		Vector3 forward = _path.GetTangent(key-_tOffset);
 		//instance the jumper
@@ -801,17 +777,31 @@ public class RailGenerator : MonoBehaviour
 		r.planet.Init(rand);
 		r.go = planet.gameObject;
 		_planets.Add(key,r);
-		/*
-		foreach(float k in _coins.Keys){
-			float ab = Mathf.Abs(k-key);
-			if(ab<0.25f)
-			{
-				Coin c = (Coin)_coins[k];
-				c.transform.position+=c.transform.up*
-					_coinHeightCurve.Evaluate(Mathf.InverseLerp(0.25f,0,ab))*2f;
-			}
-		}
-		*/
+	}
+
+	void GenerateBattery(float distance){
+		float key = distance;
+		Vector3 railPos = _path.GetPoint(key-_tOffset);
+		Vector3 forward = _path.GetTangent(key-_tOffset);
+		//instance the battery
+		Transform battery = Instantiate(_battery,railPos,Quaternion.identity, null);
+		battery.localScale=Vector3.one*3f;
+		//enable rotation
+		battery.GetComponent<Rotator>().enabled=true;
+		//setup struct
+		Battery r = new Battery();
+		r.transform = battery;
+		r.mesh=battery.GetComponent<MeshRenderer>();
+		Phase p = _course[_curPhase];
+		r.dur=_batteryDuration;
+		//random rotation around rail
+		//r.RotateAround(railPos,forward,r);
+		battery.position+=Vector3.up*_batteryHeight;
+		float rand = Random.value*_maxBatteryRotation*(Random.Range(0,2)*2f-1f);
+		battery.RotateAround(railPos,forward,rand);
+		r.up=(battery.position-railPos).normalized;
+		battery.rotation=Quaternion.identity;
+		_batteries.Add(key,r);
 	}
 
 	int GenerateNewTrack(){
@@ -1040,11 +1030,11 @@ public class RailGenerator : MonoBehaviour
 				//coins
 				if(knotT-i>_lastCluster+p._minCoinSpace && Random.value<p._coinProbability)
 				{
-					if(knotT-i>_lastObstacle+p._minObstacleSpace){
+					//if(knotT-i>_lastObstacle+p._minObstacleSpace){
 						GenerateCoinCluster(knotT-i);
 						_lastCluster=knotT-i;
-						_lastObstacle=knotT-i;
-					}
+						//_lastObstacle=knotT-i;
+					//}
 				}
 				//duckers
 				if(knotT-i>_lastDucker+p._minDuckerSpace && Random.value<p._duckerProbability)
@@ -1073,6 +1063,17 @@ public class RailGenerator : MonoBehaviour
 						_lastObstacle=knotT-i;
 					}
 				}
+				
+				//batteries
+				if(knotT-i>_lastBattery+_minBatterySpace && Random.value<_batteryProbability)
+				{
+					if(knotT-i>_lastObstacle+p._minObstacleSpace){
+						GenerateBattery(knotT-i);
+						_lastBattery=knotT-i;
+						_lastObstacle=knotT-i;
+					}
+				}
+
 			}
 		}
 	}
@@ -1085,8 +1086,10 @@ public class RailGenerator : MonoBehaviour
 	public event EventHandler OnGearCollected;
 
 	void AddCoin(int setValue=-1){
+		/*
 		if(_zen)
 			return;
+			*/
 		if(setValue==-1)
 		{
 			if(OnCoinCollected!=null)
@@ -1117,8 +1120,10 @@ public class RailGenerator : MonoBehaviour
 	}
 
 	void AddScore(int points){
+		/*
 		if(_zen)
 			return;
+			*/
 		_collectedCoins+=points;
 		_scoreText.text=_collectedCoins.ToString();
 		_scoreText.fontSize=_boldScoreFont;
@@ -1319,7 +1324,7 @@ public class RailGenerator : MonoBehaviour
 	}
 
 	public void CheckPlanetCollisions(){
-		bool genRack=false;
+		bool genPlanet=false;
 		Planet tmp;
 		foreach(float f in _planets.Keys){
 			tmp=(Planet)_planets[f];
@@ -1338,9 +1343,14 @@ public class RailGenerator : MonoBehaviour
 							foreach(ParticleSystem ps in p)
 								ps.Play();
 							tmp.transform.tag="Collected";
-							tmp.transform.GetChild(0).GetChild(0).GetComponent<MeshRenderer>().enabled=false;
+							MeshRenderer[] meshes = tmp.transform.GetComponentsInChildren<MeshRenderer>();
+							foreach(MeshRenderer mr in meshes)
+							{
+								if(mr.transform!=tmp.transform)
+									mr.enabled=false;
+							}
 							_smash.Play();
-							genRack=true;
+							genPlanet=true;
 						}
 						else{
 							tmp.planet.StopSpinning();
@@ -1348,13 +1358,13 @@ public class RailGenerator : MonoBehaviour
 						}
 					}
 					else if(_t-f>.04f){
-						genRack=true;
+						genPlanet=true;
 						tmp.transform.tag="Collected";
 					}
 				}
 			}
 		}
-		if(genRack)
+		if(genPlanet)
 		{
 			//GenNextRack();
 			AddScore(1);
@@ -1386,7 +1396,23 @@ public class RailGenerator : MonoBehaviour
 	}
 
 	public void CheckBatteryCollisions(){
-
+		Battery j;
+		foreach(float f in _batteries.Keys){
+			j = (Battery)_batteries[f];
+			if(Mathf.Abs(f-_t)<.04f && Vector3.Dot(_railTracker.up,j.up)>0.9f){
+				bool notCol = j.transform.tag!="Collected";
+				if(notCol)
+				{
+					j.transform.tag="Collected";
+					j.transform.gameObject.SetActive(false);
+					AcquireBattery();
+				}
+				//tutorial
+				else{
+					return;
+				}
+			}
+		}
 	}
 
 	// Update is called once per frame
@@ -1491,7 +1517,7 @@ public class RailGenerator : MonoBehaviour
 				CheckJumperCollisions();
 				CheckPlanetCollisions();
 				CheckSupportCollisions();
-				//CheckBatteryCollisions
+				CheckBatteryCollisions();
 
 
 				//check for new track gen if only X tracks lie ahead
@@ -1507,6 +1533,7 @@ public class RailGenerator : MonoBehaviour
 					ClearOldStuff(_racks,_tOffset+removed);
 					ClearOldStuff(_planets,_tOffset+removed);
 					ClearOldStuff(_supports,_tOffset+removed);
+					ClearOldStuff(_batteries,_tOffset+removed);
 
 					//update line renderer
 					ResetRail();
@@ -1531,25 +1558,15 @@ public class RailGenerator : MonoBehaviour
 					StartCoroutine(FadeInScoreText(0));
 				}
 
-				//invincinbility effect
-				/*
-				if(_moveSpeed>_invincibleSpeed){
-					Color color;
-					if(_moveSpeed>_invincibleSpeed+_invincibleWarning){
-						color = _invincibilityGrad.Evaluate(Mathf.PingPong(_t,1f))*.5f;
+				if(_batteryDur>=0){
+					_batteryDur-=Time.deltaTime;
+					//update battery fill meter
+					_batteryTempMat.SetFloat("_Power",_batteryDur/_batteryCapacity);
+					if(_batteryDur<0)
+					{
+						RemoveBattery();
 					}
-					else{
-						color = Color.white*Mathf.PingPong(_t,0.2f)*5f;
-					}
-					//_ethanMat.SetColor("_EmissionColor",color);
-					//_invincMeter.fillAmount=Mathf.InverseLerp(_invincibleSpeed,_maxSpeed,_moveSpeed);
 				}
-				else
-				{
-					//_ethanMat.SetColor("_EmissionColor",Color.black);
-					//_invincDisplay.alpha=0;
-				}
-				*/
 
 				//phase change logic
 				if(!_phaseChange){
@@ -1618,32 +1635,6 @@ public class RailGenerator : MonoBehaviour
 		localEuler.z = -_balance;
 		_railTracker.localEulerAngles=localEuler;
 	}
-
-	/*
-	void GateEvent(){
-		//tighten up jumps
-		_jumpSpacing = Mathf.Lerp(_jumpSpacing,_minJumpSpacing,_jumpIncreaseRate);
-		_jumpThreshold = Mathf.Lerp(_jumpThreshold,_minJumpThreshold,_jumpIncreaseRate);	
-		_jumpProbability = Mathf.Lerp(_jumpProbability,_maxJumpProbability,_jumpIncreaseRate);
-
-		//determine next gate position
-		_gatePos=Mathf.FloorToInt(_nextGate)+50;//this will get reset when the next gate is generated
-
-		//speed boost
-		_moveSpeed=_maxSpeed;
-
-		_woosh.Play();
-
-		//_invincDisplay.alpha=1f;
-		//_invincMeter.fillAmount=1f;
-
-		//particles
-		foreach(ParticleSystem ps in _speedParts){
-			ps.Play();
-		}
-	}
-	*/
-
 
 	IEnumerator FadeInScoreText(float delay=4f){
 		yield return new WaitForSeconds(delay);
@@ -1810,6 +1801,43 @@ public class RailGenerator : MonoBehaviour
 			yield return null;
 		}
 		Debug.Log("Done animating transition to next phase");
+	}
+
+
+	void AcquireBattery(){
+		Debug.Log("battery acquired!");
+		//add a battery to ethands hands
+		if(_batteryDur<0){
+			_batteryTemp = Instantiate(_battery,_ethanHandSlot);
+			_batteryTemp.GetChild(0).gameObject.SetActive(false);
+			_batteryTempMat=_batteryTemp.GetComponent<MeshRenderer>().materials[1];
+			_music.pitch=1.1f;
+		}
+		StartCoroutine(BlinkRoutine());
+		_batteryTempMat.SetFloat("_Power",1f);
+		_batteryDur=_batteryDuration;
+		_batteryCapacity=_batteryDur;
+		//set battery material thingy
+		_anim.SetBool("carry",true);
+		_zen=true;
+	}
+
+	void RemoveBattery(){
+		_anim.SetBool("carry",false);
+		Destroy(_batteryTemp.gameObject);
+		_zen=false;
+		_ethanMat.SetColor("_OutlineColor",Color.black);
+		_music.pitch=1f;
+	}
+
+	IEnumerator BlinkRoutine(){
+		for(int i=0; i<5; i++){
+			_ethanMat.SetColor("_OutlineColor",Color.yellow);
+			yield return new WaitForSeconds(0.1f);
+			_ethanMat.SetColor("_OutlineColor",Color.black);
+			yield return new WaitForSeconds(0.1f);
+		}
+		_ethanMat.SetColor("_OutlineColor",Color.yellow);
 	}
 
 	public void GameOver(){
