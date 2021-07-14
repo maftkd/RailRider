@@ -110,6 +110,8 @@ public class RailGenerator : MonoBehaviour
 	public AudioSource _woosh;
 	public AudioSource _smash;
 	public AudioSource _gearHit;
+	public AudioSource _powerUp;
+	public AudioSource _powerDown;
 	public TrailRenderer _lTrail,_rTrail;
 	public Transform _coinFx;
 	int _combo;
@@ -443,7 +445,7 @@ public class RailGenerator : MonoBehaviour
 		foreach(float f in _jumpers.Keys){
 			j=(Jumper)_jumpers[f];
 			if(f>_t-1 && f<_t+4){
-				if(f-_t<.3f&&f-_t>0){
+				if(f-_t<.5f&&f-_t>0){
 					trick=j.type;
 					j.transform.tag="Collected";
 					break;
@@ -1813,6 +1815,7 @@ public class RailGenerator : MonoBehaviour
 			_batteryTempMat=_batteryTemp.GetComponent<MeshRenderer>().materials[1];
 			_music.pitch=1.1f;
 		}
+		_powerUp.Play();
 		StartCoroutine(BlinkRoutine());
 		_batteryTempMat.SetFloat("_Power",1f);
 		_batteryDur=_batteryDuration;
@@ -1828,6 +1831,7 @@ public class RailGenerator : MonoBehaviour
 		_zen=false;
 		_ethanMat.SetColor("_OutlineColor",Color.black);
 		_music.pitch=1f;
+		_powerDown.Play();
 	}
 
 	IEnumerator BlinkRoutine(){

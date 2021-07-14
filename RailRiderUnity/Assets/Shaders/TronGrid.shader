@@ -6,7 +6,7 @@
         _MainTex ("Albedo (RGB)", 2D) = "white" {}
         _Glossiness ("Smoothness", Range(0,1)) = 0.5
         _Metallic ("Metallic", Range(0,1)) = 0.0
-	_GridScale ("Grid Scale", Vector) = (0,0,0,0)
+		_GridScale ("Grid Scale", Vector) = (0,0,0,0)
     }
     SubShader
     {
@@ -44,7 +44,7 @@
 			fixed3 dist = _WorldSpaceCameraPos-IN.worldPos;
 			float dstSqr=dot(dist,dist);
 			//#temp
-			clip(dstSqr-200);
+			clip(dstSqr-_GridScale.y);
             // Albedo comes from a texture tinted by color
             //fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
 			float green = step(_GridScale.w,frac(IN.worldPos.x*_GridScale.x));
