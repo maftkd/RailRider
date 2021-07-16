@@ -16,12 +16,12 @@ public class RailGenerator : MonoBehaviour
 	int _lineResolution = 10;//Number of points on line per segment
 	float _moveSpeed=0.6f;//rate at which char moves along rail in segments/sec
 	float _targetMoveSpeed;
-	float _maxSpeed=0.8f;//speed obtained through tunnel
 	float _speedChangeLerp=.12f;
 	Transform _railTracker;
 	float _balance;
 	float _t;//measurement of time progress throughout the run
 	float _balanceSpeed = 100;//degrees per second of rotation at full balanceVelocity
+	int _prevBalanceState = 0;
 	int _balanceState = 0;//0=no input, 1=left input, 2=right input
 	float _balanceVelocity = 0;//rate at which Character rotates
 	float _balanceAcceleration = 3f;//rate at which touch input affects velocity
@@ -62,6 +62,8 @@ public class RailGenerator : MonoBehaviour
 	Dictionary<float, Item> _supports = new Dictionary<float, Item>();
 
 	//[ColorUsageAttribute(false,true)]
+	public Color _yellow;
+	public Color _grey;
 	public Color _coinHitColor;
 	int _collectedCoins;
 	float _coinHitThreshold = .95f;
@@ -85,6 +87,7 @@ public class RailGenerator : MonoBehaviour
 	float _maxTrickTextTimer=3f;
 	float _spinTrick;
 	public AnimationCurve _popup;
+	public AnimationCurve _dialogCurve;
 	CanvasGroup _scoreCanvas;
 	public CanvasGroup _authorCanvas;
 	float _balanceSpeedMultiplier=280;
@@ -95,6 +98,8 @@ public class RailGenerator : MonoBehaviour
 	int _boldScoreFont;
 	public Text [] _hsText;
 	bool _tutorial;
+	float _tutCoinStart;
+	CanvasGroup _readyCanvas;
 	public AudioSource _music;
 	public GameObject _tutorialObjs;
 	Camera _main;
@@ -141,6 +146,8 @@ public class RailGenerator : MonoBehaviour
 	float _uncrouchTimer;
 	float _uncrouchTime=0.1f;//time it takes to confirm an uncrouch
 	public ParticleSystem _sparks;
+	public ParticleSystem _flames;
+	ParticleSystem _grindEffects;
 
 	//spawn object spacing vars
 	int _clusterCount;
@@ -177,8 +184,22 @@ public class RailGenerator : MonoBehaviour
 	public float _batteryDuration;
 	public float _maxBatteryRotation;
 
+	//stats
+	float _minBalance=0.1f;
+	float _maxBalance=0.8f;
+	float _minTrick=270f;
+	float _maxTrick=1080f;
+	float _minSpeed=0.45f;
+	float _maxSpeed=0.8f;
+	int _bars=8;
+
 	public Transform _shopParent;
 	UIManager _menu;
+
+	//dialog
+	int _dialogIndex;
+	public string[] _dialog;
+	bool _ready;
 
 	[System.Serializable]
 	public class Phase {
@@ -250,6 +271,7 @@ public class RailGenerator : MonoBehaviour
 
 	int _numBoards;
 	int _curBoard;
+	int _equippedBoard;
 	Transform _boardParent;
 	Transform _board;
 	Transform _ethanParent;
@@ -285,17 +307,8 @@ public class RailGenerator : MonoBehaviour
 		_anim = _ethanParent.GetChild(0).GetComponent<Animator>();
 
 		//generate track starter
-		if(PlayerPrefs.HasKey("tut"))
-		{
-			GenerateStartingSection();
-			_tutorial=false;
-		}
-		else{
-			//generate tutorial section
-			GenerateTutorialSection();
-			_tutorial=true;
-		}
-
+		_tutorial=!PlayerPrefs.HasKey("tut");
+		GenerateStartingSection();
 
 		//This sets number of coins to 0
 		_collectedCoins=0;
@@ -310,10 +323,9 @@ public class RailGenerator : MonoBehaviour
 		_comboText = _scoreText.transform.GetChild(0).GetComponent<Text>();
 		_comboSfx = _comboText.transform.GetComponent<AudioSource>();
 		_trickText = GameObject.Find("TrickText").GetComponent<Text>();
-		_trickTextRect = _trickText.GetComponent<RectTransform>();
+		_trickTextRect = _trickText.transform.parent.GetComponent<RectTransform>();
 		_trickText.text="";
-		//_invincDisplay = _scoreText.transform.GetChild(1).GetComponent<CanvasGroup>();
-		//_invincMeter = _invincDisplay.transform.GetChild(0).GetComponent<Image>();
+		_readyCanvas = GameObject.Find("ReadyArrow").GetComponent<CanvasGroup>();
 		_scoreCanvas = _scoreText.transform.parent.GetComponent<CanvasGroup>();
 		_defaultScoreFont=_scoreText.fontSize;
 		_boldScoreFont=Mathf.FloorToInt(_defaultScoreFont*1.4f);
@@ -334,7 +346,11 @@ public class RailGenerator : MonoBehaviour
 		_boardParent = _shopParent.Find("Boards");
 		_numBoards = _boardParent.childCount;
 		if(PlayerPrefs.HasKey("board"))
+		{
 			_curBoard=PlayerPrefs.GetInt("board");
+			_equippedBoard=_curBoard;
+		}
+		EquipBoard();
 		RotateBoard(0);
 	}
 
@@ -361,6 +377,17 @@ public class RailGenerator : MonoBehaviour
 			}
 		}
 		Hoverboard b = _boardParent.GetChild(_curBoard).GetComponent<Hoverboard>();
+
+		//custom board stats from player prefs
+		if(_curBoard==4){
+			if(PlayerPrefs.HasKey("balance"))
+				b._balance=PlayerPrefs.GetFloat("balance");
+			if(PlayerPrefs.HasKey("trick"))
+				b._trick=PlayerPrefs.GetFloat("trick");
+			if(PlayerPrefs.HasKey("speed"))
+				b._speed=PlayerPrefs.GetFloat("speed");
+		}
+
 		//show name
 		Text title = _shopParent.Find("Canvas").Find("Title").GetComponent<Text>();
 		title.text=b._name;
@@ -370,29 +397,20 @@ public class RailGenerator : MonoBehaviour
 		Text cost = stats.GetChild(0).GetChild(0).GetComponent<Text>();
 		Button buy = cost.transform.parent.GetChild(1).GetComponent<Button>();
 		buy.interactable=false;
+		Slider equip = cost.transform.parent.GetChild(5).GetComponent<Slider>();
+		equip.gameObject.SetActive(false);
+		buy.gameObject.SetActive(true);
 		cost.text="Cost: "+b._cost.ToString("0");
+		bool owned=false;
+		bool equipped=_curBoard==_equippedBoard;
 		if(PlayerPrefs.HasKey(b._name)||_curBoard==0){
-			cost.text="Owned";
-			//equip board
-			//remove old board
-			if(_ethanParent.GetComponentInChildren<Hoverboard>()!=null)
-				Destroy(_ethanParent.GetComponentInChildren<Hoverboard>().gameObject);
-			//add new
-			_board = Instantiate(_boardParent.GetChild(_curBoard),_ethanParent);
-			_board.GetComponent<Hoverboard>()._rotate=false;
-			_board.localPosition=Vector3.zero;
-			_board.localEulerAngles=Vector3.zero;
-			_board.localScale=Vector3.one*1f;
-			PlayerPrefs.SetInt("board",_curBoard);
-			_trickMult=b._trick;
-			_balanceMult=b._balance;
-			//set speed
-			_speedMult=b._speed;
-			_moveSpeed=_speedMult;
-			_maxSpeed=_moveSpeed*1.5f;
-			//_invincibleSpeed=_moveSpeed+0.05f;
-			_targetMoveSpeed=_moveSpeed;
-			_balanceSpeed = _moveSpeed*_balanceSpeedMultiplier;
+			owned=true;
+			buy.gameObject.SetActive(false);
+			cost.text=equipped?"Equipped" : "Equip";
+			//active equp toggle
+			equip.gameObject.SetActive(true);
+			//set toggle if equiped
+			equip.value=equipped? 1 : 0;
 		}
 		else
 		{
@@ -400,15 +418,70 @@ public class RailGenerator : MonoBehaviour
 				buy.interactable=true;
 		}
 
-		//show stat
-		Text stat = stats.GetChild(1).GetChild(0).GetComponent<Text>();
-		stat.text="Balance: "+b._balance.ToString("0.0");
+		for(int i=1; i<=3; i++){
+			Transform stat = stats.GetChild(i);
+			Text text = stat.GetChild(0).GetComponent<Text>();
+			text.gameObject.SetActive(owned);
+			Transform statBars=stat.Find("Stats");
+			statBars.gameObject.SetActive(owned);
+			if(owned){
+				int bars=1;
+				switch(i){
+					case 1:
+						//text.text="Balance: "+b._balance.ToString("0.0");
+						bars+=Mathf.RoundToInt((_bars-1)*
+								Mathf.InverseLerp(_minBalance,_maxBalance,b._balance));
+						break;
+					case 2:
+						//text.text="Trick: "+b._trick.ToString("0.0");
+						bars+=Mathf.RoundToInt((_bars-1)*
+								Mathf.InverseLerp(_minTrick,_maxTrick,b._trick));
+						break;
+					case 3:
+						//text.text="Speed: "+b._speed.ToString("0.0");
+						bars+=Mathf.RoundToInt((_bars-1)*
+								Mathf.InverseLerp(_minSpeed,_maxSpeed,b._speed));
+						break;
+				}
 
-		stat = stats.GetChild(3).GetChild(0).GetComponent<Text>();
-		stat.text="Speed: "+b._speed.ToString("0.0");
+				for(int j=1; j<=statBars.childCount;j++)
+					statBars.GetChild(j-1).GetComponent<RawImage>().color =
+						bars>=j ? _yellow : _grey;
 
-		stat = stats.GetChild(2).GetChild(0).GetComponent<Text>();
-		stat.text="Trick: "+b._trick.ToString("0.0");
+			}
+			bool customize=owned&&_curBoard==4;
+			stat.Find("Minus").gameObject.SetActive(customize);
+			stat.Find("Plus").gameObject.SetActive(customize);
+		}
+
+		Transform wins = stats.GetChild(4);
+		if(owned)
+			wins.GetChild(0).GetComponent<Text>().text="Wins: "+PlayerPrefs.GetInt(b._name).ToString("0");
+		else
+			wins.GetChild(0).GetComponent<Text>().text="";
+
+		//set particle fx
+		if(_curBoard==3)
+			_grindEffects=_flames;
+		else
+			_grindEffects=_sparks;
+	}
+
+	[ContextMenu("Clear boards")]
+	public void DeleteBoards(){
+		PlayerPrefs.DeleteKey("The Plank");
+		PlayerPrefs.DeleteKey("The Gusto");
+		PlayerPrefs.DeleteKey("Flame Princess");
+		PlayerPrefs.DeleteKey("Custom");
+		PlayerPrefs.Save();
+	}
+
+	[ContextMenu("Clear stats")]
+	public void ClearStats(){
+		PlayerPrefs.DeleteKey("balance");
+		PlayerPrefs.DeleteKey("trick");
+		PlayerPrefs.DeleteKey("speed");
+		PlayerPrefs.Save();
 	}
 
 	public void BuyBoard(){
@@ -417,6 +490,79 @@ public class RailGenerator : MonoBehaviour
 		PlayerPrefs.Save();
 		_menu.CoinSpent(h._cost);
 		RotateBoard(0);
+	}
+
+	public void ChangeStat(string stat){
+		string[] parts = stat.Split('%');
+		string name = parts[0];
+		int dir = int.Parse(parts[1]);
+		Debug.Log("Changing stat on custom board - "+name+" in direction: "+dir);
+		switch(name){
+			default:
+			case "balance":
+				_balanceMult+=dir*((_maxBalance-_minBalance)/(_bars-1));
+				if(_balanceMult>_maxBalance)
+					_balanceMult=_maxBalance;
+				else if(_balanceMult<_minBalance)
+					_balanceMult=_minBalance;
+				PlayerPrefs.SetFloat("balance",_balanceMult);
+				break;
+			case "trick":
+				_trickMult+=dir*((_maxTrick-_minTrick)/(_bars-1));
+				if(_trickMult>_maxTrick)
+					_trickMult=_maxTrick;
+				else if(_trickMult<_minTrick)
+					_trickMult=_minTrick;
+				PlayerPrefs.SetFloat("trick",_trickMult);
+				break;
+			case "speed":
+				_speedMult+=dir*((_maxSpeed-_minSpeed)/(_bars-1));
+				if(_speedMult>_maxSpeed)
+					_speedMult=_maxSpeed;
+				else if(_speedMult<_minSpeed)
+					_speedMult=_minSpeed;
+				PlayerPrefs.SetFloat("speed",_speedMult);
+				break;
+		}
+		if(_equippedBoard==4)
+			EquipBoard();
+		PlayerPrefs.Save();
+		RotateBoard(0);
+	}
+
+	public void ToggleEquipBoard(){
+		if(_curBoard!=_equippedBoard)
+			_equippedBoard=_curBoard;
+		EquipBoard();
+		RotateBoard(0);
+	}
+
+	void EquipBoard(){
+		if(_ethanParent.GetComponentInChildren<Hoverboard>()!=null)
+			Destroy(_ethanParent.GetComponentInChildren<Hoverboard>().gameObject);
+		//add new
+		_board = Instantiate(_boardParent.GetChild(_equippedBoard),_ethanParent);
+		Hoverboard b = _board.GetComponent<Hoverboard>();
+		b._rotate=false;
+		_board.localPosition=Vector3.zero;
+		_board.localEulerAngles=Vector3.zero;
+		_board.localScale=Vector3.one*1f;
+		PlayerPrefs.SetInt("board",_curBoard);
+		//set stats
+		_trickMult=b._trick;
+		_balanceMult=b._balance;
+		_speedMult=b._speed;
+		if(_curBoard==4){
+			if(PlayerPrefs.HasKey("balance"))
+				_balanceMult=PlayerPrefs.GetFloat("balance");
+			if(PlayerPrefs.HasKey("trick"))
+				_trickMult=PlayerPrefs.GetFloat("trick");
+			if(PlayerPrefs.HasKey("speed"))
+				_speedMult=PlayerPrefs.GetFloat("speed");
+		}
+		_moveSpeed=_speedMult;
+		_targetMoveSpeed=_moveSpeed;
+		_balanceSpeed = _moveSpeed*_balanceSpeedMultiplier;
 	}
 	
 	//function used in update loop to reset velocity towards 0
@@ -438,7 +584,7 @@ public class RailGenerator : MonoBehaviour
 		float startY = _ethan.localEulerAngles.y;
 		//wait for player to un-crouch
 		yield return new WaitForSeconds(0.05f);
-		_sparks.Stop();
+		_grindEffects.Stop();
 		//determine trick
 		int trick=-1;
 		Jumper j = new Jumper();
@@ -482,7 +628,7 @@ public class RailGenerator : MonoBehaviour
 			yield return null;
 		}
 		if(_gameState==1)
-			_sparks.Play();
+			_grindEffects.Play();
 		_ethan.localPosition=startPos;
 		_board.localEulerAngles=Vector3.zero;
 		_jumping=false;
@@ -512,15 +658,15 @@ public class RailGenerator : MonoBehaviour
 				break;
 			case 0:
 				tricky+=" Shuv-it";
-				trickScore+=(1+Mathf.RoundToInt(Mathf.Abs(_spinTrick)/90f))*2;
+				trickScore=3;
 				break;
 			case 1:
 				tricky+=" Kickflip";
-				trickScore+=(1+Mathf.RoundToInt(Mathf.Abs(_spinTrick)/90f))*2;
+				trickScore=3;
 				break;
 			case 2:
 				tricky+=" Impossible";
-				trickScore+=(1+Mathf.RoundToInt(Mathf.Abs(_spinTrick)/90f))*2;
+				trickScore=3;
 				break;
 		}
 		//get grind
@@ -536,9 +682,12 @@ public class RailGenerator : MonoBehaviour
 				tricky+="Boardslide";
 				break;
 		}
-		_trickText.text=tricky;
-		_spinTrick=0;
-		_trickTextTimer=_maxTrickTextTimer;
+		if(!_tutorial)
+		{
+			_trickText.text=tricky;
+			_spinTrick=0;
+			_trickTextTimer=_maxTrickTextTimer;
+		}
 		if(trickScore>0)
 			AddScore(trickScore);
 	}
@@ -569,12 +718,11 @@ public class RailGenerator : MonoBehaviour
 		AddStraight(2);
 
 		//Then a long curve
-		AddCurve(_nodeDist*Random.Range(3,5f),3,(Random.value < 0.5f));
+		if(!_tutorial)
+			AddCurve(_nodeDist*Random.Range(3,5f),3,(Random.value < 0.5f));
 
 		ResetRail();
 
-		//_nextGate = Random.Range(_minGateSpace,_maxGateSpace);//remember this is not the location of the gate but the tOffset at which the gate spawns
-		//_gatePos=1024;//something arbitrarily high at the start - will be reset in AddGate()
 		UpdateFloorPlane();
 	}
 
@@ -819,7 +967,7 @@ public class RailGenerator : MonoBehaviour
 		}
 		*/
 		//add a straight
-		if(val<.33f){
+		if(val<.33f || _tutorial){
 			//max of 4 per straight
 			numTracks = Random.Range(1,5);
 			AddStraight(numTracks);
@@ -1016,7 +1164,7 @@ public class RailGenerator : MonoBehaviour
 		//spawn stuff
 		Phase p = _course[_curPhase];
 		//don't spawn nothing till the first few sections
-		if(knotT>3f){
+		if(knotT>3f && !_tutorial){
 
 			//spawn every .1 length
 			for(float i=1; i>=0; i-=0.1f){
@@ -1135,7 +1283,7 @@ public class RailGenerator : MonoBehaviour
 	public void StartRiding(bool zen){
 		_zen=zen;
 		_gameState=1;
-		_sparks.Play();
+		_grindEffects.Play();
 		_lTrail.emitting=true;
 		_rTrail.emitting=true;
 		if(!_tutorial)
@@ -1238,7 +1386,7 @@ public class RailGenerator : MonoBehaviour
 						else{
 							_gameState=2;
 							_gearHit.Play();
-							StartCoroutine(Rewind());
+							StartCoroutine(RewindR());
 							return;
 						}
 					}
@@ -1386,13 +1534,6 @@ public class RailGenerator : MonoBehaviour
 						GameOver();
 					}
 				}
-				//tutorial
-				else{
-					_gameState=2;
-					_gearHit.Play();
-					StartCoroutine(Rewind());
-					return;
-				}
 			}
 		}
 	}
@@ -1401,7 +1542,7 @@ public class RailGenerator : MonoBehaviour
 		Battery j;
 		foreach(float f in _batteries.Keys){
 			j = (Battery)_batteries[f];
-			if(Mathf.Abs(f-_t)<.04f && Vector3.Dot(_railTracker.up,j.up)>0.9f){
+			if(Mathf.Abs(f-_t)<.04f && Vector3.Dot(_railTracker.up,j.up)>0.85f){
 				bool notCol = j.transform.tag!="Collected";
 				if(notCol)
 				{
@@ -1508,7 +1649,8 @@ public class RailGenerator : MonoBehaviour
 				}
 
 				//set player's root position and orientation
-				_balance-=_balanceVelocity*Time.deltaTime*_balanceSpeed;
+				if(!_tutorial || _dialogIndex>=7)
+					_balance-=_balanceVelocity*Time.deltaTime*_balanceSpeed;
 				Vector3 prevForward = _railTracker.forward;
 				SetPosition();
 
@@ -1544,12 +1686,18 @@ public class RailGenerator : MonoBehaviour
 					UpdateFloorPlane();
 				}
 
-				//physicsy stuff
-				_moveSpeed = Mathf.Lerp(_moveSpeed,_targetMoveSpeed,_speedChangeLerp*Time.deltaTime);
+				//physicsy stuff - not needed if speed stays same
+				/*
+				_moveSpeed = Mathf.Lerp(_moveSpeed,_targetMoveSpeed,
+					_speedChangeLerp*Time.deltaTime);
 				_balanceSpeed = _moveSpeed*_balanceSpeedMultiplier;
+				*/
+
+				//advance timer
 				_t+=Time.deltaTime*_moveSpeed;
 
 				//tutorial cleanup
+				/*
 				if(_tutorial && _t > 13){
 					_tutorialObjs.SetActive(false);
 					_tutorial=false;
@@ -1559,7 +1707,97 @@ public class RailGenerator : MonoBehaviour
 					AddCoin(0);
 					StartCoroutine(FadeInScoreText(0));
 				}
+				if(tutorial){
+					//turn right
+					if t > X and score < 5
+						show message
+						start rewind
+					//turn left
+					else if t > Y and score < 10
+						show message
+						start rewind
+					//duck
+					else if t > Z and score < 11
+						show message
+						start rewind
+					//jump
+					else if t > W and score < 12
+						show message
+						start rewind
+				}
+				*/
+				if(_tutorial){
+					if(!_ready);
+					{
+						_readyCanvas.alpha=Mathf.PingPong(Time.time,1f);
+						//ready on touch
+						if(_prevBalanceState==0 && _balanceState>0&&_balanceState<3)
+						{
+							_ready=true;
+							_readyCanvas.alpha=0;
+						}
+					}
+					//welcome / intro
+					if(_t>3.5f && _dialogIndex==0){
+						ShowNextDialog();
+					}
+					if(_dialogIndex==1&&_ready){
+						ShowNextDialog();
+					}
+					if(_dialogIndex==2&&_ready){
+						ShowNextDialog();
+					}
+					if(_dialogIndex==3&&_ready){
+						ShowNextDialog();
+					}
+					if(_dialogIndex==4&&_ready){
+						ShowNextDialog();
+					}
+					//tap to rotate / collect coins
+					if(_dialogIndex==5&&_ready){
+						ShowNextDialog();
+						StartCoroutine(PulseAndDestroyCanvasR(GameObject.Find("TapRight")));
+					}
+					if(_dialogIndex==6&&_ready){
+						ShowNextDialog();
+						StartCoroutine(PulseAndDestroyCanvasR(GameObject.Find("TapLeft")));
+					}
+					if(_dialogIndex==7&&_ready){
+						ShowNextDialog();
+						//spawn some coins
+						_tutCoinStart=_t+3f;
+						GenerateTutorialCoins(_tutCoinStart);
+						_dialogIndex=8;
+					}
+					if(_t>_tutCoinStart+2.1f && _dialogIndex==8){
+						if(_clusterCounter==10){
+							ShowNextDialog();
+							_dialogIndex=11;
+						}
+						else if(_clusterCounter>=7){
+							ShowNextDialog();
+							ShowNextDialog();
+							_dialogIndex=11;
+						}
+						else{
+							ShowNextDialog();
+							ShowNextDialog();
+							ShowNextDialog();
+							_dialogIndex=7;
+							_gameState=2;
+							ClearTutorialCoins();
+							StartCoroutine(RewindR(2f));
+						}
+					}
+					if(_dialogIndex==11&&_ready){
+						ShowNextDialog();
+					}
+					if(_dialogIndex==12&&_ready){
+						ShowNextDialog();
+					}
+				}
 
+				//animate power-up battery cell
 				if(_batteryDur>=0){
 					_batteryDur-=Time.deltaTime;
 					//update battery fill meter
@@ -1571,7 +1809,7 @@ public class RailGenerator : MonoBehaviour
 				}
 
 				//phase change logic
-				if(!_phaseChange){
+				if(!_phaseChange && !_tutorial){
 					_phaseTimer+=Time.deltaTime;
 					if(_phaseTimer>=_course[_curPhase]._duration){
 						Debug.Log("Time for another phase");
@@ -1594,33 +1832,41 @@ public class RailGenerator : MonoBehaviour
 						}
 					}
 				}
-				else{
+				else if(!_tutorial){
 					if(_t>=_phaseChangeT)
 						StartCoroutine(PhaseChangeR());
 				}
+				_prevBalanceState=_balanceState;
 				break;
-			case 2://collide with jumper
+			case 2://rewind
 				break;
 			case 3://gate check
 				break;
 		}
+
+		//animate score change
 		if(_scoreChangeTimer>0){
 			_scoreChangeTimer-=Time.deltaTime;
 			if(_scoreChangeTimer<=0)
 				_scoreText.fontSize=_defaultScoreFont;
 		}
-		//player prefs helpers
-#if UNITY_EDITOR
-		if(Input.GetKeyDown(KeyCode.T))
-			PlayerPrefs.DeleteKey("tut");
-#endif
+
+		//animate trick text
 		if(_trickTextTimer>0){
 			Vector2 lPos = _trickTextRect.anchoredPosition;
-			lPos.y = Mathf.Lerp(-250f,0f,_popup.Evaluate(_trickTextTimer/_maxTrickTextTimer));
+			if(_tutorial&&_dialogIndex!=8&&_dialogIndex!=13)
+			{
+				lPos.y = Mathf.Lerp(-250f,0f,
+						_dialogCurve.Evaluate(1-_trickTextTimer/_maxTrickTextTimer));
+			}
+			else
+				lPos.y = Mathf.Lerp(-250f,0f,_popup.Evaluate(_trickTextTimer/_maxTrickTextTimer));
 			_trickTextRect.anchoredPosition=lPos;
 			_trickTextTimer-=Time.deltaTime;
+			/*
 			if(_trickTextTimer<=0)
 				_trickText.text="";
+				*/
 		}
 	}
 
@@ -1661,10 +1907,10 @@ public class RailGenerator : MonoBehaviour
 		Destroy(_gate.gameObject);
 	}
 
-	IEnumerator Rewind(){
+	IEnumerator RewindR(float time=1f){
 		float timer=0;
 		_music.pitch=2;
-		while(timer<1){
+		while(timer<time){
 			timer+=Time.deltaTime;
 			_t-=Time.deltaTime;
 			SetPosition();
@@ -1682,13 +1928,13 @@ public class RailGenerator : MonoBehaviour
 
 	public void Pause(){
 		_gameState=0;
-		_sparks.Stop();
+		_grindEffects.Stop();
 		_anim.enabled=false;
 	}
 
 	public void Resume(){
 		_gameState=1;
-		_sparks.Play();
+		_grindEffects.Play();
 		_anim.enabled=true;
 	}
 
@@ -1844,9 +2090,75 @@ public class RailGenerator : MonoBehaviour
 		_ethanMat.SetColor("_OutlineColor",Color.yellow);
 	}
 
+	void ShowNextDialog(){
+		_trickText.text=_dialog[_dialogIndex];
+		_trickTextTimer=_maxTrickTextTimer;
+		_dialogIndex++;
+		_ready=false;
+	}
+
+	IEnumerator PulseAndDestroyCanvasR(GameObject go,float dur=3f, int numCycles=3){
+		CanvasGroup cg = go.GetComponent<CanvasGroup>();
+		float timer=0;
+		float frac;
+		while(timer<dur){
+			timer+=Time.deltaTime;
+			frac=timer/dur;
+			frac*=numCycles;
+			//sine cycle and abs
+			float t = Mathf.Sin(frac*6.28f);
+			cg.alpha=t;
+			yield return null;
+		}
+		Destroy(go);
+	}
+
+	void ClearTutorialCoins(){
+		//Destroy coins and remove from dict
+		List<float> deleteKeys = new List<float>();
+		foreach(float f in _coins.Keys){
+			deleteKeys.Add(f);
+		}
+		
+		//Destroy coins and remove from dict
+		foreach(float f in deleteKeys){
+			Transform t = _coins[f].transform;
+			Destroy(t.gameObject);
+			_coins.Remove(f);
+		}
+
+	}
+	void GenerateTutorialCoins(float time){
+
+		//regen coins
+		_clusterCount=11;//made this one big so cluster counter isn't reset
+							//in CheckCoinCollision
+		for(int i=0; i<5; i++)
+		{
+			GenerateCoin(time+0.1f*i,-50f-i*3f,false);
+		}
+		for(int i=0; i<5; i++)
+		{
+			GenerateCoin(time+1.5f+0.1f*i,50f+i*3f,false);
+		}
+		/*
+		GenerateCoin(16f,-50f,false);
+		GenerateCoin(16.1f,-50f,false);
+		GenerateCoin(16.2f,-50f,false);
+		GenerateCoin(16.3f,-50f,false);
+		GenerateCoin(16.4f,-50f,false);
+		GenerateCoin(17.4f,50f,false);
+		GenerateCoin(17.5f,50f,false);
+		GenerateCoin(17.6f,50f,false);
+		GenerateCoin(17.7f,50f,false);
+		GenerateCoin(17.8f,50f,false);
+		*/
+		_clusterCounter=0;
+	}
+
 	public void GameOver(){
 		_gameState=2;
-		_sparks.Stop();
+		_grindEffects.Stop();
 		_anim.enabled=false;
 		_jumpHit.Invoke();
 		if(!PlayerPrefs.HasKey("hs"))
