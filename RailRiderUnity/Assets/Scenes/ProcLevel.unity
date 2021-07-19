@@ -1185,7 +1185,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.08, g: 0.08, b: 0.08, a: 1}
+  m_Color: {r: 0.07058824, g: 0.07058824, b: 0.07058824, a: 1}
   m_RaycastTarget: 0
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -11299,7 +11299,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -12634,7 +12634,7 @@ MonoBehaviour:
   _flames: {fileID: 1082560026}
   _course:
   - _label: Gears
-    _minJumpSpace: 1.5
+    _minJumpSpace: 1
     _jumpProbability: 0.1
     _minCoinSpace: 2.5
     _coinProbability: 0.1
@@ -12647,14 +12647,10 @@ MonoBehaviour:
     _rackProbability: 0
     _minRackSpeed: 0
     _maxRackSpeed: 0
-    _minPlanetSpace: 0
-    _planetProbability: 0
-    _minPlanetSpeed: 0
-    _maxPlanetSpeed: 0
     _minObstacleSpace: 0.5
     _duration: 15
-    _accent: {r: 0.3176471, g: 0.8826413, b: 0.9529412, a: 1}
-    _bg: {r: 1, g: 1, b: 1, a: 1}
+    _accent: {r: 0.9528302, g: 0.94745713, b: 0.4179868, a: 1}
+    _bg: {r: 0, g: 0.007990283, b: 0.12156863, a: 1}
   - _label: Ducks
     _minJumpSpace: 0
     _jumpProbability: 0
@@ -12669,54 +12665,42 @@ MonoBehaviour:
     _rackProbability: 0
     _minRackSpeed: 0
     _maxRackSpeed: 0
-    _minPlanetSpace: 0
-    _planetProbability: 0
-    _minPlanetSpeed: 0
-    _maxPlanetSpeed: 0
     _minObstacleSpace: 0.5
     _duration: 15
-    _accent: {r: 1, g: 0, b: 0.84751415, a: 1}
-    _bg: {r: 0.6462264, g: 0.76927805, b: 1, a: 1}
+    _accent: {r: 1, g: 0, b: 0.3796172, a: 1}
+    _bg: {r: 0.009300464, g: 0.06783703, b: 0.1792453, a: 1}
   - _label: JumpDucks
-    _minJumpSpace: 1.5
+    _minJumpSpace: 0.5
     _jumpProbability: 0.1
     _minCoinSpace: 2.5
     _coinProbability: 0.1
     _coinClusterSize: 5
     _maxCoinRotation: 45
     _maxCoinCork: 2
-    _minDuckerSpace: 1.5
+    _minDuckerSpace: 0.5
     _duckerProbability: 0.1
     _minRackSpace: 0
     _rackProbability: 0
     _minRackSpeed: 0
     _maxRackSpeed: 0
-    _minPlanetSpace: 0
-    _planetProbability: 0
-    _minPlanetSpeed: 0
-    _maxPlanetSpeed: 0
     _minObstacleSpace: 0.5
     _duration: 25
-    _accent: {r: 1, g: 0.7392709, b: 0, a: 1}
-    _bg: {r: 0.3999644, g: 0.49945945, b: 0.7924528, a: 1}
+    _accent: {r: 0.6739578, g: 0, b: 1, a: 1}
+    _bg: {r: 0, g: 0.09198113, b: 0.3679245, a: 1}
   - _label: Coins
     _minJumpSpace: 0
     _jumpProbability: 0
     _minCoinSpace: 1.6
-    _coinProbability: 0.1
+    _coinProbability: 0.5
     _coinClusterSize: 8
-    _maxCoinRotation: 150
-    _maxCoinCork: 10
+    _maxCoinRotation: 100
+    _maxCoinCork: 8
     _minDuckerSpace: 0
     _duckerProbability: 0
     _minRackSpace: 0
     _rackProbability: 0
     _minRackSpeed: 0
     _maxRackSpeed: 0
-    _minPlanetSpace: 0
-    _planetProbability: 0
-    _minPlanetSpeed: 0
-    _maxPlanetSpeed: 0
     _minObstacleSpace: 0
     _duration: 10
     _accent: {r: 1, g: 0, b: 0.39479208, a: 1}
@@ -12727,7 +12711,7 @@ MonoBehaviour:
     _minCoinSpace: 2.5
     _coinProbability: 0.1
     _coinClusterSize: 5
-    _maxCoinRotation: 180
+    _maxCoinRotation: 100
     _maxCoinCork: 5
     _minDuckerSpace: 0
     _duckerProbability: 0
@@ -12735,168 +12719,82 @@ MonoBehaviour:
     _rackProbability: 0.25
     _minRackSpeed: 45
     _maxRackSpeed: 90
-    _minPlanetSpace: 0
-    _planetProbability: 0
-    _minPlanetSpeed: 0
-    _maxPlanetSpeed: 0
     _minObstacleSpace: 0
     _duration: 15
     _accent: {r: 1, g: 0.85797274, b: 0, a: 1}
-    _bg: {r: 0.013572444, g: 0.078994, b: 0.5754717, a: 1}
+    _bg: {r: 0.735849, g: 0.41519058, b: 0, a: 1}
   - _label: JumpRacks
-    _minJumpSpace: 1.5
+    _minJumpSpace: 0.5
     _jumpProbability: 0.1
     _minCoinSpace: 2.5
     _coinProbability: 0.1
     _coinClusterSize: 5
-    _maxCoinRotation: 90
+    _maxCoinRotation: 110
     _maxCoinCork: 5
     _minDuckerSpace: 0
     _duckerProbability: 0
-    _minRackSpace: 2
-    _rackProbability: 0.5
+    _minRackSpace: 0.5
+    _rackProbability: 0.1
     _minRackSpeed: 60
     _maxRackSpeed: 120
-    _minPlanetSpace: 0
-    _planetProbability: 0
-    _minPlanetSpeed: 0
-    _maxPlanetSpeed: 0
     _minObstacleSpace: 0.5
     _duration: 25
-    _accent: {r: 0, g: 0.7231324, b: 1, a: 1}
-    _bg: {r: 1, g: 0.7494587, b: 0.36320752, a: 1}
-  - _label: JumpDuckRacks
-    _minJumpSpace: 1.5
-    _jumpProbability: 0.1
+    _accent: {r: 0.1490072, g: 1, b: 0, a: 1}
+    _bg: {r: 1, g: 0.86747646, b: 0.6084906, a: 1}
+  - _label: DuckRacks
+    _minJumpSpace: 0
+    _jumpProbability: 0
     _minCoinSpace: 2.5
     _coinProbability: 0.1
     _coinClusterSize: 5
-    _maxCoinRotation: 90
+    _maxCoinRotation: 130
     _maxCoinCork: 5
-    _minDuckerSpace: 1.5
-    _duckerProbability: 0.1
-    _minRackSpace: 2
-    _rackProbability: 0.5
+    _minDuckerSpace: 0.5
+    _duckerProbability: 1
+    _minRackSpace: 0.5
+    _rackProbability: 0.1
     _minRackSpeed: 90
-    _maxRackSpeed: 150
-    _minPlanetSpace: 0
-    _planetProbability: 0
-    _minPlanetSpeed: 0
-    _maxPlanetSpeed: 0
+    _maxRackSpeed: 135
     _minObstacleSpace: 0.5
-    _duration: 15
-    _accent: {r: 1, g: 0, b: 0.39479208, a: 1}
-    _bg: {r: 0.33459416, g: 0.7345534, b: 0.9716981, a: 1}
+    _duration: 25
+    _accent: {r: 1, g: 1, b: 1, a: 1}
+    _bg: {r: 0.74654466, g: 0.42733178, b: 0.9150943, a: 1}
   - _label: MoreCoins
     _minJumpSpace: 0
     _jumpProbability: 0
-    _minCoinSpace: 2
-    _coinProbability: 0.1
+    _minCoinSpace: 2.5
+    _coinProbability: 0.5
     _coinClusterSize: 10
-    _maxCoinRotation: 150
-    _maxCoinCork: 15
+    _maxCoinRotation: 90
+    _maxCoinCork: 8
     _minDuckerSpace: 0
     _duckerProbability: 0
     _minRackSpace: 0
     _rackProbability: 0
     _minRackSpeed: 0
     _maxRackSpeed: 0
-    _minPlanetSpace: 0
-    _planetProbability: 0
-    _minPlanetSpeed: 0
-    _maxPlanetSpeed: 0
     _minObstacleSpace: 0.5
-    _duration: 15
-    _accent: {r: 0.401738, g: 0.8773585, b: 0.30210927, a: 1}
-    _bg: {r: 0.9716981, g: 0.53626734, b: 0.8730512, a: 1}
-  - _label: Planets
-    _minJumpSpace: 0
-    _jumpProbability: 0
-    _minCoinSpace: 2.5
-    _coinProbability: 0.1
-    _coinClusterSize: 5
-    _maxCoinRotation: 150
-    _maxCoinCork: 5
-    _minDuckerSpace: 0
-    _duckerProbability: 0
-    _minRackSpace: 0
-    _rackProbability: 0
-    _minRackSpeed: 0
-    _maxRackSpeed: 0
-    _minPlanetSpace: 1
-    _planetProbability: 0.1
-    _minPlanetSpeed: 45
-    _maxPlanetSpeed: 90
-    _minObstacleSpace: 0.5
-    _duration: 25
-    _accent: {r: 0.13207841, g: 1, b: 0, a: 1}
-    _bg: {r: 0.6285159, g: 0.38959593, b: 0.9716981, a: 1}
-  - _label: DuckPlanets
-    _minJumpSpace: 0
-    _jumpProbability: 0
-    _minCoinSpace: 2.5
-    _coinProbability: 0.1
-    _coinClusterSize: 5
-    _maxCoinRotation: 150
-    _maxCoinCork: 5
-    _minDuckerSpace: 1
-    _duckerProbability: 0.1
-    _minRackSpace: 0
-    _rackProbability: 0
-    _minRackSpeed: 0
-    _maxRackSpeed: 0
-    _minPlanetSpace: 1
-    _planetProbability: 0.1
-    _minPlanetSpeed: 45
-    _maxPlanetSpeed: 90
-    _minObstacleSpace: 0.5
-    _duration: 25
-    _accent: {r: 1, g: 0.38020274, b: 0.2971698, a: 1}
-    _bg: {r: 0.3224012, g: 0.3569263, b: 0.990566, a: 1}
-  - _label: DuckPlanetRacks
-    _minJumpSpace: 0
-    _jumpProbability: 0
-    _minCoinSpace: 2.5
-    _coinProbability: 0.1
-    _coinClusterSize: 4
-    _maxCoinRotation: 150
-    _maxCoinCork: 5
-    _minDuckerSpace: 2
-    _duckerProbability: 0.1
-    _minRackSpace: 2
-    _rackProbability: 0.2
-    _minRackSpeed: 90
-    _maxRackSpeed: 180
-    _minPlanetSpace: 2
-    _planetProbability: 0.1
-    _minPlanetSpeed: 45
-    _maxPlanetSpeed: 90
-    _minObstacleSpace: 0.5
-    _duration: 25
-    _accent: {r: 0.4962862, g: 1, b: 0.4198113, a: 1}
-    _bg: {r: 0.9339623, g: 0.3568441, b: 0.3568441, a: 1}
+    _duration: 10
+    _accent: {r: 0, g: 1, b: 0.1271038, a: 1}
+    _bg: {r: 1, g: 0, b: 0.88149357, a: 1}
   - _label: TheWorks
-    _minJumpSpace: 2
+    _minJumpSpace: 0.5
     _jumpProbability: 0.1
     _minCoinSpace: 2.5
     _coinProbability: 0.1
-    _coinClusterSize: 4
-    _maxCoinRotation: 150
-    _maxCoinCork: 5
-    _minDuckerSpace: 2
+    _coinClusterSize: 5
+    _maxCoinRotation: 160
+    _maxCoinCork: 10
+    _minDuckerSpace: 0.5
     _duckerProbability: 0.1
-    _minRackSpace: 2
-    _rackProbability: 0.2
-    _minRackSpeed: 45
-    _maxRackSpeed: 60
-    _minPlanetSpace: 2
-    _planetProbability: 0.1
-    _minPlanetSpeed: 90
-    _maxPlanetSpeed: 180
+    _minRackSpace: 0.5
+    _rackProbability: 0.1
+    _minRackSpeed: 90
+    _maxRackSpeed: 160
     _minObstacleSpace: 0.5
     _duration: 30
-    _accent: {r: 1, g: 1, b: 1, a: 1}
-    _bg: {r: 0, g: 0, b: 0, a: 1}
+    _accent: {r: 0.4528302, g: 0.4528302, b: 0.4528302, a: 1}
+    _bg: {r: 1, g: 1, b: 1, a: 1}
   _minBatterySpace: 5
   _batteryProbability: 0.0075
   _batteryDuration: 15
@@ -12914,6 +12812,12 @@ MonoBehaviour:
   - Perfect!
   - Decent!
   - Let's try that one more time!
+  - Rotation is only half the battle...
+  - Press with both thumbs to duck
+  - Nice duck!
+  - Now it's time to get some air
+  - While ducking, release both thumbs to jump!
+  - That was some big air!
 --- !u!4 &1009601617
 Transform:
   m_ObjectHideFlags: 0
@@ -20884,7 +20788,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.08, g: 0.08, b: 0.08, a: 1}
+  m_Color: {r: 0.07058824, g: 0.07058824, b: 0.07058824, a: 1}
   m_RaycastTarget: 0
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -27868,7 +27772,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -29903,16 +29807,21 @@ PrefabInstance:
     - target: {fileID: 5111512013203411916, guid: 05eaa1c2249f24a3494aaf30c6d87d62,
         type: 3}
       propertyPath: m_Materials.Array.size
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 5111512013203411916, guid: 05eaa1c2249f24a3494aaf30c6d87d62,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: 47cf5f6a3ae685447b0bb48f446bf4d6, type: 2}
+      objectReference: {fileID: 2100000, guid: 89ac6aeb6f9b9694b82824b94928248a, type: 2}
     - target: {fileID: 5111512013203411916, guid: 05eaa1c2249f24a3494aaf30c6d87d62,
         type: 3}
       propertyPath: m_Materials.Array.data[1]
+      value: 
+      objectReference: {fileID: 2100000, guid: d8bc28aa3f2a94466b910b576dd5fcfa, type: 2}
+    - target: {fileID: 5111512013203411916, guid: 05eaa1c2249f24a3494aaf30c6d87d62,
+        type: 3}
+      propertyPath: m_Materials.Array.data[2]
       value: 
       objectReference: {fileID: 2100000, guid: 95578785512004659897eaa14f989000, type: 2}
     - target: {fileID: 5111512013203411918, guid: 05eaa1c2249f24a3494aaf30c6d87d62,
@@ -29922,8 +29831,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5111512013203411918, guid: 05eaa1c2249f24a3494aaf30c6d87d62,
         type: 3}
+      propertyPath: m_LocalScale.x
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 5111512013203411918, guid: 05eaa1c2249f24a3494aaf30c6d87d62,
+        type: 3}
       propertyPath: m_LocalScale.y
-      value: 228.12
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 5111512013203411918, guid: 05eaa1c2249f24a3494aaf30c6d87d62,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 2.25
       objectReference: {fileID: 0}
     - target: {fileID: 5111512013203411918, guid: 05eaa1c2249f24a3494aaf30c6d87d62,
         type: 3}
@@ -29943,37 +29862,37 @@ PrefabInstance:
     - target: {fileID: 5111512013203411918, guid: 05eaa1c2249f24a3494aaf30c6d87d62,
         type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.7057762
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5111512013203411918, guid: 05eaa1c2249f24a3494aaf30c6d87d62,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.7057762
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5111512013203411918, guid: 05eaa1c2249f24a3494aaf30c6d87d62,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.04335819
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5111512013203411918, guid: 05eaa1c2249f24a3494aaf30c6d87d62,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.0433582
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5111512013203411918, guid: 05eaa1c2249f24a3494aaf30c6d87d62,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: 97.031006
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5111512013203411918, guid: 05eaa1c2249f24a3494aaf30c6d87d62,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: -90
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5111512013203411918, guid: 05eaa1c2249f24a3494aaf30c6d87d62,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: -90
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6359976202067111543, guid: 05eaa1c2249f24a3494aaf30c6d87d62,
         type: 3}

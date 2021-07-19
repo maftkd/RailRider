@@ -51,8 +51,8 @@
 			green += step(_GridScale.w,frac(IN.worldPos.z*_GridScale.z))*(1-green);
 			//green = lerp(0,green,sin(_Time.y));
 			o.Emission = (1-green)*lerp(fixed4(0,0,0,0),_Color,abs(sin(_Time.y)));
-			o.Albedo = 0;
-            //o.Albedo = dstSqr;
+			//o.Albedo = 1-_Color.rgb;
+            o.Albedo = _Color*0.5;
             // Metallic and smoothness come from slider variables
             o.Metallic = _Metallic;
             o.Smoothness = _Glossiness;

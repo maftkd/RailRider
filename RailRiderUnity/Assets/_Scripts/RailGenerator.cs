@@ -16,7 +16,6 @@ public class RailGenerator : MonoBehaviour
 	int _lineResolution = 10;//Number of points on line per segment
 	float _moveSpeed=0.6f;//rate at which char moves along rail in segments/sec
 	float _targetMoveSpeed;
-	float _speedChangeLerp=.12f;
 	Transform _railTracker;
 	float _balance;
 	float _t;//measurement of time progress throughout the run
@@ -36,7 +35,6 @@ public class RailGenerator : MonoBehaviour
 	public AnimationCurve _coinHeightCurve;
 	int _tOffset=0;//subtract from _t to get time about current sections of rail
 	int _lookAheadTracks=8;
-	float _spawnPoint=6f;
 	public Transform _jumper;
 	public Transform _ducker;
 	public Transform _rack;
@@ -99,6 +97,8 @@ public class RailGenerator : MonoBehaviour
 	public Text [] _hsText;
 	bool _tutorial;
 	float _tutCoinStart;
+	float _tutDuckerStart;
+	float _tutJumperStart;
 	CanvasGroup _readyCanvas;
 	public AudioSource _music;
 	public GameObject _tutorialObjs;
@@ -137,12 +137,9 @@ public class RailGenerator : MonoBehaviour
 	int _numBuildings=400;
 	Transform[] _buildings;
 	float _seed;
-	float _maxTime=180f;//360f;
 
 	//jump / duck vars
 	float _jumpDuckSpace;
-	float _minJumpDuckSpace=0.5f;
-	float _maxJumpDuckSpace=1f;
 	float _uncrouchTimer;
 	float _uncrouchTime=0.1f;//time it takes to confirm an uncrouch
 	public ParticleSystem _sparks;
@@ -221,11 +218,6 @@ public class RailGenerator : MonoBehaviour
 		public float _rackProbability;
 		public float _minRackSpeed;
 		public float _maxRackSpeed;
-		[Header("Planets")]
-		public float _minPlanetSpace;
-		public float _planetProbability;
-		public float _minPlanetSpeed;
-		public float _maxPlanetSpeed;
 		[Header("General")]
 		public float _minObstacleSpace;
 		public float _duration;
@@ -300,6 +292,9 @@ public class RailGenerator : MonoBehaviour
 		Phase cur = _course[_curPhase];
 		_lineMat.SetColor("_EdgeColor",cur._accent);
 		_buildingMat.SetColor("_Color",cur._accent);
+		_main = Camera.main;
+		_main.backgroundColor=cur._bg;
+		RenderSettings.fogColor=cur._bg;
 		
 		//configure railTracker
 		_railTracker=transform.GetChild(0);
@@ -333,7 +328,6 @@ public class RailGenerator : MonoBehaviour
 			foreach(Text t in _hsText)
 				t.text=PlayerPrefs.GetInt("hs").ToString("HIGH SCORE: #");
 		}
-		_main = Camera.main;
 		_explosion = GameObject.FindGameObjectWithTag("Explosion").transform;
 		_ethanMat.SetColor("_EmissionColor",Color.black);
 
@@ -593,7 +587,7 @@ public class RailGenerator : MonoBehaviour
 			if(f>_t-1 && f<_t+4){
 				if(f-_t<.5f&&f-_t>0){
 					trick=j.type;
-					j.transform.tag="Collected";
+					//j.transform.tag="Collected";
 					break;
 				}
 			}
@@ -643,9 +637,13 @@ public class RailGenerator : MonoBehaviour
 		int pos=Mathf.RoundToInt(Mathf.Abs(yLocal))/90;
 		localE.y=yLocal;
 		_ethan.localEulerAngles=localE;
+		int trickScore=0;
+		if(trick>=0)
+			trickScore=4+Mathf.RoundToInt(Mathf.Abs(_spinTrick/90f));
+
+		/*
 		string tricky="";
 		float dir=Mathf.Sign(_spinTrick);
-		int trickScore=0;
 		//get spins
 		if(Mathf.Abs(_spinTrick)>90){
 			tricky+=dir==1? "FS " : "BS ";
@@ -688,6 +686,7 @@ public class RailGenerator : MonoBehaviour
 			_spinTrick=0;
 			_trickTextTimer=_maxTrickTextTimer;
 		}
+		*/
 		if(trickScore>0)
 			AddScore(trickScore);
 	}
@@ -859,7 +858,9 @@ public class RailGenerator : MonoBehaviour
 		Jumper j=new Jumper();
 		j.type=Random.Range(0,3);
 		j.transform = jump;
-		j.transform.GetComponent<Rotator>()._speed=Random.Range(90f,180f);
+		float rand = Random.Range(90f,180f)*(Random.Range(0,2)*2f-1f);
+		j.transform.GetComponent<Rotator>()._speed=rand;
+		//j.transform.GetComponent<Rotator>()._speed=Random.Range(90f,180f);
 		j.mesh=jump.GetComponent<MeshRenderer>();
 		_jumpers.Add(key,j);
 	}
@@ -875,7 +876,8 @@ public class RailGenerator : MonoBehaviour
 		//create the struct
 		Ducker d=new Ducker();
 		d.transform = duck;
-		d.transform.GetComponent<Rotator>()._speed=Random.Range(90f,180f);
+		float rand = Random.Range(90f,180f)*(Random.Range(0,2)*2f-1f);
+		d.transform.GetComponent<Rotator>()._speed=rand;
 		d.mesh=duck.GetComponent<MeshRenderer>();
 		d.mesh.enabled=false;
 		_duckers.Add(key,d);
@@ -911,6 +913,7 @@ public class RailGenerator : MonoBehaviour
 		j.transform.position=railPos;
 	}
 
+	/*
 	void GeneratePlanet(float distance){
 		float key = distance;
 		Vector3 railPos = _path.GetPoint(key-_tOffset);
@@ -928,6 +931,7 @@ public class RailGenerator : MonoBehaviour
 		r.go = planet.gameObject;
 		_planets.Add(key,r);
 	}
+	*/
 
 	void GenerateBattery(float distance){
 		float key = distance;
@@ -1205,6 +1209,7 @@ public class RailGenerator : MonoBehaviour
 					}
 				}
 				//planets
+				/*
 				if(knotT-i>_lastPlanet+p._minPlanetSpace && Random.value<p._planetProbability)
 				{
 					if(knotT-i>_lastObstacle+p._minObstacleSpace){
@@ -1213,6 +1218,7 @@ public class RailGenerator : MonoBehaviour
 						_lastObstacle=knotT-i;
 					}
 				}
+				*/
 				
 				//batteries
 				if(knotT-i>_lastBattery+_minBatterySpace && Random.value<_batteryProbability)
@@ -1303,8 +1309,6 @@ public class RailGenerator : MonoBehaviour
 	}
 
 	public void CheckCoinCollisions(){
-		bool genNext=false;
-		bool gotCluster=false;
 		Coin c;
 		foreach(float f in _coins.Keys){
 			if(f>_t-1 && f <_t+4){
@@ -1329,10 +1333,12 @@ public class RailGenerator : MonoBehaviour
 						}
 						if(c.transform.name.Split('-')[0]=="final")
 						{
+							_comboPitch=_minComboPitch;
+							/*
 							if(_clusterCounter==int.Parse(c.transform.name.Split('-')[1]))
 								AddScore(5);
+								*/
 							c.transform.name="foo";
-							genNext=true;
 							_clusterCounter=0;
 						}
 					}
@@ -1344,7 +1350,6 @@ public class RailGenerator : MonoBehaviour
 						if(c.transform.name=="final")
 						{
 							c.transform.name="foo";
-							genNext=true;
 							_clusterCounter=0;
 						}
 					}
@@ -1384,9 +1389,12 @@ public class RailGenerator : MonoBehaviour
 						}
 						//tutorial
 						else{
-							_gameState=2;
 							_gearHit.Play();
-							StartCoroutine(RewindR());
+							//rewind
+							_gameState=2;
+							StartCoroutine(RewindR(2f));
+							_dialogIndex=15;
+							ShowNextDialog();
 							return;
 						}
 					}
@@ -1420,8 +1428,19 @@ public class RailGenerator : MonoBehaviour
 							genDuck=true;
 						}
 						else{
-							tmp.transform.GetComponent<Rotator>()._speed=0;
-							GameOver();
+							if(_tutorial)
+							{
+								//rewind
+								_gameState=2;
+								_gearHit.Play();
+								StartCoroutine(RewindR(2f));
+								_dialogIndex=12;
+								ShowNextDialog();
+							}
+							else{
+								tmp.transform.GetComponent<Rotator>()._speed=0;
+								GameOver();
+							}
 						}
 					}
 					else if(_t-f>.04f){
@@ -1727,7 +1746,7 @@ public class RailGenerator : MonoBehaviour
 				}
 				*/
 				if(_tutorial){
-					if(!_ready);
+					if(!_ready)
 					{
 						_readyCanvas.alpha=Mathf.PingPong(Time.time,1f);
 						//ready on touch
@@ -1760,9 +1779,15 @@ public class RailGenerator : MonoBehaviour
 					}
 					if(_dialogIndex==6&&_ready){
 						ShowNextDialog();
+						StopAllCoroutines();
+						if(GameObject.Find("TapRight")!=null)
+							Destroy(GameObject.Find("TapRight"));
 						StartCoroutine(PulseAndDestroyCanvasR(GameObject.Find("TapLeft")));
 					}
 					if(_dialogIndex==7&&_ready){
+						StopAllCoroutines();
+						if(GameObject.Find("TapLeft")!=null)
+							Destroy(GameObject.Find("TapLeft"));
 						ShowNextDialog();
 						//spawn some coins
 						_tutCoinStart=_t+3f;
@@ -1794,6 +1819,22 @@ public class RailGenerator : MonoBehaviour
 					}
 					if(_dialogIndex==12&&_ready){
 						ShowNextDialog();
+						_tutDuckerStart=_t+2f;
+						GenerateTutorialDucker(_tutDuckerStart);
+					}
+					if(_t>_tutDuckerStart+0.5f && _dialogIndex==13){
+						ShowNextDialog();//nice duck
+					}
+					if(_dialogIndex==14&&_ready){
+						ShowNextDialog();
+					}
+					if(_dialogIndex==15&&_ready){
+						ShowNextDialog();
+						_tutJumperStart=_t+2f;
+						GenerateTutorialJumper(_tutJumperStart);
+					}
+					if(_t>_tutJumperStart+0.5f && _dialogIndex==16){
+						ShowNextDialog();//nice jump
 					}
 				}
 
@@ -1885,8 +1926,14 @@ public class RailGenerator : MonoBehaviour
 	}
 
 	IEnumerator FadeInScoreText(float delay=4f){
-		yield return new WaitForSeconds(delay);
 		float timer=0;
+		while(timer<1f){
+			timer+=Time.deltaTime;
+			_authorCanvas.alpha=timer;
+			yield return null;
+
+		}
+		yield return new WaitForSeconds(delay-1);
 		if(_zen){
 			_scoreText.text="";
 			_comboText.text="";
@@ -1923,6 +1970,12 @@ public class RailGenerator : MonoBehaviour
 	[ContextMenu("Clear tut")]
 	public void ClearTut(){
 		PlayerPrefs.DeleteKey("tut");
+		PlayerPrefs.Save();
+	}
+
+	[ContextMenu("Complete tut")]
+	public void CompleteTut(){
+		PlayerPrefs.SetInt("tut",0);
 		PlayerPrefs.Save();
 	}
 
@@ -2129,31 +2182,22 @@ public class RailGenerator : MonoBehaviour
 
 	}
 	void GenerateTutorialCoins(float time){
-
 		//regen coins
 		_clusterCount=11;//made this one big so cluster counter isn't reset
 							//in CheckCoinCollision
 		for(int i=0; i<5; i++)
-		{
 			GenerateCoin(time+0.1f*i,-50f-i*3f,false);
-		}
 		for(int i=0; i<5; i++)
-		{
 			GenerateCoin(time+1.5f+0.1f*i,50f+i*3f,false);
-		}
-		/*
-		GenerateCoin(16f,-50f,false);
-		GenerateCoin(16.1f,-50f,false);
-		GenerateCoin(16.2f,-50f,false);
-		GenerateCoin(16.3f,-50f,false);
-		GenerateCoin(16.4f,-50f,false);
-		GenerateCoin(17.4f,50f,false);
-		GenerateCoin(17.5f,50f,false);
-		GenerateCoin(17.6f,50f,false);
-		GenerateCoin(17.7f,50f,false);
-		GenerateCoin(17.8f,50f,false);
-		*/
 		_clusterCounter=0;
+	}
+
+	void GenerateTutorialDucker(float time){
+		GenerateDucker(time);
+	}
+
+	void GenerateTutorialJumper(float time){
+		GenerateJumper(time);
 	}
 
 	public void GameOver(){
