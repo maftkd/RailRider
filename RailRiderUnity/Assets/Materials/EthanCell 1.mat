@@ -81,7 +81,7 @@ Material:
     - _Mode: 0
     - _OcclusionStrength: 1
     - _OutlineMult: 5.12
-    - _OutlineStep: 0.64
+    - _OutlineStep: 0.67
     - _Parallax: 0.02
     - _Shininess: 0.41313845
     - _SmoothnessTextureChannel: 0

@@ -12,6 +12,7 @@ public class RailGenerator : MonoBehaviour
 	LineRenderer _line;
 	public Material _lineMat;
 	public Material _buildingMat;
+	public Material _skyMat;
 	float _nodeDist = 16f;//approximate segment length
 	int _lineResolution = 10;//Number of points on line per segment
 	float _moveSpeed=0.6f;//rate at which char moves along rail in segments/sec
@@ -164,7 +165,11 @@ public class RailGenerator : MonoBehaviour
 
 	//phase vars
 	public Phase [] _course;
-	int _curPhase;
+	public Color [] _accentPalette;
+	public Color [] _bgPalette;
+	int _phaseCounter;
+	Phase _curPhase;
+	Phase _prevPhase;
 	float _phaseTimer;
 	bool _phaseChange;
 	int _phaseChangeIn;
@@ -180,6 +185,8 @@ public class RailGenerator : MonoBehaviour
 	public float _batteryProbability;
 	public float _batteryDuration;
 	public float _maxBatteryRotation;
+	GameObject _bubble;
+	ParticleSystem.MainModule _rain;
 
 	//stats
 	float _minBalance=0.1f;
@@ -223,6 +230,28 @@ public class RailGenerator : MonoBehaviour
 		public float _duration;
 		public Color _accent;
 		public Color _bg;
+
+		public Phase(){}
+
+		public Phase(Phase other){
+			_minJumpSpace=other._minJumpSpace;
+			_jumpProbability=other._jumpProbability;
+			_minCoinSpace=other._minCoinSpace;
+			_coinProbability=other._coinProbability;
+			_coinClusterSize=other._coinClusterSize;
+			_maxCoinRotation=other._maxCoinRotation;
+			_maxCoinCork=other._maxCoinCork;
+			_minDuckerSpace=other._minDuckerSpace;
+			_duckerProbability=other._duckerProbability;
+			_minRackSpace=other._minRackSpace;
+			_rackProbability=other._rackProbability;
+			_minRackSpeed=other._minRackSpeed;
+			_maxRackSpeed=other._maxRackSpeed;
+			_minObstacleSpace=other._minObstacleSpace;
+			_duration=other._duration;
+			_accent=other._accent;
+			_bg=other._bg;
+		}
 	}
 
 	public class Item {
@@ -272,7 +301,10 @@ public class RailGenerator : MonoBehaviour
 	void Start()
 	{
 		//#temp
-		//_curPhase=8;
+		_curPhase=GenerateNextPhase();
+		_curPhase._accent=_course[0]._accent;
+		_curPhase._bg=_course[0]._bg;
+
 		//get random seed
 		_seed = 1f/System.DateTime.Now.Millisecond;
 		_seed*=1000f;
@@ -289,12 +321,13 @@ public class RailGenerator : MonoBehaviour
 		_lineResFrac=1/(float)_lineResolution;
 
 		//set colors
-		Phase cur = _course[_curPhase];
-		_lineMat.SetColor("_EdgeColor",cur._accent);
-		_buildingMat.SetColor("_Color",cur._accent);
+		_lineMat.SetColor("_EdgeColor",_curPhase._accent);
+		_buildingMat.SetColor("_Color",_curPhase._accent);
 		_main = Camera.main;
-		_main.backgroundColor=cur._bg;
-		RenderSettings.fogColor=cur._bg;
+		_main.backgroundColor=_curPhase._bg;
+		RenderSettings.fogColor=_curPhase._bg;
+		_rain = GameObject.Find("Rain").GetComponent<ParticleSystem>().main;
+		_rain.startColor=_curPhase._accent;
 		
 		//configure railTracker
 		_railTracker=transform.GetChild(0);
@@ -311,6 +344,7 @@ public class RailGenerator : MonoBehaviour
 		//Get some references
 		_helmet = GameObject.FindGameObjectWithTag("Helmet").transform;
 		_ethan = _railTracker.GetChild(0); 
+		_bubble = _ethan.Find("Sphere").gameObject;
 		_ethanHandSlot = GameObject.Find("HandSlot").transform;
 		_ethanMat.SetColor("_OutlineColor",Color.black);
 		_gate = GameObject.FindGameObjectWithTag("Gate").transform;
@@ -758,8 +792,7 @@ public class RailGenerator : MonoBehaviour
 		//reset audio
 		_comboPitch=_minComboPitch;
 		//determine a starting point - say current pos+ 2 knots
-		Phase phase = _course[_curPhase];
-		int numCoins=_leftOverCoins>0? _leftOverCoins : phase._coinClusterSize;
+		int numCoins=_leftOverCoins>0? _leftOverCoins : _curPhase._coinClusterSize;
 		//reset cluster count unless left over coins from prev segment
 		if(_leftOverCoins<=0){
 			_clusterCount=numCoins;
@@ -768,8 +801,8 @@ public class RailGenerator : MonoBehaviour
 		float coinSpacing=0.1f;//.075f;
 		//for loop
 		//float maxR = Mathf.Lerp(45f,180f,_playTimer/_maxTime);
-		float maxR=phase._maxCoinRotation;;
-		float cork = _leftOverCoins>0? _leftOverCork : phase._maxCoinCork*Random.Range(-1f,1f);
+		float maxR=_curPhase._maxCoinRotation;;
+		float cork = _leftOverCoins>0? _leftOverCork : _curPhase._maxCoinCork*Random.Range(-1f,1f);
 		float rotation = _leftOverCoins>0?_leftOverRotation : Random.Range(-maxR,maxR);
 		//	place coins
 		_leftOverCoins=0;
@@ -900,8 +933,7 @@ public class RailGenerator : MonoBehaviour
 		Rack r = new Rack();
 		r.transform = rack;
 		r.rack = rack.GetComponent<RackWheel>();
-		Phase p = _course[_curPhase];
-		float rand = Random.Range(p._minRackSpeed,p._maxRackSpeed)*(Random.Range(0,2)*2f-1f);
+		float rand = Random.Range(_curPhase._minRackSpeed,_curPhase._maxRackSpeed)*(Random.Range(0,2)*2f-1f);
 		r.rack.Init(rand);
 		r.go = rack.gameObject;
 		_racks.Add(key,r);
@@ -912,26 +944,6 @@ public class RailGenerator : MonoBehaviour
 		Vector3 railPos = _path.GetPoint(t-_tOffset);
 		j.transform.position=railPos;
 	}
-
-	/*
-	void GeneratePlanet(float distance){
-		float key = distance;
-		Vector3 railPos = _path.GetPoint(key-_tOffset);
-		Vector3 forward = _path.GetTangent(key-_tOffset);
-		//instance the jumper
-		Transform planet = Instantiate(_planet,railPos,Quaternion.identity, null);
-		planet.forward=-forward;
-		//create the struct
-		Planet r = new Planet();
-		r.transform = planet;
-		r.planet = planet.GetComponent<PlanetWheel>();
-		Phase p = _course[_curPhase];
-		float rand = Random.Range(p._minPlanetSpeed,p._maxPlanetSpeed)*(Random.Range(0,2)*2f-1f);
-		r.planet.Init(rand);
-		r.go = planet.gameObject;
-		_planets.Add(key,r);
-	}
-	*/
 
 	void GenerateBattery(float distance){
 		float key = distance;
@@ -946,7 +958,6 @@ public class RailGenerator : MonoBehaviour
 		Battery r = new Battery();
 		r.transform = battery;
 		r.mesh=battery.GetComponent<MeshRenderer>();
-		Phase p = _course[_curPhase];
 		r.dur=_batteryDuration;
 		//random rotation around rail
 		//r.RotateAround(railPos,forward,r);
@@ -1160,70 +1171,58 @@ public class RailGenerator : MonoBehaviour
 			_phaseChangeIn--;
 			Debug.Log("Phase change in: "+_phaseChangeIn);
 			if(_phaseChangeIn<=0){
-				_curPhase++;
+				_prevPhase=new Phase(_curPhase);
+				_curPhase = GenerateNextPhase();
 				_phaseTimer=0;
 			}
 			return;
 		}
 		//spawn stuff
-		Phase p = _course[_curPhase];
 		//don't spawn nothing till the first few sections
-		if(knotT>3f && !_tutorial){
+		if(knotT>5f && !_tutorial){
 
 			//spawn every .1 length
 			for(float i=1; i>=0; i-=0.1f){
 				//jumpers
-				if(knotT-i>_lastJumper+p._minJumpSpace && Random.value<p._jumpProbability)
+				if(knotT-i>_lastJumper+_curPhase._minJumpSpace && Random.value<_curPhase._jumpProbability)
 				{
-					if(knotT-i>_lastObstacle+p._minObstacleSpace){
+					if(knotT-i>_lastObstacle+_curPhase._minObstacleSpace){
 						GenerateJumper(knotT-i);
 						_lastJumper=knotT-i;
 						_lastObstacle=knotT-i;
 					}
 				}
 				//coins
-				if(knotT-i>_lastCluster+p._minCoinSpace && Random.value<p._coinProbability)
+				if(knotT-i>_lastCluster+_curPhase._minCoinSpace && Random.value<_curPhase._coinProbability)
 				{
-					//if(knotT-i>_lastObstacle+p._minObstacleSpace){
+					if(knotT-i>_lastObstacle+_curPhase._minObstacleSpace){
 						GenerateCoinCluster(knotT-i);
 						_lastCluster=knotT-i;
-						//_lastObstacle=knotT-i;
-					//}
+						_lastObstacle=knotT-i;
+					}
 				}
 				//duckers
-				if(knotT-i>_lastDucker+p._minDuckerSpace && Random.value<p._duckerProbability)
+				if(knotT-i>_lastDucker+_curPhase._minDuckerSpace && Random.value<_curPhase._duckerProbability)
 				{
-					if(knotT-i>_lastObstacle+p._minObstacleSpace){
+					if(knotT-i>_lastObstacle+_curPhase._minObstacleSpace){
 						GenerateDucker(knotT-i);
 						_lastDucker=knotT-i;
 						_lastObstacle=knotT-i;
 					}
 				}
 				//racks
-				if(knotT-i>_lastRack+p._minRackSpace && Random.value<p._rackProbability)
+				if(knotT-i>_lastRack+_curPhase._minRackSpace && Random.value<_curPhase._rackProbability)
 				{
-					if(knotT-i>_lastObstacle+p._minObstacleSpace){
+					if(knotT-i>_lastObstacle+_curPhase._minObstacleSpace){
 						GenerateRack(knotT-i);
 						_lastRack=knotT-i;
 						_lastObstacle=knotT-i;
 					}
 				}
-				//planets
-				/*
-				if(knotT-i>_lastPlanet+p._minPlanetSpace && Random.value<p._planetProbability)
-				{
-					if(knotT-i>_lastObstacle+p._minObstacleSpace){
-						GeneratePlanet(knotT-i);
-						_lastPlanet=knotT-i;
-						_lastObstacle=knotT-i;
-					}
-				}
-				*/
-				
 				//batteries
 				if(knotT-i>_lastBattery+_minBatterySpace && Random.value<_batteryProbability)
 				{
-					if(knotT-i>_lastObstacle+p._minObstacleSpace){
+					if(knotT-i>_lastObstacle+_curPhase._minObstacleSpace){
 						GenerateBattery(knotT-i);
 						_lastBattery=knotT-i;
 						_lastObstacle=knotT-i;
@@ -1252,6 +1251,7 @@ public class RailGenerator : MonoBehaviour
 				OnCoinCollected.Invoke();
 			//_collectedCoins++;
 			//_combo++;
+			AddScore(1);
 			Transform coinSfx = Instantiate(_coinFx);
 			AudioSource coinAudio = coinSfx.GetComponent<AudioSource>();
 			_comboPitch = Mathf.Lerp(_comboPitch,_maxComboPitch,.3f);
@@ -1852,25 +1852,13 @@ public class RailGenerator : MonoBehaviour
 				//phase change logic
 				if(!_phaseChange && !_tutorial){
 					_phaseTimer+=Time.deltaTime;
-					if(_phaseTimer>=_course[_curPhase]._duration){
+					if(_phaseTimer>=_curPhase._duration){
 						Debug.Log("Time for another phase");
-						if(_curPhase>=_course.Length-1)
-						{
-							//#temp
-							Debug.Log("Winner!");
-							_phaseChangeIn=999;
-							_phaseChangeT=9999;
-							_phaseChange=true;
-						}
-						else
-						{
-							_phaseChange=true;
-							float curT = _t-_tOffset;
-							int curTi = Mathf.FloorToInt(curT);
-							//_phaseChangeIn=_knots.Count-curTi;
-							_phaseChangeIn = 3;
-							_phaseChangeT=_t+_knots.Count-curTi-1;
-						}
+						_phaseChange=true;
+						float curT = _t-_tOffset;
+						int curTi = Mathf.FloorToInt(curT);
+						_phaseChangeIn = 3;
+						_phaseChangeT=_t+_knots.Count-curTi-1;
 					}
 				}
 				else if(!_tutorial){
@@ -1925,7 +1913,7 @@ public class RailGenerator : MonoBehaviour
 		_railTracker.localEulerAngles=localEuler;
 	}
 
-	IEnumerator FadeInScoreText(float delay=4f){
+	IEnumerator FadeInScoreText(float delay=6f){
 		float timer=0;
 		while(timer<1f){
 			timer+=Time.deltaTime;
@@ -1938,6 +1926,7 @@ public class RailGenerator : MonoBehaviour
 			_scoreText.text="";
 			_comboText.text="";
 		}
+		timer=0;
 		while(timer<1){
 			timer+=Time.deltaTime;
 			_scoreCanvas.alpha=timer;
@@ -2067,11 +2056,25 @@ public class RailGenerator : MonoBehaviour
 				Transform t = _buildings[i*bDepth+j];
 				t.gameObject.SetActive(true);
 				Vector3 pos=verts[i]+j*offset;
+				pos.x=Mathf.Round(pos.x);
+				pos.y=Mathf.Round(pos.y);
+				pos.z=Mathf.Round(pos.z);
 				t.position=pos;
 				float rng = Mathf.PerlinNoise(pos.x+_seed,pos.z);
-				float width = Mathf.Lerp(7f,10f,1-rng);
-				float height = Mathf.Lerp(20f,50f*(j+1),rng);
+				float width = Mathf.Round(Mathf.Lerp(7f,10f,1-rng));
+				float height = Mathf.Round(Mathf.Lerp(20f,50f*(j+1),rng));
 				t.localScale=new Vector3(width,height,width);
+				/*
+				float fracX = (pos.x+width*0.5f)%1f;
+				if(Mathf.Abs(0.5f-fracX)>0.3f)
+					t.position+=Vector3.right*0.5f;
+				float fracZ = (pos.z+width*0.5f)%1f;
+				if(Mathf.Abs(0.5f-fracZ)>0.3f)
+					t.position+=Vector3.forward*0.5f;
+				float fracY = (pos.y+height*0.5f)%1f;
+				if(Mathf.Abs(0.5f-fracY)>0.3f)
+					t.position+=Vector3.up*0.5f;
+					*/
 			}
 		}
 	}
@@ -2079,12 +2082,12 @@ public class RailGenerator : MonoBehaviour
 	IEnumerator PhaseChangeR(){
 		_phaseChange=false;
 		Debug.Log("Starting next phase!");
-		Phase prev = _course[_curPhase-1];
-		Phase cur = _course[_curPhase];
+		Phase prev = _prevPhase;
+		Phase next = _curPhase;
 		Color accentPrev = prev._accent;
-		Color accentCur = cur._accent;
+		Color accentCur = next._accent;
 		Color bgPrev = prev._bg;
-		Color bgCur = cur._bg;
+		Color bgCur = next._bg;
 
 		Color tmp;
 		Color tmp2;
@@ -2097,7 +2100,10 @@ public class RailGenerator : MonoBehaviour
 			_lineMat.SetColor("_EdgeColor",tmp);
 			_buildingMat.SetColor("_Color",tmp);
 			_main.backgroundColor=tmp2;
+			//_skyMat.SetColor("_SkyColor",cur._bg);
+			//_skyMat.SetColor("_SunColor",cur._accent);
 			RenderSettings.fogColor=tmp2;
+			_rain.startColor=tmp;
 
 			yield return null;
 		}
@@ -2122,6 +2128,7 @@ public class RailGenerator : MonoBehaviour
 		//set battery material thingy
 		_anim.SetBool("carry",true);
 		_zen=true;
+		_bubble.SetActive(true);
 	}
 
 	void RemoveBattery(){
@@ -2131,6 +2138,7 @@ public class RailGenerator : MonoBehaviour
 		_ethanMat.SetColor("_OutlineColor",Color.black);
 		_music.pitch=1f;
 		_powerDown.Play();
+		_bubble.SetActive(false);
 	}
 
 	IEnumerator BlinkRoutine(){
@@ -2198,6 +2206,90 @@ public class RailGenerator : MonoBehaviour
 
 	void GenerateTutorialJumper(float time){
 		GenerateJumper(time);
+	}
+
+	Phase GenerateNextPhase(){
+		Phase p = new Phase();
+		//pick colors
+		p._accent = _accentPalette[Random.Range(0,_accentPalette.Length)];
+		p._bg = _bgPalette[Random.Range(0,_bgPalette.Length)];
+		p._duration=5f;
+		/*
+
+		//first 5 alternate jump/duck and rack
+		//every 5 are coin levels
+		//after 5, three are mixed
+		//first 5 should take maybe 2-3 mins
+		if(_phaseCounter>0 && _phaseCounter%5==0){
+			p._minCoinSpace=0;
+			p._coinProbability=0.2f;
+			p._coinClusterSize=10;
+			p._maxCoinRotation=90f;
+			p._maxCoinCork=8f;
+			//p._duration=10f;
+			p._minObstacleSpace=2.5f;
+		}
+		else if(_phaseCounter<5){
+			float frac = Mathf.InverseLerp(0,4f,_phaseCounter);
+			//coins
+			p._minCoinSpace=2f;
+			p._coinProbability=0.1f;
+			p._coinClusterSize=5;
+			p._maxCoinRotation=Mathf.Lerp(45f,60f,frac);
+			p._maxCoinCork=Mathf.Lerp(5f,7f,frac);
+			if(_phaseCounter%2==0){
+				//jumps and ducks
+				p._minJumpSpace=0.5f;
+				p._jumpProbability=Mathf.Lerp(0.05f,0.2f,frac);
+				p._minDuckerSpace=0.5f;
+				p._duckerProbability=Mathf.Lerp(0.05f,0.2f,frac);
+
+				//general
+				p._minObstacleSpace=Mathf.Lerp(1f,0.75f,frac);
+				//p._duration=Mathf.Lerp(5f,10f,frac);
+			}
+			else{
+				//racks
+				p._minRackSpace=1;
+				p._rackProbability=Mathf.Lerp(0.05f,0.5f,frac);
+				p._minRackSpeed=Mathf.Lerp(30f,90f,frac);
+				p._maxRackSpeed=Mathf.Lerp(60f,160f,frac);
+				
+				//general
+				p._minObstacleSpace=Mathf.Lerp(1f,0.75f,frac);
+				//p._duration=Mathf.Lerp(5f,10f,frac);
+			}
+		}
+		else{
+			float frac = Mathf.InverseLerp(6,10,_phaseCounter);
+			//gen mixed
+			//coins
+			p._minCoinSpace=2f;
+			p._coinProbability=0.3f;
+			p._coinClusterSize=5;
+			p._maxCoinRotation=Mathf.LerpUnclamped(60f,90f,frac);
+			p._maxCoinCork=Mathf.LerpUnclamped(7f,9f,frac);
+
+			//jumps and ducks
+			p._minJumpSpace=0.5f;
+			p._jumpProbability=Mathf.LerpUnclamped(0.2f,someth,frac);
+			p._minDuckerSpace=0.5f;
+			p._duckerProbability=Mathf.LerpUnclamped(0.2f,someth,frac);
+
+			//racks
+			p._minRackSpace=1;
+			p._rackProbability=Mathf.LerpUnclamped(0.05f,0.5f,frac);
+			p._minRackSpeed=Mathf.LerpUnclamped(30f,90f,frac);
+			p._maxRackSpeed=Mathf.LerpUnclamped(60f,160f,frac);
+			
+			//general
+			p._duration=Mathf.LerpUnclamped(5f,10f,frac);
+			p._minObstacleSpace=Mathf.LerpUnclamped(1f,0.75f,frac);
+		}
+		*/
+
+		_phaseCounter++;
+		return p;
 	}
 
 	public void GameOver(){

@@ -48,11 +48,13 @@
             // Albedo comes from a texture tinted by color
             //fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
 			float green = step(_GridScale.w,frac(IN.worldPos.x*_GridScale.x));
+			green += step(_GridScale.w,frac(IN.worldPos.y*_GridScale.z));
 			green += step(_GridScale.w,frac(IN.worldPos.z*_GridScale.z))*(1-green);
 			//green = lerp(0,green,sin(_Time.y));
-			o.Emission = (1-green)*lerp(fixed4(0,0,0,0),_Color,abs(sin(_Time.y)));
+			o.Emission = (green)*lerp(fixed4(0.1,0.1,0.1,0.1),_Color,abs(sin(_Time.y-IN.worldPos.y)));
 			//o.Albedo = 1-_Color.rgb;
-            o.Albedo = _Color*0.5;
+            //o.Albedo = _Color*0.5;
+			o.Albedo=0;
             // Metallic and smoothness come from slider variables
             o.Metallic = _Metallic;
             o.Smoothness = _Glossiness;
