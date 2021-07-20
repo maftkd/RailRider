@@ -18,16 +18,22 @@ public class RailGenerator : MonoBehaviour
 	float _moveSpeed=0.6f;//rate at which char moves along rail in segments/sec
 	float _targetMoveSpeed;
 	Transform _railTracker;
+
+	//balance vars
 	float _balance;
 	float _t;//measurement of time progress throughout the run
 	float _balanceSpeed = 100;//degrees per second of rotation at full balanceVelocity
 	int _prevBalanceState = 0;
 	int _balanceState = 0;//0=no input, 1=left input, 2=right input
 	float _balanceVelocity = 0;//rate at which Character rotates
+	float _inputVelocity;
 	float _balanceAcceleration = 3f;//rate at which touch input affects velocity
-	float _balanceDecceleration = 1f;//rate at which touch velocity slows
+	float _balanceDecceleration = 3f;//rate at which touch velocity slows
 	float _minVel = 0.01f;//min velocity before balance clamped to 0
 	float _maxVel = 2f;
+	public RectTransform _balanceMarker;
+	CanvasGroup _balanceCanvas;
+
 	Transform _helmet;
 	Dictionary<float, Item> _coins = new Dictionary<float, Item>();
 	public Transform _coin;
@@ -105,6 +111,8 @@ public class RailGenerator : MonoBehaviour
 	public GameObject _tutorialObjs;
 	Camera _main;
 	float _curvature;
+	public float _curvePower;
+	public float _gravityPower;
 	Transform _explosion;
 
 
@@ -174,7 +182,6 @@ public class RailGenerator : MonoBehaviour
 	bool _phaseChange;
 	int _phaseChangeIn;
 	float _phaseChangeT;
-	float _phaseChangeDur=5f;
 
 	//powerups
 	float _batteryDur=-1;
@@ -342,6 +349,7 @@ public class RailGenerator : MonoBehaviour
 		_collectedCoins=0;
 
 		//Get some references
+		_balanceCanvas = _balanceMarker.parent.GetComponent<CanvasGroup>();
 		_helmet = GameObject.FindGameObjectWithTag("Helmet").transform;
 		_ethan = _railTracker.GetChild(0); 
 		_bubble = _ethan.Find("Sphere").gameObject;
@@ -364,6 +372,8 @@ public class RailGenerator : MonoBehaviour
 		}
 		_explosion = GameObject.FindGameObjectWithTag("Explosion").transform;
 		_ethanMat.SetColor("_EmissionColor",Color.black);
+
+		_balanceCanvas.alpha=0;
 
 		SetupShop();
 	}
@@ -595,10 +605,10 @@ public class RailGenerator : MonoBehaviour
 	
 	//function used in update loop to reset velocity towards 0
 	void LimitVelocity(){
-		if(_balanceVelocity!=0){
-			_balanceVelocity=Mathf.Lerp(_balanceVelocity,0,_balanceDecceleration*Time.deltaTime*_balanceMult);
-			if(Mathf.Abs(_balanceVelocity)<_minVel)
-				_balanceVelocity=0;
+		if(_inputVelocity!=0){
+			_inputVelocity=Mathf.Lerp(_inputVelocity,0,_balanceDecceleration*Time.deltaTime*_balanceMult);
+			if(Mathf.Abs(_inputVelocity)<_minVel)
+				_inputVelocity=0;
 		}
 	}
 
@@ -1174,6 +1184,7 @@ public class RailGenerator : MonoBehaviour
 				_prevPhase=new Phase(_curPhase);
 				_curPhase = GenerateNextPhase();
 				_phaseTimer=0;
+				_phaseChange=false;
 			}
 			return;
 		}
@@ -1631,7 +1642,7 @@ public class RailGenerator : MonoBehaviour
 						//climb to 1
 						if(!_jumping)
 						{
-							_balanceVelocity=Mathf.Lerp(_balanceVelocity,_maxVel,_balanceAcceleration*Time.deltaTime*_balanceMult);
+							_inputVelocity=Mathf.Lerp(_inputVelocity,_maxVel,_balanceAcceleration*Time.deltaTime*_balanceMult);
 						}
 						//temp code for air spins
 						else
@@ -1646,7 +1657,7 @@ public class RailGenerator : MonoBehaviour
 						}
 						//climb to -1
 						if(!_jumping)
-							_balanceVelocity = Mathf.Lerp(_balanceVelocity,-_maxVel,_balanceAcceleration*Time.deltaTime*_balanceMult);
+							_inputVelocity = Mathf.Lerp(_inputVelocity,-_maxVel,_balanceAcceleration*Time.deltaTime*_balanceMult);
 
 						//temp code for air spins
 						else
@@ -1668,9 +1679,10 @@ public class RailGenerator : MonoBehaviour
 				}
 
 				//set player's root position and orientation
+				/*
 				if(!_tutorial || _dialogIndex>=7)
 					_balance-=_balanceVelocity*Time.deltaTime*_balanceSpeed;
-				Vector3 prevForward = _railTracker.forward;
+					*/
 				SetPosition();
 
 				//check collisions with items
@@ -1857,13 +1869,9 @@ public class RailGenerator : MonoBehaviour
 						_phaseChange=true;
 						float curT = _t-_tOffset;
 						int curTi = Mathf.FloorToInt(curT);
-						_phaseChangeIn = 3;
+						_phaseChangeIn = 1;
 						_phaseChangeT=_t+_knots.Count-curTi-1;
 					}
-				}
-				else if(!_tutorial){
-					if(_t>=_phaseChangeT)
-						StartCoroutine(PhaseChangeR());
 				}
 				_prevBalanceState=_balanceState;
 				break;
@@ -1900,17 +1908,42 @@ public class RailGenerator : MonoBehaviour
 	}
 
 	void SetPosition(){
+		//calc new pos and forward for rail
 		float railT = _t-_tOffset;
 		_railTracker.position = _path.GetPoint(railT);
 		_railTracker.forward = _path.GetTangent(railT);
 		Vector3 localEuler = _railTracker.localEulerAngles;
 
+		//calc rail curvature
 		Vector3 nextForward = _path.GetTangent(railT+1f/(float)_lineResolution);
 		_curvature = Vector3.Cross(_railTracker.forward,nextForward).y;
-		if(!_jumping)
-			_balance-=_curvature*_balanceMult*2;
+		//Debug.Log("curve: "+_curvature);
+		
+		//balance physics
+		if(!_jumping && !_zen)
+		{
+			//affect of gravity
+			//0.02
+			_balanceVelocity=Mathf.Sign(_balance)*_balance*_balance*Time.deltaTime*_gravityPower;
+			//affect of curvature
+			//_balance-=_curvature*_balanceMult*2;
+			//10
+			_balanceVelocity+=Mathf.Sign(_curvature)*Mathf.Abs(_curvature)*Time.deltaTime*_curvePower;
+		}
+		//apply input "velocity"
+		float vel = _inputVelocity+_balanceVelocity*_balanceMult;
+		_balance-=vel*Time.deltaTime*_balanceSpeed;
+
+		if(Mathf.Abs(_balance)>110f && !_zen){
+			Debug.Break();
+		}
+
+		//set ethan rotation
 		localEuler.z = -_balance;
 		_railTracker.localEulerAngles=localEuler;
+		//set balance marker rotation
+		localEuler.y=0;
+		_balanceMarker.localEulerAngles=localEuler;
 	}
 
 	IEnumerator FadeInScoreText(float delay=6f){
@@ -1931,6 +1964,7 @@ public class RailGenerator : MonoBehaviour
 			timer+=Time.deltaTime;
 			_scoreCanvas.alpha=timer;
 			_authorCanvas.alpha=1-timer;
+			_balanceCanvas.alpha=timer;
 			yield return null;
 		}
 		_scoreCanvas.alpha=1f;
@@ -2056,9 +2090,9 @@ public class RailGenerator : MonoBehaviour
 				Transform t = _buildings[i*bDepth+j];
 				t.gameObject.SetActive(true);
 				Vector3 pos=verts[i]+j*offset;
-				pos.x=Mathf.Round(pos.x);
-				pos.y=Mathf.Round(pos.y);
-				pos.z=Mathf.Round(pos.z);
+				pos.x=Mathf.Round(pos.x)+0.1f;
+				pos.y=Mathf.Round(pos.y)+0.1f;
+				pos.z=Mathf.Round(pos.z)+0.1f;
 				t.position=pos;
 				float rng = Mathf.PerlinNoise(pos.x+_seed,pos.z);
 				float width = Mathf.Round(Mathf.Lerp(7f,10f,1-rng));
@@ -2078,47 +2112,62 @@ public class RailGenerator : MonoBehaviour
 			}
 		}
 	}
-
-	IEnumerator PhaseChangeR(){
-		_phaseChange=false;
-		Debug.Log("Starting next phase!");
-		Phase prev = _prevPhase;
-		Phase next = _curPhase;
-		Color accentPrev = prev._accent;
-		Color accentCur = next._accent;
-		Color bgPrev = prev._bg;
-		Color bgCur = next._bg;
+	
+	IEnumerator NightTimeR(){
+		Color accentPrev = _curPhase._accent;
+		Color accentCur = _course[1]._accent;
+		Color bgPrev = _curPhase._bg;
+		Color bgCur = _course[1]._bg;
 
 		Color tmp;
 		Color tmp2;
 		float timer=0;
-		while(timer<_phaseChangeDur){
+		while(timer<1f){
 			timer+=Time.deltaTime;
-			//set accent colors
-			tmp = Color.Lerp(accentPrev,accentCur,timer/_phaseChangeDur);
-			tmp2 = Color.Lerp(bgPrev,bgCur,timer/_phaseChangeDur);
+			tmp = Color.Lerp(accentPrev,accentCur,timer/1f);
+			tmp2 = Color.Lerp(bgPrev,bgCur,timer/1f);
 			_lineMat.SetColor("_EdgeColor",tmp);
 			_buildingMat.SetColor("_Color",tmp);
 			_main.backgroundColor=tmp2;
-			//_skyMat.SetColor("_SkyColor",cur._bg);
-			//_skyMat.SetColor("_SunColor",cur._accent);
 			RenderSettings.fogColor=tmp2;
 			_rain.startColor=tmp;
 
 			yield return null;
 		}
-		Debug.Log("Done animating transition to next phase");
 	}
 
+	IEnumerator DayTimeR(){
+		Color accentPrev = _course[1]._accent;
+		Color accentCur = _curPhase._accent;
+		Color bgPrev = _course[1]._bg;
+		Color bgCur = _curPhase._bg;
+
+		Color tmp;
+		Color tmp2;
+		float timer=0;
+		while(timer<1f){
+			timer+=Time.deltaTime;
+			tmp = Color.Lerp(accentPrev,accentCur,timer/1f);
+			tmp2 = Color.Lerp(bgPrev,bgCur,timer/1f);
+			_lineMat.SetColor("_EdgeColor",tmp);
+			_buildingMat.SetColor("_Color",tmp);
+			_main.backgroundColor=tmp2;
+			RenderSettings.fogColor=tmp2;
+			_rain.startColor=tmp;
+			yield return null;
+		}
+	}
 
 	void AcquireBattery(){
-		Debug.Log("battery acquired!");
+		_balanceVelocity=0;
 		//add a battery to ethands hands
 		if(_batteryDur<0){
 			_batteryTemp = Instantiate(_battery,_ethanHandSlot);
 			_batteryTemp.GetChild(0).gameObject.SetActive(false);
 			_batteryTempMat=_batteryTemp.GetComponent<MeshRenderer>().materials[1];
 			_music.pitch=1.1f;
+			StopAllCoroutines();
+			StartCoroutine(NightTimeR());
 		}
 		_powerUp.Play();
 		StartCoroutine(BlinkRoutine());
@@ -2139,6 +2188,19 @@ public class RailGenerator : MonoBehaviour
 		_music.pitch=1f;
 		_powerDown.Play();
 		_bubble.SetActive(false);
+		StartCoroutine(DayTimeR());
+		//correct rotation
+
+		int extraSpins=0;
+		//take out any full rotations
+		if(Mathf.Abs(_balance)>=360){
+			extraSpins=(int)(_balance/360);
+			_balance-=360f*extraSpins;
+		}
+		if(Mathf.Abs(_balance)>180)
+		{
+			_balance=-Mathf.Sign(_balance)*180+(Mathf.Abs(_balance)-180);
+		}
 	}
 
 	IEnumerator BlinkRoutine(){
@@ -2209,12 +2271,12 @@ public class RailGenerator : MonoBehaviour
 	}
 
 	Phase GenerateNextPhase(){
+		Debug.Log("Phase counter: "+_phaseCounter);
 		Phase p = new Phase();
-		//pick colors
-		p._accent = _accentPalette[Random.Range(0,_accentPalette.Length)];
-		p._bg = _bgPalette[Random.Range(0,_bgPalette.Length)];
-		p._duration=5f;
-		/*
+		if(_curPhase!=null){
+			p._bg=_curPhase._bg;
+			p._accent=_curPhase._accent;
+		}
 
 		//first 5 alternate jump/duck and rack
 		//every 5 are coin levels
@@ -2224,10 +2286,10 @@ public class RailGenerator : MonoBehaviour
 			p._minCoinSpace=0;
 			p._coinProbability=0.2f;
 			p._coinClusterSize=10;
-			p._maxCoinRotation=90f;
-			p._maxCoinCork=8f;
-			//p._duration=10f;
+			p._maxCoinRotation=45f;
+			p._maxCoinCork=5f;
 			p._minObstacleSpace=2.5f;
+			p._duration=15f;
 		}
 		else if(_phaseCounter<5){
 			float frac = Mathf.InverseLerp(0,4f,_phaseCounter);
@@ -2246,7 +2308,7 @@ public class RailGenerator : MonoBehaviour
 
 				//general
 				p._minObstacleSpace=Mathf.Lerp(1f,0.75f,frac);
-				//p._duration=Mathf.Lerp(5f,10f,frac);
+				p._duration=Mathf.Lerp(10f,15f,frac);
 			}
 			else{
 				//racks
@@ -2258,6 +2320,8 @@ public class RailGenerator : MonoBehaviour
 				//general
 				p._minObstacleSpace=Mathf.Lerp(1f,0.75f,frac);
 				//p._duration=Mathf.Lerp(5f,10f,frac);
+				//rack levels are shorter cuz they tougher
+				p._duration=5f;
 			}
 		}
 		else{
@@ -2272,21 +2336,20 @@ public class RailGenerator : MonoBehaviour
 
 			//jumps and ducks
 			p._minJumpSpace=0.5f;
-			p._jumpProbability=Mathf.LerpUnclamped(0.2f,someth,frac);
+			p._jumpProbability=Mathf.LerpUnclamped(0.2f,0.5f,frac);
 			p._minDuckerSpace=0.5f;
-			p._duckerProbability=Mathf.LerpUnclamped(0.2f,someth,frac);
+			p._duckerProbability=Mathf.LerpUnclamped(0.2f,0.5f,frac);
 
 			//racks
 			p._minRackSpace=1;
-			p._rackProbability=Mathf.LerpUnclamped(0.05f,0.5f,frac);
-			p._minRackSpeed=Mathf.LerpUnclamped(30f,90f,frac);
-			p._maxRackSpeed=Mathf.LerpUnclamped(60f,160f,frac);
+			p._rackProbability=0.5f;
+			p._minRackSpeed=30f;
+			p._maxRackSpeed=160f;
 			
 			//general
-			p._duration=Mathf.LerpUnclamped(5f,10f,frac);
-			p._minObstacleSpace=Mathf.LerpUnclamped(1f,0.75f,frac);
+			p._duration=Mathf.LerpUnclamped(15f,30f,frac);
+			p._minObstacleSpace=Mathf.LerpUnclamped(0.75f,0.5f,frac);
 		}
-		*/
 
 		_phaseCounter++;
 		return p;
