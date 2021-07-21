@@ -8,7 +8,7 @@ public class RackWheel : MonoBehaviour
 	Transform _pinion;
 	Transform _gear;
 	float _ratio;
-	float _hitThresh = 0.6f;
+	float _hitThresh = 0.65f;
     // Start is called before the first frame update
     void Start()
     {
