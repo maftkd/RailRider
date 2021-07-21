@@ -76,6 +76,7 @@ public class RailGenerator : MonoBehaviour
 	int _collectedCoins;
 	float _coinHitThreshold = .95f;
 	public int _gameState=0;
+	bool _inputLock;
 	//0 = menu
 	//1 = play
 	//2 = collided with jumper
@@ -86,6 +87,7 @@ public class RailGenerator : MonoBehaviour
 	float _minGateSpace=1;
 	float _maxGateSpace=30;
 	public UnityEvent _jumpHit;//essentially game over event
+	public UnityEvent _tutorialComplete;
 	Text _scoreText;
 	Text _scoreTextShadow;
 	Text _comboText;
@@ -111,6 +113,7 @@ public class RailGenerator : MonoBehaviour
 	float _tutCoinStart;
 	float _tutDuckerStart;
 	float _tutJumperStart;
+	float _tutLanternStart;
 	CanvasGroup _readyCanvas;
 	public AudioSource _music;
 	public GameObject _tutorialObjs;
@@ -209,6 +212,9 @@ public class RailGenerator : MonoBehaviour
 	float _minSpeed=0.45f;
 	float _maxSpeed=0.8f;
 	int _bars=8;
+
+	//physics objects for fall anim
+	Transform _ethanPhysics;
 
 	public Transform _shopParent;
 	UIManager _menu;
@@ -346,10 +352,24 @@ public class RailGenerator : MonoBehaviour
 		_railTracker=transform.GetChild(0);
 		_ethanParent=_railTracker.GetChild(0).GetChild(0);
 		_anim = _ethanParent.GetChild(0).GetComponent<Animator>();
+		_ethanPhysics=_anim.transform;
+
+		//check version
+		if(PlayerPrefs.HasKey("version")){
+			int v = PlayerPrefs.GetInt("version");
+			//#todo check version
+		}
+		else{
+			//if no version, clear all - coins, score, board
+			PlayerPrefs.DeleteAll();
+			PlayerPrefs.SetInt("version", 1);
+			PlayerPrefs.Save();
+		}
 
 		//generate track starter
 		_tutorial=!PlayerPrefs.HasKey("tut");
 		GenerateStartingSection();
+		_inputLock=_tutorial;
 
 		//This sets number of coins to 0
 		_collectedCoins=0;
@@ -502,17 +522,17 @@ public class RailGenerator : MonoBehaviour
 			stat.Find("Plus").gameObject.SetActive(customize);
 		}
 
-		Transform wins = stats.GetChild(4);
-		if(owned)
-			wins.GetChild(0).GetComponent<Text>().text="Wins: "+PlayerPrefs.GetInt(b._name).ToString("0");
-		else
-			wins.GetChild(0).GetComponent<Text>().text="";
-
 		//set particle fx
 		if(_curBoard==3)
 			_grindEffects=_flames;
 		else
 			_grindEffects=_sparks;
+	}
+
+	[ContextMenu("Clear version")]
+	public void ClearVersion(){
+		PlayerPrefs.DeleteKey("version");
+		PlayerPrefs.Save();
 	}
 
 	[ContextMenu("Clear boards")]
@@ -694,53 +714,6 @@ public class RailGenerator : MonoBehaviour
 		int trickScore=0;
 		if(trick>=0)
 			trickScore=4+Mathf.RoundToInt(Mathf.Abs(_spinTrick/90f));
-
-		/*
-		string tricky="";
-		float dir=Mathf.Sign(_spinTrick);
-		//get spins
-		if(Mathf.Abs(_spinTrick)>90){
-			tricky+=dir==1? "FS " : "BS ";
-			tricky+=Mathf.Round(Mathf.Abs(_spinTrick)/90)*90;
-		}
-		//get trick
-		switch(trick){
-			case -1:
-				tricky+=" Ollie";
-				break;
-			case 0:
-				tricky+=" Shuv-it";
-				trickScore=3;
-				break;
-			case 1:
-				tricky+=" Kickflip";
-				trickScore=3;
-				break;
-			case 2:
-				tricky+=" Impossible";
-				trickScore=3;
-				break;
-		}
-		//get grind
-		tricky+=" to\n";
-		switch(pos){
-			case 0:
-			case 2:
-			case 4:
-				tricky+="Fifty Fifty";
-				break;
-			case 1:
-			case 3:
-				tricky+="Boardslide";
-				break;
-		}
-		if(!_tutorial)
-		{
-			_trickText.text=tricky;
-			_spinTrick=0;
-			_trickTextTimer=_maxTrickTextTimer;
-		}
-		*/
 		if(trickScore>0)
 			AddScore(trickScore);
 	}
@@ -1349,16 +1322,15 @@ public class RailGenerator : MonoBehaviour
 							AddCoin();
 							_clusterCounter++;
 						}
+						/*
 						if(c.transform.name.Split('-')[0]=="final")
 						{
 							_comboPitch=_minComboPitch;
-							/*
 							if(_clusterCounter==int.Parse(c.transform.name.Split('-')[1]))
 								AddScore(5);
-								*/
-							c.transform.name="foo";
-							_clusterCounter=0;
+							//c.transform.name="foo";
 						}
+						*/
 					}
 					//on coin miss
 					else if(_t-f>.05f && c.transform.tag!="Collected"){
@@ -1372,7 +1344,7 @@ public class RailGenerator : MonoBehaviour
 						*/
 						UpdateCombo(false);
 						c.transform.tag="Collected";
-						_clusterCounter=0;
+						//_clusterCounter=0;
 					}
 				}
 			}
@@ -1391,32 +1363,29 @@ public class RailGenerator : MonoBehaviour
 					//j.mesh.enabled=true;
 					
 					if(Mathf.Abs(f-_t)<.04f && _ethan.localPosition.y < _minJumpY){
-						if(!_tutorial){
-							if(_zen){
-								gearExplode=true;
-								Transform vfx = j.transform.GetChild(0);
-								ParticleSystem p = vfx.GetComponent<ParticleSystem>();
-								p.Play();
-								j.transform.tag="Collected";
-								j.mesh.enabled=false;
-								_smash.Play();
-								if(OnGearCollected!=null)
-									OnGearCollected.Invoke();
-							}
-							else{
-								j.transform.GetComponent<Rotator>()._speed=0;
-								GameOver();
-							}
+						if(_zen){
+							gearExplode=true;
+							Transform vfx = j.transform.GetChild(0);
+							ParticleSystem p = vfx.GetComponent<ParticleSystem>();
+							p.Play();
+							j.transform.tag="Collected";
+							j.mesh.enabled=false;
+							_smash.Play();
+							if(OnGearCollected!=null)
+								OnGearCollected.Invoke();
 						}
-						//tutorial
-						else{
+						else if(_tutorial && _dialogIndex<20){
 							_gearHit.Play();
 							//rewind
 							_gameState=2;
 							StartCoroutine(RewindR(2f));
 							_dialogIndex=15;
 							ShowNextDialog();
-							return;
+							LockInput(true);
+						}
+						else{
+							j.transform.GetComponent<Rotator>()._speed=0;
+							GameOver();
 						}
 					}
 				}
@@ -1451,12 +1420,15 @@ public class RailGenerator : MonoBehaviour
 						else{
 							if(_tutorial)
 							{
-								//rewind
-								_gameState=2;
-								_gearHit.Play();
-								StartCoroutine(RewindR(2f));
-								_dialogIndex=12;
-								ShowNextDialog();
+								if(_dialogIndex<20){
+									//rewind
+									_gameState=2;
+									_gearHit.Play();
+									StartCoroutine(RewindR(2f));
+									_dialogIndex=12;
+									ShowNextDialog();
+									LockInput(true);
+								}
 							}
 							else{
 								tmp.transform.GetComponent<Rotator>()._speed=0;
@@ -1635,64 +1607,61 @@ public class RailGenerator : MonoBehaviour
 					_balanceState=3;
 				}
 
-				//handle balance logic
-				switch(_balanceState){
-					case 0:
-						//fall to 0
-						LimitVelocity();
-						//#todo - something about crouch timer
-						if(_crouching && !_jumping){
-							StartCoroutine(JumpRoutine());
-						}
-						break;
-					case 1:
-						if(_crouching && !_jumping){
-							Uncrouch();
-						}
-						//climb to 1
-						if(!_jumping)
-						{
-							_inputVelocity=Mathf.Lerp(_inputVelocity,_maxVel,_balanceAcceleration*Time.deltaTime*_balanceMult);
-						}
-						//temp code for air spins
-						else
-						{
-							_spinTrick-=_trickMult*Time.deltaTime;
-							_ethan.Rotate(0,-_trickMult*Time.deltaTime, 0);
-						}
-						break;
-					case 2:
-						if(_crouching && !_jumping){
-							Uncrouch();
-						}
-						//climb to -1
-						if(!_jumping)
-							_inputVelocity = Mathf.Lerp(_inputVelocity,-_maxVel,_balanceAcceleration*Time.deltaTime*_balanceMult);
-
-						//temp code for air spins
-						else
-						{
-							_spinTrick+=_trickMult*Time.deltaTime;
-							_ethan.Rotate(0,_trickMult*Time.deltaTime, 0);
-						}
-						break;
-					case 3:
-						if(!_jumping)
+				if(!_inputLock)
+				{
+					//handle balance logic
+					switch(_balanceState){
+						case 0:
+							//fall to 0
 							LimitVelocity();
-						//jump
-						if(!_crouching && !_jumping)
-						{
-							_crouching=true;
-							_anim.SetBool("crouch",true);
-						}
-						break;
-				}
+							//#todo - something about crouch timer
+							if(_crouching && !_jumping){
+								StartCoroutine(JumpRoutine());
+							}
+							break;
+						case 1:
+							if(_crouching && !_jumping){
+								Uncrouch();
+							}
+							//climb to 1
+							if(!_jumping)
+							{
+								_inputVelocity=Mathf.Lerp(_inputVelocity,_maxVel,_balanceAcceleration*Time.deltaTime*_balanceMult);
+							}
+							//temp code for air spins
+							else
+							{
+								_spinTrick-=_trickMult*Time.deltaTime;
+								_ethan.Rotate(0,-_trickMult*Time.deltaTime, 0);
+							}
+							break;
+						case 2:
+							if(_crouching && !_jumping){
+								Uncrouch();
+							}
+							//climb to -1
+							if(!_jumping)
+								_inputVelocity = Mathf.Lerp(_inputVelocity,-_maxVel,_balanceAcceleration*Time.deltaTime*_balanceMult);
 
-				//set player's root position and orientation
-				/*
-				if(!_tutorial || _dialogIndex>=7)
-					_balance-=_balanceVelocity*Time.deltaTime*_balanceSpeed;
-					*/
+							//temp code for air spins
+							else
+							{
+								_spinTrick+=_trickMult*Time.deltaTime;
+								_ethan.Rotate(0,_trickMult*Time.deltaTime, 0);
+							}
+							break;
+						case 3:
+							if(!_jumping)
+								LimitVelocity();
+							//jump
+							if(!_crouching && !_jumping)
+							{
+								_crouching=true;
+								_anim.SetBool("crouch",true);
+							}
+							break;
+					}
+				}
 				SetPosition();
 
 				//check collisions with items
@@ -1727,46 +1696,9 @@ public class RailGenerator : MonoBehaviour
 					UpdateFloorPlane();
 				}
 
-				//physicsy stuff - not needed if speed stays same
-				/*
-				_moveSpeed = Mathf.Lerp(_moveSpeed,_targetMoveSpeed,
-					_speedChangeLerp*Time.deltaTime);
-				_balanceSpeed = _moveSpeed*_balanceSpeedMultiplier;
-				*/
-
 				//advance timer
 				_t+=Time.deltaTime*_moveSpeed;
 
-				//tutorial cleanup
-				/*
-				if(_tutorial && _t > 13){
-					_tutorialObjs.SetActive(false);
-					_tutorial=false;
-					PlayerPrefs.SetInt("tut",1);
-					PlayerPrefs.Save();
-					_collectedCoins=0;
-					AddCoin(0);
-					StartCoroutine(FadeInScoreText(0));
-				}
-				if(tutorial){
-					//turn right
-					if t > X and score < 5
-						show message
-						start rewind
-					//turn left
-					else if t > Y and score < 10
-						show message
-						start rewind
-					//duck
-					else if t > Z and score < 11
-						show message
-						start rewind
-					//jump
-					else if t > W and score < 12
-						show message
-						start rewind
-				}
-				*/
 				if(_tutorial){
 					if(!_ready)
 					{
@@ -1814,9 +1746,13 @@ public class RailGenerator : MonoBehaviour
 						//spawn some coins
 						_tutCoinStart=_t+3f;
 						GenerateTutorialCoins(_tutCoinStart);
+						_balanceCanvas.alpha=1;
 						_dialogIndex=8;
 					}
+					if(_dialogIndex==8 && _ready&&_inputLock)
+						LockInput(false);
 					if(_t>_tutCoinStart+2.1f && _dialogIndex==8){
+						LockInput(true);
 						if(_clusterCounter==10){
 							ShowNextDialog();
 							_dialogIndex=11;
@@ -1844,8 +1780,11 @@ public class RailGenerator : MonoBehaviour
 						_tutDuckerStart=_t+2f;
 						GenerateTutorialDucker(_tutDuckerStart);
 					}
+					if(_dialogIndex==13 && _ready && _inputLock)
+						LockInput(false);
 					if(_t>_tutDuckerStart+0.5f && _dialogIndex==13){
 						ShowNextDialog();//nice duck
+						LockInput(true);
 					}
 					if(_dialogIndex==14&&_ready){
 						ShowNextDialog();
@@ -1855,8 +1794,48 @@ public class RailGenerator : MonoBehaviour
 						_tutJumperStart=_t+2f;
 						GenerateTutorialJumper(_tutJumperStart);
 					}
+					if(_dialogIndex==16&&_ready&&_inputLock)
+						LockInput(false);
 					if(_t>_tutJumperStart+0.5f && _dialogIndex==16){
 						ShowNextDialog();//nice jump
+						LockInput(true);
+					}
+					if(_dialogIndex==17&&_ready){
+						ShowNextDialog();
+					}
+					if(_dialogIndex==18&&_ready){
+						ShowNextDialog();
+					}
+					if(_dialogIndex==19&&_ready){
+						ShowNextDialog();
+					}
+					if(_dialogIndex==20&&_ready){
+						ShowNextDialog();
+						_tutLanternStart=_t+1f;
+						_maxBatteryRotation=0;
+						GenerateTutorialLantern(_tutLanternStart);
+					}
+					if(_t>_tutLanternStart+0.5f && _dialogIndex==21){
+						_dialogIndex=22;
+						//reusing tutLantern start
+						_tutLanternStart=_t+1f;
+						GenerateTutorialStuff(_tutLanternStart);
+						LockInput(false);
+					}
+					if(_t>_tutLanternStart+3f && _dialogIndex==22){
+						ShowNextDialog();
+						LockInput(true);
+					}
+					if(_dialogIndex==23 && _ready){
+						ShowNextDialog();
+					}
+					if(_dialogIndex==24 && _ready){
+						ShowNextDialog();
+					}
+					if(_dialogIndex==25 && _ready){
+						//end tutorial
+						CompleteTut();
+						_tutorialComplete.Invoke();
 					}
 				}
 
@@ -1940,7 +1919,8 @@ public class RailGenerator : MonoBehaviour
 		//apply input "velocity"
 		float vel = _inputVelocity*Time.deltaTime+_balanceVelocity*_balanceMult;
 		//_balance-=vel*Time.deltaTime*_balanceSpeed;
-		_balance-=vel*_balanceSpeed;
+		if(!_inputLock)
+			_balance-=vel*_balanceSpeed;
 
 		if(Mathf.Abs(_balance)>110f && !_zen){
 			GameOver(true);
@@ -2274,8 +2254,18 @@ public class RailGenerator : MonoBehaviour
 		GenerateDucker(time);
 	}
 
+	void GenerateTutorialLantern(float time){
+		GenerateBattery(time);
+	}
+
 	void GenerateTutorialJumper(float time){
 		GenerateJumper(time);
+	}
+
+	void GenerateTutorialStuff(float time){
+		GenerateJumper(time);
+		GenerateDucker(time+0.5f);
+		GenerateRack(time+1f);
 	}
 
 	Phase GenerateNextPhase(){
@@ -2399,29 +2389,13 @@ public class RailGenerator : MonoBehaviour
 				break;
 		}
 		_comboFg.fillAmount = (_combo%25 / 25f);
-		//if combo < 25
-		//	comboBg color = 0,0,0,0
-		//	comboMult=1
-		//else if combo < 50
-		//	comboBg color = cyan
-		//	comboMult=2
-		//else if combo < 75
-		//	comboBg color = magenta
-		//	comboMult=4
-		//else
-		//	comboBg color = yellow
-		//	comboMult=8
-
-		//if combo <75
-		//	comboFg fill amount = combo%25 / 25
-		//else
-		//	comboFg fill = 0
 
 		Debug.Log("combo: "+_combo);
 		Debug.Log("combo mult: "+_comboMult);
 	}
 
 	public void GameOver(bool fall=false){
+		_balanceCanvas.alpha=0;
 		_gameState=2;
 		_grindEffects.Stop();
 		_anim.enabled=false;
@@ -2437,9 +2411,33 @@ public class RailGenerator : MonoBehaviour
 		PlayerPrefs.Save();
 		_explosion.position = _ethan.position;
 		_explosion.GetComponent<ParticleSystem>().Play();
-		if(fall){
-			//#todo fall animation
-		}
+
+		//fall animation
+		float force=fall? 100f :300f;
+		_ethanPhysics.gameObject.AddComponent<Rigidbody>();
+		_ethanPhysics.gameObject.AddComponent<SphereCollider>();
+		_ethanPhysics.GetComponent<Rigidbody>().AddForce(Random.insideUnitSphere*force);
+		Destroy(_ethanPhysics.gameObject,10f);
+
+		_board.gameObject.AddComponent<Rigidbody>();
+		_board.gameObject.AddComponent<BoxCollider>();
+		_board.GetComponent<Rigidbody>().AddForce(Random.insideUnitSphere*force);
+		Destroy(_board.gameObject,10f);
+	}
+
+	void LockInput(bool l){
+		_inputLock=l;
+		_balanceCanvas.alpha=l?0:1;
+		_crouching=false;
+		_jumping=false;
+		_balance=0;
+		_inputVelocity=0;
+		_balanceVelocity=0;
+	}
+
+	public void ReplayTutorial(){
+		ClearTut();
+		_tutorialComplete.Invoke();
 	}
 
 	/*
