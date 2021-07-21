@@ -5,7 +5,7 @@
         _MainTex ("Texture", 2D) = "white" {}
 		_ColorA ("Color A", Color) = (0,0,0,0)
 		_ColorB ("Color B", Color) = (1,1,1,1)
-		_Step ("Step", Vector) = (0.5,0.8,0,0)
+		_Step ("Step", Float) = 0.5
     }
     SubShader
     {
@@ -39,7 +39,7 @@
             float4 _MainTex_ST;
 			fixed4 _ColorA;
 			fixed4 _ColorB;
-			fixed4 _Step;
+			fixed _Step;
 
             v2f vert (appdata v)
             {
@@ -53,7 +53,7 @@
             {
                 // sample the texture
                 fixed4 col = tex2D(_MainTex, i.uv);
-				col*=lerp(_ColorA,_ColorB,smoothstep(_Step.x,_Step.y,i.uv.y));
+				col*=lerp(_ColorA,_ColorB,smoothstep(_Step,0.92,i.uv.y));
                 return col;
             }
             ENDCG

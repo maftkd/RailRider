@@ -12,7 +12,7 @@ public class RailGenerator : MonoBehaviour
 	LineRenderer _line;
 	public Material _lineMat;
 	public Material _buildingMat;
-	public Material _skyMat;
+	public Material _ringMat;
 	float _nodeDist = 16f;//approximate segment length
 	int _lineResolution = 10;//Number of points on line per segment
 	float _moveSpeed=0.6f;//rate at which char moves along rail in segments/sec
@@ -347,6 +347,7 @@ public class RailGenerator : MonoBehaviour
 		RenderSettings.fogColor=_curPhase._bg;
 		_rain = GameObject.Find("Rain").GetComponent<ParticleSystem>().main;
 		_rain.startColor=_curPhase._accent;
+		_ringMat.SetFloat("_Step",0.5f);
 		
 		//configure railTracker
 		_railTracker=transform.GetChild(0);
@@ -355,14 +356,17 @@ public class RailGenerator : MonoBehaviour
 		_ethanPhysics=_anim.transform;
 
 		//check version
+		bool fullReset=true;
 		if(PlayerPrefs.HasKey("version")){
 			int v = PlayerPrefs.GetInt("version");
-			//#todo check version
+			//version must be 2
+			if(v==2)
+				fullReset=false;
 		}
-		else{
+		if(fullReset){
 			//if no version, clear all - coins, score, board
 			PlayerPrefs.DeleteAll();
-			PlayerPrefs.SetInt("version", 1);
+			PlayerPrefs.SetInt("version", 2);
 			PlayerPrefs.Save();
 		}
 
@@ -564,7 +568,6 @@ public class RailGenerator : MonoBehaviour
 		string[] parts = stat.Split('%');
 		string name = parts[0];
 		int dir = int.Parse(parts[1]);
-		Debug.Log("Changing stat on custom board - "+name+" in direction: "+dir);
 		switch(name){
 			default:
 			case "balance":
@@ -907,7 +910,6 @@ public class RailGenerator : MonoBehaviour
 		d.mesh=duck.GetComponent<MeshRenderer>();
 		d.mesh.enabled=false;
 		_duckers.Add(key,d);
-		//Debug.Log("<color=green>Added ducker @ "+key+" - current t: "+_t+"</color>");
 	}
 
 	void ResetDucker(float t, Ducker j){
@@ -1162,7 +1164,6 @@ public class RailGenerator : MonoBehaviour
 		if(_phaseChangeIn>0)
 		{
 			_phaseChangeIn--;
-			Debug.Log("Phase change in: "+_phaseChangeIn);
 			if(_phaseChangeIn<=0){
 				_prevPhase=new Phase(_curPhase);
 				_curPhase = GenerateNextPhase();
@@ -1779,9 +1780,8 @@ public class RailGenerator : MonoBehaviour
 						ShowNextDialog();
 						_tutDuckerStart=_t+2f;
 						GenerateTutorialDucker(_tutDuckerStart);
-					}
-					if(_dialogIndex==13 && _ready && _inputLock)
 						LockInput(false);
+					}
 					if(_t>_tutDuckerStart+0.5f && _dialogIndex==13){
 						ShowNextDialog();//nice duck
 						LockInput(true);
@@ -1793,9 +1793,8 @@ public class RailGenerator : MonoBehaviour
 						ShowNextDialog();
 						_tutJumperStart=_t+2f;
 						GenerateTutorialJumper(_tutJumperStart);
-					}
-					if(_dialogIndex==16&&_ready&&_inputLock)
 						LockInput(false);
+					}
 					if(_t>_tutJumperStart+0.5f && _dialogIndex==16){
 						ShowNextDialog();//nice jump
 						LockInput(true);
@@ -1854,7 +1853,6 @@ public class RailGenerator : MonoBehaviour
 				if(!_phaseChange && !_tutorial){
 					_phaseTimer+=Time.deltaTime;
 					if(_phaseTimer>=_curPhase._duration){
-						Debug.Log("Time for another phase");
 						_phaseChange=true;
 						float curT = _t-_tOffset;
 						int curTi = Mathf.FloorToInt(curT);
@@ -1906,7 +1904,6 @@ public class RailGenerator : MonoBehaviour
 		//calc rail curvature
 		Vector3 nextForward = _path.GetTangent(railT+1f/(float)_lineResolution);
 		_curvature = Vector3.Cross(_railTracker.forward,nextForward).y;
-		//Debug.Log("curve: "+_curvature);
 		
 		//balance physics
 		if(!_jumping && !_zen)
@@ -2157,6 +2154,7 @@ public class RailGenerator : MonoBehaviour
 			StopAllCoroutines();
 			StartCoroutine(NightTimeR());
 		}
+		_ringMat.SetFloat("_Step",-0.3f);
 		_powerUp.Play();
 		StartCoroutine(BlinkRoutine());
 		_batteryTempMat.SetFloat("_Power",1f);
@@ -2187,8 +2185,10 @@ public class RailGenerator : MonoBehaviour
 		}
 		if(Mathf.Abs(_balance)>180)
 		{
-			_balance=-Mathf.Sign(_balance)*180+(Mathf.Abs(_balance)-180);
+			_balance=-Mathf.Sign(_balance)*(360-(Mathf.Abs(_balance)));
 		}
+
+		_ringMat.SetFloat("_Step",0.5f);
 	}
 
 	IEnumerator BlinkRoutine(){
@@ -2269,7 +2269,6 @@ public class RailGenerator : MonoBehaviour
 	}
 
 	Phase GenerateNextPhase(){
-		Debug.Log("Phase counter: "+_phaseCounter);
 		Phase p = new Phase();
 		if(_curPhase!=null){
 			p._bg=_curPhase._bg;
@@ -2389,9 +2388,6 @@ public class RailGenerator : MonoBehaviour
 				break;
 		}
 		_comboFg.fillAmount = (_combo%25 / 25f);
-
-		Debug.Log("combo: "+_combo);
-		Debug.Log("combo mult: "+_comboMult);
 	}
 
 	public void GameOver(bool fall=false){
@@ -2399,7 +2395,8 @@ public class RailGenerator : MonoBehaviour
 		_gameState=2;
 		_grindEffects.Stop();
 		_anim.enabled=false;
-		_jumpHit.Invoke();
+		if(!fall)
+			_jumpHit.Invoke();
 		if(!PlayerPrefs.HasKey("hs"))
 			PlayerPrefs.SetInt("hs",_collectedCoins);
 		else{
@@ -2433,6 +2430,7 @@ public class RailGenerator : MonoBehaviour
 		_balance=0;
 		_inputVelocity=0;
 		_balanceVelocity=0;
+		_anim.SetBool("crouch",false);
 	}
 
 	public void ReplayTutorial(){
