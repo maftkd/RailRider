@@ -12397,8 +12397,8 @@ MonoBehaviour:
   - {fileID: 146937231}
   _music: {fileID: 2012078503}
   _tutorialObjs: {fileID: 1584361514}
-  _curvePower: 150
-  _gravityPower: -0.03
+  _curvePower: 0
+  _gravityPower: -0.0002
   _ethanMat: {fileID: 2100000, guid: 746c7c4e6f7194a5896632001c70c6e4, type: 2}
   _invincibilityGrad:
     serializedVersion: 2
@@ -20588,7 +20588,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -15.000061, y: 15.00001}
+  m_AnchoredPosition: {x: -15, y: 15}
   m_SizeDelta: {x: 200, y: 168.3}
   m_Pivot: {x: 1, y: 0}
 --- !u!225 &1498233376
@@ -34805,7 +34805,7 @@ PrefabInstance:
     - target: {fileID: 789696517803222415, guid: 4af6e4c0854494a119f01362e5dc37fa,
         type: 3}
       propertyPath: m_RootOrder
-      value: 2
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 1522328251878945426, guid: 4af6e4c0854494a119f01362e5dc37fa,
         type: 3}
@@ -34955,7 +34955,7 @@ PrefabInstance:
     - target: {fileID: 4790449896035967463, guid: 4af6e4c0854494a119f01362e5dc37fa,
         type: 3}
       propertyPath: m_RootOrder
-      value: 4
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 5856287498832488372, guid: 4af6e4c0854494a119f01362e5dc37fa,
         type: 3}

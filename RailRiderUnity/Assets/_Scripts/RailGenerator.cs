@@ -129,6 +129,7 @@ public class RailGenerator : MonoBehaviour
 	public TrailRenderer _lTrail,_rTrail;
 	public Transform _coinFx;
 	int _combo;
+	int _comboMult=1;
 	float _comboPitch=1f;
 	float _minComboPitch=1f;
 	float _maxComboPitch=1.5f;
@@ -1287,14 +1288,11 @@ public class RailGenerator : MonoBehaviour
 	}
 
 	void AddScore(int points){
-		/*
-		if(_zen)
-			return;
-			*/
 		_collectedCoins+=points;
 		_scoreText.text=_collectedCoins.ToString();
 		_scoreText.fontSize=_boldScoreFont;
 		_scoreChangeTimer=.4f;
+		UpdateCombo();
 	}
 
 	public void StartRiding(bool zen){
@@ -1355,14 +1353,17 @@ public class RailGenerator : MonoBehaviour
 					}
 					//on coin miss
 					else if(_t-f>.05f && c.transform.tag!="Collected"){
+						/*
 						if(_combo>0){
-							c.transform.tag="Collected";
 						}
 						if(c.transform.name=="final")
 						{
 							c.transform.name="foo";
-							_clusterCounter=0;
 						}
+						*/
+						UpdateCombo(false);
+						c.transform.tag="Collected";
+						_clusterCounter=0;
 					}
 				}
 			}
@@ -1923,16 +1924,14 @@ public class RailGenerator : MonoBehaviour
 		if(!_jumping && !_zen)
 		{
 			//affect of gravity
-			//0.02
 			_balanceVelocity=Mathf.Sign(_balance)*_balance*_balance*Time.deltaTime*_gravityPower;
 			//affect of curvature
-			//_balance-=_curvature*_balanceMult*2;
-			//10
 			_balanceVelocity+=Mathf.Sign(_curvature)*Mathf.Abs(_curvature)*Time.deltaTime*_curvePower;
 		}
 		//apply input "velocity"
-		float vel = _inputVelocity+_balanceVelocity*_balanceMult;
-		_balance-=vel*Time.deltaTime*_balanceSpeed;
+		float vel = _inputVelocity*Time.deltaTime+_balanceVelocity*_balanceMult;
+		//_balance-=vel*Time.deltaTime*_balanceSpeed;
+		_balance-=vel*_balanceSpeed;
 
 		if(Mathf.Abs(_balance)>110f && !_zen){
 			Debug.Break();
@@ -2353,6 +2352,40 @@ public class RailGenerator : MonoBehaviour
 
 		_phaseCounter++;
 		return p;
+	}
+
+	void UpdateCombo(bool increase=true){
+		if(increase)
+			_combo++;
+		else
+			_combo=0;
+
+		int comboLevel = _combo/25;
+		//cap combo level at 3
+		if(comboLevel>3)
+			comboLevel=3;
+		//get mult
+		_comboMult = Mathf.RoundToInt(Mathf.Pow(2,comboLevel));
+		//if combo < 25
+		//	comboBg color = 0,0,0,0
+		//	comboMult=1
+		//else if combo < 50
+		//	comboBg color = cyan
+		//	comboMult=2
+		//else if combo < 75
+		//	comboBg color = magenta
+		//	comboMult=4
+		//else
+		//	comboBg color = yellow
+		//	comboMult=8
+
+		//if combo <75
+		//	comboFg fill amount = combo%25 / 25
+		//else
+		//	comboFg fill = 0
+
+		Debug.Log("combo: "+_combo);
+		Debug.Log("combo mult: "+_comboMult);
 	}
 
 	public void GameOver(){
