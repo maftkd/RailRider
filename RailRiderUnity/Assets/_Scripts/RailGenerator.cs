@@ -70,6 +70,9 @@ public class RailGenerator : MonoBehaviour
 	public Color _yellow;
 	public Color _grey;
 	public Color _coinHitColor;
+	public Color _cyan;
+	public Color _clear;
+	public Color _magenta;
 	int _collectedCoins;
 	float _coinHitThreshold = .95f;
 	public int _gameState=0;
@@ -86,6 +89,8 @@ public class RailGenerator : MonoBehaviour
 	Text _scoreText;
 	Text _scoreTextShadow;
 	Text _comboText;
+	Image _comboFg;
+	Image _comboBg;
 	Text _trickText;
 	RectTransform _trickTextRect;
 	float _trickTextTimer;
@@ -358,8 +363,12 @@ public class RailGenerator : MonoBehaviour
 		_ethanMat.SetColor("_OutlineColor",Color.black);
 		_gate = GameObject.FindGameObjectWithTag("Gate").transform;
 		_scoreText = GameObject.FindGameObjectWithTag("Score").GetComponent<Text>();
-		_comboText = _scoreText.transform.GetChild(0).GetComponent<Text>();
-		_comboSfx = _comboText.transform.GetComponent<AudioSource>();
+		Transform stp = _scoreText.transform.parent;
+		_comboText = stp.Find("ComboText").GetComponent<Text>();
+		_comboBg = stp.Find("ComboBar").GetChild(0).GetComponent<Image>();
+		_comboFg = stp.Find("ComboBar").GetChild(1).GetComponent<Image>();
+
+		//_comboSfx = _comboText.transform.GetComponent<AudioSource>();
 		_trickText = GameObject.Find("TrickText").GetComponent<Text>();
 		_trickTextRect = _trickText.transform.parent.GetComponent<RectTransform>();
 		_trickText.text="";
@@ -1288,7 +1297,7 @@ public class RailGenerator : MonoBehaviour
 	}
 
 	void AddScore(int points){
-		_collectedCoins+=points;
+		_collectedCoins+=points*_comboMult;
 		_scoreText.text=_collectedCoins.ToString();
 		_scoreText.fontSize=_boldScoreFont;
 		_scoreChangeTimer=.4f;
@@ -1934,7 +1943,7 @@ public class RailGenerator : MonoBehaviour
 		_balance-=vel*_balanceSpeed;
 
 		if(Mathf.Abs(_balance)>110f && !_zen){
-			Debug.Break();
+			GameOver(true);
 		}
 
 		//set ethan rotation
@@ -2366,6 +2375,30 @@ public class RailGenerator : MonoBehaviour
 			comboLevel=3;
 		//get mult
 		_comboMult = Mathf.RoundToInt(Mathf.Pow(2,comboLevel));
+		_comboText.text=_comboMult+"x";
+		switch(comboLevel){
+			case 0:
+				_comboBg.color = _clear;
+				_comboFg.color = _cyan;
+				_comboText.color=Color.white;
+				break;
+			case 1:
+				_comboBg.color = _cyan;
+				_comboFg.color = _magenta;
+				_comboText.color=_cyan;
+				break;
+			case 2:
+				_comboBg.color = _magenta;
+				_comboFg.color = _yellow;
+				_comboText.color=_magenta;
+				break;
+			case 3:
+			default:
+				_comboBg.color = _yellow;
+				_comboText.color=_yellow;
+				break;
+		}
+		_comboFg.fillAmount = (_combo%25 / 25f);
 		//if combo < 25
 		//	comboBg color = 0,0,0,0
 		//	comboMult=1
@@ -2388,7 +2421,7 @@ public class RailGenerator : MonoBehaviour
 		Debug.Log("combo mult: "+_comboMult);
 	}
 
-	public void GameOver(){
+	public void GameOver(bool fall=false){
 		_gameState=2;
 		_grindEffects.Stop();
 		_anim.enabled=false;
@@ -2404,6 +2437,9 @@ public class RailGenerator : MonoBehaviour
 		PlayerPrefs.Save();
 		_explosion.position = _ethan.position;
 		_explosion.GetComponent<ParticleSystem>().Play();
+		if(fall){
+			//#todo fall animation
+		}
 	}
 
 	/*
