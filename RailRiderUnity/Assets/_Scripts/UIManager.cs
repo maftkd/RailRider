@@ -29,6 +29,8 @@ public class UIManager : MonoBehaviour
 	{
 		//get menu
 		_menu = transform.GetChild(0).GetComponent<CanvasGroup>();
+		if(_menu==null)
+			_menu = GetComponent<CanvasGroup>();
 
 		//get rail gen
 		_railGen = GameObject.FindGameObjectWithTag("GameController").GetComponent<RailGenerator>();	

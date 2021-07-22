@@ -123,7 +123,6 @@ public class RailGenerator : MonoBehaviour
 	public float _gravityPower;
 	Transform _explosion;
 
-
 	//effects
 	public Material _ethanMat;
 	public Gradient _invincibilityGrad;
@@ -206,12 +205,15 @@ public class RailGenerator : MonoBehaviour
 
 	//stats
 	float _minBalance=0.1f;
-	float _maxBalance=0.8f;
+	float _maxBalance=0.6f;
 	float _minTrick=270f;
 	float _maxTrick=1080f;
 	float _minSpeed=0.45f;
 	float _maxSpeed=0.8f;
 	int _bars=8;
+	Vector3 _curPos;
+	Vector3 _prevPos;
+	float _distance;
 
 	//physics objects for fall anim
 	Transform _ethanPhysics;
@@ -223,6 +225,9 @@ public class RailGenerator : MonoBehaviour
 	int _dialogIndex;
 	public string[] _dialog;
 	bool _ready;
+
+	public string[] _tips;
+	public Text _tipText;
 
 	[System.Serializable]
 	public class Phase {
@@ -320,7 +325,7 @@ public class RailGenerator : MonoBehaviour
 	void Start()
 	{
 		//#temp
-		_curPhase=GenerateNextPhase();
+		_curPhase=GenNextPhase();
 		_curPhase._accent=_course[0]._accent;
 		_curPhase._bg=_course[0]._bg;
 
@@ -399,7 +404,7 @@ public class RailGenerator : MonoBehaviour
 		_readyCanvas = GameObject.Find("ReadyArrow").GetComponent<CanvasGroup>();
 		_scoreCanvas = _scoreText.transform.parent.GetComponent<CanvasGroup>();
 		_defaultScoreFont=_scoreText.fontSize;
-		_boldScoreFont=Mathf.FloorToInt(_defaultScoreFont*1.4f);
+		_boldScoreFont=Mathf.FloorToInt(_defaultScoreFont*1.2f);
 		if(PlayerPrefs.HasKey("hs")){
 			foreach(Text t in _hsText)
 				t.text=PlayerPrefs.GetInt("hs").ToString("HIGH SCORE: #");
@@ -410,6 +415,10 @@ public class RailGenerator : MonoBehaviour
 		_balanceCanvas.alpha=0;
 
 		SetupShop();
+
+		//set positions
+		_prevPos=_railTracker.position;
+		_curPos=_prevPos;
 	}
 
 	void SetupShop(){
@@ -502,7 +511,7 @@ public class RailGenerator : MonoBehaviour
 					case 1:
 						//text.text="Balance: "+b._balance.ToString("0.0");
 						bars+=Mathf.RoundToInt((_bars-1)*
-								Mathf.InverseLerp(_minBalance,_maxBalance,b._balance));
+								Mathf.InverseLerp(_maxBalance,_minBalance,b._balance));
 						break;
 					case 2:
 						//text.text="Trick: "+b._trick.ToString("0.0");
@@ -524,6 +533,20 @@ public class RailGenerator : MonoBehaviour
 			bool customize=owned&&_curBoard==4;
 			stat.Find("Minus").gameObject.SetActive(customize);
 			stat.Find("Plus").gameObject.SetActive(customize);
+		}
+		//record
+		Transform record = stats.GetChild(4);
+		Text recordText = record.GetChild(0).GetComponent<Text>();
+		recordText.gameObject.SetActive(owned);
+		Transform dstBg = record.Find("distBg");
+		dstBg.gameObject.SetActive(owned);
+		if(owned){
+			recordText = dstBg.GetChild(0).GetComponent<Text>();
+			float dst = PlayerPrefs.GetFloat(b._name);
+			if(dst<1000)
+				recordText.text = dst.ToString("0.0")+" m";
+			else
+				recordText.text = (dst/1000f).ToString("0.0") + " km";
 		}
 
 		//set particle fx
@@ -558,7 +581,7 @@ public class RailGenerator : MonoBehaviour
 
 	public void BuyBoard(){
 		Hoverboard h = _boardParent.GetChild(_curBoard).GetComponent<Hoverboard>();
-		PlayerPrefs.SetInt(h._name,0);
+		PlayerPrefs.SetFloat(h._name,0);
 		PlayerPrefs.Save();
 		_menu.CoinSpent(h._cost);
 		RotateBoard(0);
@@ -1166,7 +1189,7 @@ public class RailGenerator : MonoBehaviour
 			_phaseChangeIn--;
 			if(_phaseChangeIn<=0){
 				_prevPhase=new Phase(_curPhase);
-				_curPhase = GenerateNextPhase();
+				_curPhase = GenNextPhase();
 				_phaseTimer=0;
 				_phaseChange=false;
 			}
@@ -1184,15 +1207,6 @@ public class RailGenerator : MonoBehaviour
 					if(knotT-i>_lastObstacle+_curPhase._minObstacleSpace){
 						GenerateJumper(knotT-i);
 						_lastJumper=knotT-i;
-						_lastObstacle=knotT-i;
-					}
-				}
-				//coins
-				if(knotT-i>_lastCluster+_curPhase._minCoinSpace && Random.value<_curPhase._coinProbability)
-				{
-					if(knotT-i>_lastObstacle+_curPhase._minObstacleSpace){
-						GenerateCoinCluster(knotT-i);
-						_lastCluster=knotT-i;
 						_lastObstacle=knotT-i;
 					}
 				}
@@ -1220,6 +1234,16 @@ public class RailGenerator : MonoBehaviour
 					if(knotT-i>_lastObstacle+_curPhase._minObstacleSpace){
 						GenerateBattery(knotT-i);
 						_lastBattery=knotT-i;
+						_lastObstacle=knotT-i;
+					}
+				}
+				
+				//coins
+				if(knotT-i>_lastCluster+_curPhase._minCoinSpace && Random.value<_curPhase._coinProbability)
+				{
+					if(knotT-i>_lastObstacle+_curPhase._minObstacleSpace){
+						GenerateCoinCluster(knotT-i);
+						_lastCluster=knotT-i;
 						_lastObstacle=knotT-i;
 					}
 				}
@@ -1397,7 +1421,6 @@ public class RailGenerator : MonoBehaviour
 	}
 
 	public void CheckDuckerCollisions(){
-		bool genDuck=false;
 		Ducker tmp;
 		foreach(float f in _duckers.Keys){
 			tmp = (Ducker)_duckers[f];
@@ -1416,7 +1439,7 @@ public class RailGenerator : MonoBehaviour
 							tmp.transform.tag="Collected";
 							tmp.mesh.enabled=false;
 							_smash.Play();
-							genDuck=true;
+							AddScore(1);
 						}
 						else{
 							if(_tutorial)
@@ -1438,18 +1461,14 @@ public class RailGenerator : MonoBehaviour
 						}
 					}
 					else if(_t-f>.04f){
-						genDuck=true;
 						tmp.transform.tag="Collected";
 					}
 				}
 			}
 		}
-		if(genDuck)
-			AddScore(1);
 	}
 
 	public void CheckRackCollisions(){
-		bool genRack=false;
 		Rack tmp;
 		foreach(float f in _racks.Keys){
 			tmp=(Rack)_racks[f];
@@ -1465,7 +1484,7 @@ public class RailGenerator : MonoBehaviour
 							tmp.transform.tag="Collected";
 							tmp.transform.GetChild(0).GetChild(0).GetComponent<MeshRenderer>().enabled=false;
 							_smash.Play();
-							genRack=true;
+							AddScore(1);
 						}
 						else{
 							tmp.rack.StopSpinning();
@@ -1473,16 +1492,10 @@ public class RailGenerator : MonoBehaviour
 						}
 					}
 					else if(_t-f>.04f){
-						genRack=true;
 						tmp.transform.tag="Collected";
 					}
 				}
 			}
-		}
-		if(genRack)
-		{
-			//GenNextRack();
-			AddScore(1);
 		}
 	}
 
@@ -1900,6 +1913,9 @@ public class RailGenerator : MonoBehaviour
 		_railTracker.position = _path.GetPoint(railT);
 		_railTracker.forward = _path.GetTangent(railT);
 		Vector3 localEuler = _railTracker.localEulerAngles;
+		_curPos=_railTracker.position;
+		_distance+=(_curPos-_prevPos).magnitude;
+		_prevPos=_curPos;
 
 		//calc rail curvature
 		Vector3 nextForward = _path.GetTangent(railT+1f/(float)_lineResolution);
@@ -1909,9 +1925,11 @@ public class RailGenerator : MonoBehaviour
 		if(!_jumping && !_zen)
 		{
 			//affect of gravity
-			_balanceVelocity=Mathf.Sign(_balance)*_balance*_balance*Time.deltaTime*_gravityPower;
+			_balanceVelocity=Mathf.Sign(_balance)*_balance*_balance*
+				Time.deltaTime*_gravityPower;
 			//affect of curvature
-			_balanceVelocity+=Mathf.Sign(_curvature)*Mathf.Abs(_curvature)*Time.deltaTime*_curvePower;
+			_balanceVelocity+=Mathf.Sign(_curvature)*Mathf.Abs(_curvature)*
+				Time.deltaTime*_curvePower;
 		}
 		//apply input "velocity"
 		float vel = _inputVelocity*Time.deltaTime+_balanceVelocity*_balanceMult;
@@ -1973,6 +1991,12 @@ public class RailGenerator : MonoBehaviour
 		}
 		_music.pitch=1;
 		_gameState=1;
+	}
+
+	[ContextMenu("Clear hs")]
+	public void ClearHs(){
+		PlayerPrefs.DeleteKey("hs");
+		PlayerPrefs.Save();
 	}
 
 	[ContextMenu("Clear tut")]
@@ -2268,83 +2292,47 @@ public class RailGenerator : MonoBehaviour
 		GenerateRack(time+1f);
 	}
 
-	Phase GenerateNextPhase(){
+	Phase GenNextPhase(){
 		Phase p = new Phase();
 		if(_curPhase!=null){
 			p._bg=_curPhase._bg;
 			p._accent=_curPhase._accent;
 		}
 
-		//first 5 alternate jump/duck and rack
-		//every 5 are coin levels
-		//after 5, three are mixed
-		//first 5 should take maybe 2-3 mins
-		if(_phaseCounter>0 && _phaseCounter%5==0){
+		if(_phaseCounter>0 && _phaseCounter%2==0){
 			p._minCoinSpace=0;
 			p._coinProbability=0.2f;
 			p._coinClusterSize=10;
-			p._maxCoinRotation=45f;
+			p._maxCoinRotation=40f;
 			p._maxCoinCork=5f;
-			p._minObstacleSpace=2.5f;
-			p._duration=15f;
-		}
-		else if(_phaseCounter<5){
-			float frac = Mathf.InverseLerp(0,4f,_phaseCounter);
-			//coins
-			p._minCoinSpace=2f;
-			p._coinProbability=0.1f;
-			p._coinClusterSize=5;
-			p._maxCoinRotation=Mathf.Lerp(45f,60f,frac);
-			p._maxCoinCork=Mathf.Lerp(5f,7f,frac);
-			if(_phaseCounter%2==0){
-				//jumps and ducks
-				p._minJumpSpace=0.5f;
-				p._jumpProbability=Mathf.Lerp(0.05f,0.2f,frac);
-				p._minDuckerSpace=0.5f;
-				p._duckerProbability=Mathf.Lerp(0.05f,0.2f,frac);
-
-				//general
-				p._minObstacleSpace=Mathf.Lerp(1f,0.75f,frac);
-				p._duration=Mathf.Lerp(10f,15f,frac);
-			}
-			else{
-				//racks
-				p._minRackSpace=1;
-				p._rackProbability=Mathf.Lerp(0.05f,0.5f,frac);
-				p._minRackSpeed=Mathf.Lerp(30f,90f,frac);
-				p._maxRackSpeed=Mathf.Lerp(60f,160f,frac);
-				
-				//general
-				p._minObstacleSpace=Mathf.Lerp(1f,0.75f,frac);
-				//p._duration=Mathf.Lerp(5f,10f,frac);
-				//rack levels are shorter cuz they tougher
-				p._duration=5f;
-			}
+			p._minObstacleSpace=1.5f;
+			p._duration=5f;
 		}
 		else{
-			float frac = Mathf.InverseLerp(6,10,_phaseCounter);
+			float frac = Mathf.InverseLerp(0,30,_phaseCounter);
 			//gen mixed
 			//coins
-			p._minCoinSpace=2f;
-			p._coinProbability=0.3f;
+			p._minCoinSpace=0.5f;
+			p._coinProbability=0.1f;
 			p._coinClusterSize=5;
-			p._maxCoinRotation=Mathf.LerpUnclamped(60f,90f,frac);
-			p._maxCoinCork=Mathf.LerpUnclamped(7f,9f,frac);
+			p._maxCoinRotation=Mathf.LerpUnclamped(25,60f,frac);
+			//p._maxCoinCork=Mathf.LerpUnclamped(5f,7f,frac);
+			p._maxCoinCork=5f;
 
 			//jumps and ducks
-			p._minJumpSpace=0.5f;
-			p._jumpProbability=Mathf.LerpUnclamped(0.2f,0.5f,frac);
-			p._minDuckerSpace=0.5f;
-			p._duckerProbability=Mathf.LerpUnclamped(0.2f,0.5f,frac);
+			p._minJumpSpace=Mathf.LerpUnclamped(1.5f,0.5f,frac);
+			p._jumpProbability=Mathf.LerpUnclamped(0.1f,0.2f,frac);
+			p._minDuckerSpace=Mathf.LerpUnclamped(1.5f,0.5f,frac);
+			p._duckerProbability=Mathf.LerpUnclamped(0.1f,0.2f,frac);
 
 			//racks
 			p._minRackSpace=1;
-			p._rackProbability=0.5f;
-			p._minRackSpeed=30f;
-			p._maxRackSpeed=160f;
-			
+			p._rackProbability=Mathf.LerpUnclamped(0.05f,0.1f,frac);
+			p._minRackSpeed=Mathf.LerpUnclamped(15f,100f,frac);
+			p._maxRackSpeed=Mathf.LerpUnclamped(30f,135f,frac);			
+
 			//general
-			p._duration=Mathf.LerpUnclamped(15f,30f,frac);
+			p._duration=Mathf.LerpUnclamped(10f,30f,frac);
 			p._minObstacleSpace=Mathf.LerpUnclamped(0.75f,0.5f,frac);
 		}
 
@@ -2395,14 +2383,16 @@ public class RailGenerator : MonoBehaviour
 		_gameState=2;
 		_grindEffects.Stop();
 		_anim.enabled=false;
-		if(!fall)
-			_jumpHit.Invoke();
+		Transform recordParent = _tipText.transform.parent.parent;
+		//if(!fall)
+		_jumpHit.Invoke();
 		if(!PlayerPrefs.HasKey("hs"))
 			PlayerPrefs.SetInt("hs",_collectedCoins);
 		else{
 			if(PlayerPrefs.GetInt("hs")<_collectedCoins){
 				PlayerPrefs.DeleteKey("hs");
 				PlayerPrefs.SetInt("hs",_collectedCoins);
+				recordParent.Find("RecordScore").gameObject.SetActive(true);
 			}
 		}
 		PlayerPrefs.Save();
@@ -2420,6 +2410,19 @@ public class RailGenerator : MonoBehaviour
 		_board.gameObject.AddComponent<BoxCollider>();
 		_board.GetComponent<Rigidbody>().AddForce(Random.insideUnitSphere*force);
 		Destroy(_board.gameObject,10f);
+
+		//tip gen
+		_tipText.text="TIP: "+_tips[Random.Range(0,_tips.Length)];
+
+		//check record
+		Hoverboard b = _board.GetComponent<Hoverboard>();
+		float dst = PlayerPrefs.GetFloat(b._name);
+		//new record
+		if(_distance>dst){
+			PlayerPrefs.SetFloat(b._name,_distance);
+			PlayerPrefs.Save();
+			recordParent.Find("RecordDistance").gameObject.SetActive(true);
+		}
 	}
 
 	void LockInput(bool l){
