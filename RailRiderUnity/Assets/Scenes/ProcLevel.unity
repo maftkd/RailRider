@@ -12885,6 +12885,7 @@ MonoBehaviour:
   - Release one thumb while ducking to return to a normal stance
   - Perform air spins over gears for extra points
   - Keep an eye on the lantern, it will tell you when it is running low
+  - Knock out yellow and red gears while invincible for extra points
   _tipText: {fileID: 1729309046}
 --- !u!4 &1009601617
 Transform:

@@ -571,6 +571,15 @@ public class RailGenerator : MonoBehaviour
 		PlayerPrefs.Save();
 	}
 
+	[ContextMenu("Get boards")]
+	public void GetBoards(){
+		PlayerPrefs.SetFloat("The Plank",0);
+		PlayerPrefs.SetFloat("The Gusto",0);
+		PlayerPrefs.SetFloat("Flame Princess",0);
+		PlayerPrefs.SetFloat("Custom",0);
+
+	}
+
 	[ContextMenu("Clear stats")]
 	public void ClearStats(){
 		PlayerPrefs.DeleteKey("balance");
@@ -594,7 +603,7 @@ public class RailGenerator : MonoBehaviour
 		switch(name){
 			default:
 			case "balance":
-				_balanceMult+=dir*((_maxBalance-_minBalance)/(_bars-1));
+				_balanceMult-=dir*((_maxBalance-_minBalance)/(_bars-1));
 				if(_balanceMult>_maxBalance)
 					_balanceMult=_maxBalance;
 				else if(_balanceMult<_minBalance)
