@@ -2195,7 +2195,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.990566, g: 0, b: 0.44456092, a: 1}
+  m_Color: {r: 1, g: 0.3726415, b: 0.6528452, a: 1}
   m_RaycastTarget: 1
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -2214,7 +2214,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: NEW HIGH SCORE!
+  m_Text: New High Score !
 --- !u!222 &296468718
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -5983,7 +5983,7 @@ PrefabInstance:
     - target: {fileID: 7685847536661276844, guid: 73025be23d4b84be081625118bb5bd7f,
         type: 3}
       propertyPath: _balance
-      value: 0.3
+      value: 0.4
       objectReference: {fileID: 0}
     - target: {fileID: 7685847536661276844, guid: 73025be23d4b84be081625118bb5bd7f,
         type: 3}
@@ -23659,7 +23659,7 @@ PrefabInstance:
     - target: {fileID: 7685847536661276844, guid: 73025be23d4b84be081625118bb5bd7f,
         type: 3}
       propertyPath: _balance
-      value: 0.6
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 7685847536661276844, guid: 73025be23d4b84be081625118bb5bd7f,
         type: 3}
@@ -29178,7 +29178,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.990566, g: 0, b: 0.44456092, a: 1}
+  m_Color: {r: 1, g: 0.3726415, b: 0.6528452, a: 1}
   m_RaycastTarget: 1
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -29197,7 +29197,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: RECORD DISTANCE!
+  m_Text: Record Distance !
 --- !u!222 &1899093292
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -36168,7 +36168,7 @@ PrefabInstance:
     - target: {fileID: 7685847536661276844, guid: 73025be23d4b84be081625118bb5bd7f,
         type: 3}
       propertyPath: _balance
-      value: 0.4
+      value: 0.3
       objectReference: {fileID: 0}
     - target: {fileID: 7685847536661276844, guid: 73025be23d4b84be081625118bb5bd7f,
         type: 3}

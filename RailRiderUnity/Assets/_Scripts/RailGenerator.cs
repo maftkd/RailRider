@@ -2387,7 +2387,10 @@ public class RailGenerator : MonoBehaviour
 		//if(!fall)
 		_jumpHit.Invoke();
 		if(!PlayerPrefs.HasKey("hs"))
+		{
 			PlayerPrefs.SetInt("hs",_collectedCoins);
+			recordParent.Find("RecordScore").gameObject.SetActive(true);
+		}
 		else{
 			if(PlayerPrefs.GetInt("hs")<_collectedCoins){
 				PlayerPrefs.DeleteKey("hs");
