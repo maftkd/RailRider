@@ -1991,6 +1991,7 @@ public class RailGenerator : MonoBehaviour
 		}
 		_music.pitch=1;
 		_gameState=1;
+		LockInput(false);
 	}
 
 	[ContextMenu("Clear hs")]
